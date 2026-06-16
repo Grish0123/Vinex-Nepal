@@ -1,7 +1,8 @@
 import emailjs from "@emailjs/browser";
 import { useRef, useState, type FormEvent } from "react";
-import { recordOrder } from "../lib/api";
-import type { Product } from "../types/product";
+import { recordOrder } from "../../lib/api";
+import type { Product } from "../../types/product";
+import styles from "./CheckoutPage.module.scss";
 
 type CartProduct = Product & {
   cartKey: string;
@@ -251,7 +252,7 @@ export function CheckoutPage({
 
   if (submitState === "success" && submittedOrder) {
     return (
-      <main className="page-shell">
+      <main className={`${styles.page} page-shell`}>
         <section className="success-card">
           <div className="success-hero">
             <span className="section-tag">Order Received</span>
@@ -345,7 +346,7 @@ export function CheckoutPage({
 
   if (items.length === 0) {
     return (
-      <main className="page-shell">
+      <main className={`${styles.page} page-shell`}>
         <section className="empty-card checkout-empty">
           <h2>No items to checkout</h2>
           <p>Add something to your cart first, then return here to enter delivery details.</p>
@@ -463,7 +464,7 @@ export function CheckoutPage({
   };
 
   return (
-    <main className="page-shell">
+    <main className={`${styles.page} page-shell`}>
       <section className="page-intro checkout-intro">
         <span className="section-tag">Checkout</span>
         <h2>Delivery details</h2>

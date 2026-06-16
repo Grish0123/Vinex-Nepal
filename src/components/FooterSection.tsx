@@ -243,7 +243,7 @@ function LegalPageModal({
   );
 }
 
-export function FooterSection({ showWelcome, showProductRequest, onNavigateSupport }: FooterSectionProps) {
+export function FooterSection({ showProductRequest, onNavigateSupport }: FooterSectionProps) {
   const [form, setForm] = useState<ProductRequestForm>(initialForm);
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -282,30 +282,24 @@ export function FooterSection({ showWelcome, showProductRequest, onNavigateSuppo
     }
   };
 
-  return (
-    <footer className="site-footer">
-      {showWelcome ? (
-        <section className="footer-welcome">
-          <span className="section-tag">Vinex Nepal</span>
-          <h2>Welcome to Vinex Nepal</h2>
-          <p>
-            Premium Vinex deals, clean product choices, and fast support for customers
-            looking for reliable tech in Nepal.
-          </p>
-        </section>
-      ) : null}
+  const footerClassName = ["site-footer", showProductRequest ? "site-footer-home" : ""].filter(Boolean).join(" ");
 
+  return (
+    <footer className={footerClassName}>
       {showProductRequest ? (
         <section className="footer-request-panel">
-          <div>
-            <span className="section-tag">Need Something?</span>
-            <h3>Recommend us a product you need</h3>
-            <p>Tell us what you want us to bring next. Your request goes straight to admin.</p>
+          <div className="footer-request-logo" aria-hidden="true">
+            <img src="/images/brand/VinexLogo.png" alt="" />
+          </div>
+
+          <div className="footer-request-copy">
+            <h3>Recommend a product</h3>
+            <p>A modern request for what you need</p>
           </div>
 
           <form className="footer-request-form" onSubmit={handleSubmit}>
             <label className="form-field">
-              <span>Your Name</span>
+              <span>Name</span>
               <input
                 required
                 value={form.customerName}
@@ -313,7 +307,7 @@ export function FooterSection({ showWelcome, showProductRequest, onNavigateSuppo
               />
             </label>
             <label className="form-field">
-              <span>Phone or Email</span>
+              <span>Email or phone</span>
               <input
                 required
                 value={form.contact}
@@ -321,7 +315,7 @@ export function FooterSection({ showWelcome, showProductRequest, onNavigateSuppo
               />
             </label>
             <label className="form-field full-span">
-              <span>Product You Need</span>
+              <span>Product</span>
               <input
                 required
                 value={form.productName}
@@ -331,8 +325,7 @@ export function FooterSection({ showWelcome, showProductRequest, onNavigateSuppo
             <label className="form-field full-span">
               <span>Details</span>
               <textarea
-                rows={3}
-                placeholder="Color, model, budget, or any details that help us source it."
+                rows={2}
                 value={form.details}
                 onChange={(event) => setForm({ ...form, details: event.target.value })}
               />
@@ -341,40 +334,48 @@ export function FooterSection({ showWelcome, showProductRequest, onNavigateSuppo
             {status ? <div className="form-status">{status}</div> : null}
 
             <button className="primary-button full-span" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Sending..." : "Send Product Request"}
+              {isSubmitting ? "Sending..." : "Submit"}
             </button>
           </form>
         </section>
       ) : null}
 
-      <section className="footer-links">
-        <span className="footer-social-title">Follow us on</span>
-        <div className="footer-socials" aria-label="Social links">
-          <a className="footer-social-link footer-social-facebook" href="https://www.facebook.com/" target="_blank" rel="noreferrer">
-            <FooterSocialIcon platform="facebook" />
-            <span>Facebook</span>
-          </a>
-          <a className="footer-social-link footer-social-instagram" href="https://www.instagram.com/vinexnepal/" target="_blank" rel="noreferrer">
-            <FooterSocialIcon platform="instagram" />
-            <span>Instagram</span>
-          </a>
-          <a className="footer-social-link footer-social-youtube" href="https://www.youtube.com/" target="_blank" rel="noreferrer">
-            <FooterSocialIcon platform="youtube" />
-            <span>YouTube</span>
-          </a>
-          <a className="footer-social-link footer-social-tiktok" href="https://www.tiktok.com/@vinexnepal" target="_blank" rel="noreferrer">
-            <FooterSocialIcon platform="tiktok" />
-            <span>TikTok</span>
-          </a>
+      <section className="footer-links" aria-label="Footer navigation">
+        <div className="footer-link-column">
+          <h3>Site Index</h3>
+          <div>
+            <a href="/products">Shop Now</a>
+            <a href="/">Home</a>
+            <button type="button" onClick={onNavigateSupport}>Contact Us</button>
+          </div>
         </div>
-        <div className="footer-policy-links" aria-label="Policy links">
-          <span>(c) 2026 Vinex Nepal</span>
-          <button type="button" onClick={() => setActiveLegalPage("privacy")}>Privacy Policy</button>
-          <button type="button" onClick={() => setActiveLegalPage("returns")}>Return Policy</button>
-          <button type="button" onClick={() => setActiveLegalPage("terms")}>Terms of Service</button>
-          <button type="button" onClick={() => setActiveLegalPage("contact")}>Contact Information</button>
-          {onNavigateSupport ? <button type="button" onClick={onNavigateSupport}>Help &amp; Support</button> : null}
+        <div className="footer-link-column">
+          <h3>Social</h3>
+          <div>
+            <a href="https://www.instagram.com/vinexnepal/" target="_blank" rel="noreferrer">Instagram</a>
+            <a href="https://www.tiktok.com/@vinexnepal" target="_blank" rel="noreferrer">TikTok</a>
+            <a href="https://www.facebook.com/" target="_blank" rel="noreferrer">Facebook</a>
+          </div>
         </div>
+        <div className="footer-link-column">
+          <h3>Get In Touch</h3>
+          <div>
+            <a href="mailto:katwalgrish@gmail.com">katwalgrish@gmail.com</a>
+            <a href="tel:+9779748285909">+977 9748285909</a>
+            {onNavigateSupport ? <button type="button" onClick={onNavigateSupport}>Help &amp; Support</button> : null}
+          </div>
+        </div>
+        <div className="footer-link-column">
+          <h3>Legal</h3>
+          <div>
+            <button type="button" onClick={() => setActiveLegalPage("privacy")}>Privacy Policy</button>
+            <button type="button" onClick={() => setActiveLegalPage("returns")}>Refunds</button>
+            <button type="button" onClick={() => setActiveLegalPage("terms")}>Terms of Service</button>
+            <button type="button" onClick={() => setActiveLegalPage("contact")}>Contact Information</button>
+          </div>
+        </div>
+        <p className="footer-rights">All Rights Reserved _ Vinex Nepal (c)2026</p>
+        <p className="footer-credit">Website by Vinex Nepal</p>
       </section>
 
       {legalPage ? <LegalPageModal legalPage={legalPage} onClose={() => setActiveLegalPage(null)} /> : null}

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import type { Product } from "../types/product";
+import type { Product } from "../../types/product";
+import styles from "./CartPage.module.scss";
 
 type CartProduct = Product & {
   cartKey: string;
@@ -63,7 +64,7 @@ export function CartPage({
   };
 
   return (
-    <main className="page-shell cart-page-shell">
+    <main className={`${styles.page} page-shell cart-page-shell`}>
       <section className="page-intro cart-page-intro">
         <span className="section-tag">Your Cart</span>
         <h2>Review your selected items</h2>

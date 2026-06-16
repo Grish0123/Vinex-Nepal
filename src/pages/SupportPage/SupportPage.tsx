@@ -1,3 +1,5 @@
+import styles from "./SupportPage.module.scss";
+
 function SocialIcon({ platform }: { platform: "whatsapp" | "instagram" | "tiktok" }) {
   if (platform === "whatsapp") {
     return (
@@ -41,7 +43,7 @@ function SocialIcon({ platform }: { platform: "whatsapp" | "instagram" | "tiktok
 
 export function SupportPage() {
   return (
-    <main className="page-shell support-shell">
+    <main className={`${styles.page} page-shell support-shell`}>
       <section className="page-intro">
         <span className="section-tag">Help &amp; Support</span>
         <h2>We are here to help</h2>

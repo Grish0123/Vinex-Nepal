@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { StoreOperationSettings } from "../lib/api";
-import type { Product } from "../types/product";
+import type { StoreOperationSettings } from "../../lib/api";
+import type { Product } from "../../types/product";
+import styles from "./ProductPage.module.scss";
 
 export type ProductSelection = {
   color?: string;
@@ -138,7 +139,7 @@ export function ProductPage({
 
   if (products.length === 0 && !searchQuery.trim()) {
     return (
-      <main className="page-shell">
+      <main className={`${styles.page} page-shell`}>
         <section className="page-intro">
           <span className="section-tag">Products</span>
           <h2>Loading products...</h2>
@@ -465,7 +466,7 @@ export function ProductPage({
     : null;
 
   return (
-    <main className="page-shell">
+    <main className={`${styles.page} page-shell`}>
       {storeOperations.showProductPageIntro ? (
         <section className="page-intro product-page-intro">
           <span className="section-tag">{storeOperations.productPageTag}</span>

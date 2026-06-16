@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Header } from "./components/Header";
-import { HomePage } from "./components/HomePage";
-import { ProductPage, type ProductSelection } from "./components/ProductPage";
-import { CartPage } from "./components/CartPage";
-import { CheckoutPage } from "./components/CheckoutPage";
-import { SupportPage } from "./components/SupportPage";
-import { AdminPage } from "./components/AdminPage";
+import { HomePage } from "./pages/HomePage/HomePage";
+import { ProductPage, type ProductSelection } from "./pages/ProductPage/ProductPage";
+import { CartPage } from "./pages/CartPage/CartPage";
+import { CheckoutPage } from "./pages/CheckoutPage/CheckoutPage";
+import { SupportPage } from "./pages/SupportPage/SupportPage";
+import { AdminPage } from "./pages/AdminPage/AdminPage";
 import { FooterSection } from "./components/FooterSection";
 import { LiveChatWidget } from "./components/LiveChatWidget";
 import { CustomerAccountModal } from "./components/CustomerAccountModal";
@@ -20,6 +20,13 @@ type CartItem = {
   quantity: number;
   selectedColor?: string;
   selectedSize?: string;
+};
+
+type CartProduct = Product & CartItem;
+
+type CartToast = {
+  id: number;
+  productName: string;
 };
 
 const defaultPageContent: PageContentSettings = {
@@ -113,13 +120,19 @@ function getPageFromPathname(pathname: string): Page {
 
 function MobileBottomNav({
   currentPage,
+  isCartOpen,
   onNavigate,
   onSearchChange,
+  onOpenShop,
+  onOpenCart,
   onOpenAccount,
 }: {
   currentPage: Page;
+  isCartOpen: boolean;
   onNavigate: (page: Page) => void;
   onSearchChange: (query: string) => void;
+  onOpenShop: () => void;
+  onOpenCart: () => void;
   onOpenAccount: () => void;
 }) {
   const openCategory = (category: string) => {
@@ -129,7 +142,7 @@ function MobileBottomNav({
       onSearchChange(category);
     }
 
-    onNavigate("products");
+    onOpenShop();
   };
 
   return (
@@ -153,7 +166,7 @@ function MobileBottomNav({
         </svg>
         <span>Deals</span>
       </button>
-      <button className={currentPage === "cart" ? "active" : ""} type="button" onClick={() => onNavigate("cart")}>
+      <button className={currentPage === "cart" || isCartOpen ? "active" : ""} type="button" onClick={onOpenCart}>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M4.1 4.3h2l1.8 8.9a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 1.9-1.4l1.4-4.8H8.1" />
           <path d="M7.2 19.7h.1M17.3 19.7h.1" />
@@ -171,6 +184,332 @@ function MobileBottomNav({
   );
 }
 
+function CartDrawer({
+  isOpen,
+  items,
+  orderTotal,
+  onClose,
+  onIncreaseQuantity,
+  onDecreaseQuantity,
+  onRemoveItem,
+  onCheckout,
+  onContinueShopping,
+}: {
+  isOpen: boolean;
+  items: CartProduct[];
+  orderTotal: number;
+  onClose: () => void;
+  onIncreaseQuantity: (cartKey: string) => void;
+  onDecreaseQuantity: (cartKey: string) => void;
+  onRemoveItem: (cartKey: string) => void;
+  onCheckout: () => void;
+  onContinueShopping: () => void;
+}) {
+  const formatPrice = (price: number) => `Rs ${price.toLocaleString()}`;
+
+  return (
+    <div className={isOpen ? "cart-drawer-layer open" : "cart-drawer-layer"} aria-hidden={!isOpen}>
+      <button className="cart-drawer-backdrop" type="button" aria-label="Close cart" onClick={onClose} />
+      <aside className="cart-drawer-panel" role="dialog" aria-modal="true" aria-label="Shopping cart">
+        <button className="cart-drawer-close" type="button" aria-label="Close cart" onClick={onClose}>
+          ×
+        </button>
+
+        {items.length === 0 ? (
+          <div className="cart-drawer-empty">
+            <p>
+              Your cart is currently empty.{" "}
+              <button type="button" onClick={onContinueShopping}>
+                Shop Now
+              </button>
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="cart-drawer-items">
+              {items.map((item) => (
+                <article className="cart-drawer-item" key={item.cartKey}>
+                  <img src={item.image} alt={item.name} />
+                  <div className="cart-drawer-item-main">
+                    <h3>{item.name}</h3>
+                    <div className="cart-drawer-qty">
+                      <span>Qty</span>
+                      <button type="button" onClick={() => onDecreaseQuantity(item.cartKey)} disabled={item.quantity <= 1}>
+                        -
+                      </button>
+                      <strong>{item.quantity}</strong>
+                      <button type="button" onClick={() => onIncreaseQuantity(item.cartKey)}>
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <div className="cart-drawer-item-side">
+                    <strong>{formatPrice(item.price * item.quantity)}</strong>
+                    <button type="button" onClick={() => onRemoveItem(item.cartKey)}>
+                      Remove
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div className="cart-drawer-footer">
+              <span>Total</span>
+              <strong>{formatPrice(orderTotal)}</strong>
+              <button type="button" onClick={onCheckout}>
+                Checkout
+              </button>
+            </div>
+          </>
+        )}
+      </aside>
+    </div>
+  );
+}
+
+function ProductShopWindow({
+  isOpen,
+  products,
+  cartCount,
+  storeOperations,
+  onClose,
+  onOpenCart,
+  onAddToCart,
+}: {
+  isOpen: boolean;
+  products: Product[];
+  cartCount: number;
+  storeOperations: StoreOperationSettings;
+  onClose: () => void;
+  onOpenCart: () => void;
+  onAddToCart: (productId: number, selection?: ProductSelection) => void;
+}) {
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [sortMode, setSortMode] = useState("featured");
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
+  const [activeImage, setActiveImage] = useState("");
+  const [isProductPanelOpen, setIsProductPanelOpen] = useState(false);
+  const formatPrice = (price: number) => `Rs ${price.toLocaleString()}`;
+  const categories = Array.from(new Set([...(storeOperations.categories ?? []), ...products.map((product) => product.category)].filter(Boolean)));
+  const visibleProducts = products
+    .filter((product) => categoryFilter === "all" || product.category === categoryFilter)
+    .sort((first, second) => {
+      if (sortMode === "sale") {
+        return Number(Boolean(second.originalPrice && second.originalPrice > second.price)) - Number(Boolean(first.originalPrice && first.originalPrice > first.price));
+      }
+
+      if (sortMode === "price-low") return first.price - second.price;
+      if (sortMode === "price-high") return second.price - first.price;
+      if (sortMode === "name") return first.name.localeCompare(second.name);
+      return Number(second.featured ?? false) - Number(first.featured ?? false);
+    });
+  const selectedProduct = products.find((product) => product.id === selectedProductId) ?? null;
+  const selectedProductImages = selectedProduct
+    ? Array.from(new Set([selectedProduct.image, ...(selectedProduct.galleryImages ?? []), selectedProduct.hoverImage].filter((image): image is string => Boolean(image))))
+    : [];
+  const selectedProductColors = selectedProduct?.colorOptions ?? [];
+  const selectedProductSizes = selectedProduct?.sizeOptions ?? [];
+  const selectedProductSelection = {
+    color: selectedColor || selectedProductColors[0],
+    size: selectedSize || selectedProductSizes[0],
+  };
+
+  const openProductPanel = (product: Product) => {
+    setSelectedProductId(product.id);
+    setSelectedColor(product.colorOptions?.[0] ?? "");
+    setSelectedSize(product.sizeOptions?.[0] ?? "");
+    setActiveImage(product.image);
+    window.requestAnimationFrame(() => {
+      setIsProductPanelOpen(true);
+    });
+  };
+
+  const closeProductPanel = () => {
+    setIsProductPanelOpen(false);
+    window.setTimeout(() => {
+      setSelectedProductId(null);
+      setActiveImage("");
+    }, 420);
+  };
+
+  const shopWindowClassName = [
+    "shop-window",
+    isOpen ? "open" : "",
+    selectedProduct || isProductPanelOpen ? "product-open" : "",
+  ].filter(Boolean).join(" ");
+
+  return (
+    <section className={shopWindowClassName} aria-hidden={!isOpen}>
+      <div className="shop-window-panel" role="dialog" aria-modal="true" aria-label="Shop products">
+        <Header
+          currentPage="products"
+          cartCount={cartCount}
+          searchQuery=""
+          onSearchChange={() => undefined}
+          onNavigate={(nextPage) => {
+            if (nextPage === "home") {
+              onClose();
+            }
+          }}
+          onOpenShop={() => undefined}
+          onOpenCart={onOpenCart}
+          onOpenAccount={() => undefined}
+        />
+
+        <div className="shop-window-meta">
+          <div className="shop-window-summary">
+            <span>Our Products</span>
+            <strong>{visibleProducts.length} products ready</strong>
+          </div>
+
+          <div className="shop-window-filter">
+            <label>
+              <span>Category</span>
+              <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>
+                <option value="all">All</option>
+                {categories.map((category) => (
+                  <option value={category} key={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Sort</span>
+              <select value={sortMode} onChange={(event) => setSortMode(event.target.value)}>
+                <option value="featured">Featured</option>
+                <option value="sale">Discount</option>
+                <option value="price-low">Low Price</option>
+                <option value="price-high">High Price</option>
+                <option value="name">Name</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div className="shop-window-grid">
+          {visibleProducts.map((product) => {
+            const discountPercent = product.originalPrice && product.originalPrice > product.price
+              ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+              : 0;
+
+            return (
+              <article className="shop-window-card" key={product.id}>
+                <button
+                  className="shop-window-image"
+                  type="button"
+                  onClick={() => openProductPanel(product)}
+                  disabled={product.inStock === false}
+                >
+                  <img className="shop-window-primary" src={product.image} alt={product.name} />
+                  {product.hoverImage ? <img className="shop-window-hover" src={product.hoverImage} alt="" aria-hidden="true" /> : null}
+                  <span>{product.inStock === false ? "Out of Stock" : "View Product"}</span>
+                  {discountPercent > 0 ? <em>{discountPercent}% off</em> : null}
+                </button>
+                <div className="shop-window-card-meta">
+                  <strong>{product.name}</strong>
+                  <span>{formatPrice(product.price)}</span>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        <div className={isProductPanelOpen ? "shop-product-panel open" : "shop-product-panel"} aria-hidden={!selectedProduct}>
+          {selectedProduct ? (
+            <article className="shop-product-detail" role="dialog" aria-modal="true" aria-label={`${selectedProduct.name} details`}>
+              <div className="shop-product-gallery">
+                <div className="shop-product-image-frame">
+                  <img src={activeImage || selectedProduct.image} alt={selectedProduct.name} />
+                </div>
+              </div>
+
+              <div className="shop-product-copy">
+                <button className="shop-product-close" type="button" onClick={closeProductPanel} aria-label="Close product details">
+                  ×
+                </button>
+                <span className="shop-product-category">{selectedProduct.category}</span>
+                <h2>{selectedProduct.name}</h2>
+                <p>{selectedProduct.description}</p>
+                <div className="shop-product-price">
+                  {selectedProduct.originalPrice ? <span>{formatPrice(selectedProduct.originalPrice)}</span> : null}
+                  <strong>{formatPrice(selectedProduct.price)}</strong>
+                </div>
+
+                {selectedProductImages.length > 1 ? (
+                  <div className="shop-product-thumbs">
+                    {selectedProductImages.map((image) => (
+                      <button
+                        className={(activeImage || selectedProduct.image) === image ? "active" : ""}
+                        type="button"
+                        key={image}
+                        onClick={() => setActiveImage(image)}
+                      >
+                        <img src={image} alt="" aria-hidden="true" />
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+
+                {selectedProductColors.length > 0 ? (
+                  <div className="shop-product-options">
+                    <span>Color</span>
+                    <div>
+                      {selectedProductColors.map((color) => (
+                        <button
+                          className={selectedProductSelection.color === color ? "active" : ""}
+                          type="button"
+                          key={color}
+                          onClick={() => setSelectedColor(color)}
+                        >
+                          {color}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {selectedProductSizes.length > 0 ? (
+                  <div className="shop-product-options">
+                    <span>Size</span>
+                    <div>
+                      {selectedProductSizes.map((size) => (
+                        <button
+                          className={selectedProductSelection.size === size ? "active" : ""}
+                          type="button"
+                          key={size}
+                          onClick={() => setSelectedSize(size)}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className="shop-product-actions">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onAddToCart(selectedProduct.id, selectedProductSelection);
+                      closeProductPanel();
+                    }}
+                    disabled={selectedProduct.inStock === false}
+                  >
+                    {selectedProduct.inStock === false ? "Out of Stock" : "Add to Cart"}
+                  </button>
+                </div>
+              </div>
+            </article>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function App() {
   const [page, setPage] = useState<Page>(() => getPageFromPathname(window.location.pathname));
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -181,6 +520,9 @@ export default function App() {
   const [couponMessage, setCouponMessage] = useState("");
   const [productToOpen, setProductToOpen] = useState<number | null>(null);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
+  const [isShopWindowOpen, setIsShopWindowOpen] = useState(false);
+  const [cartToasts, setCartToasts] = useState<CartToast[]>([]);
   const [customerAccount, setCustomerAccount] = useState<CustomerAccount | null>(() => {
     try {
       const storedCustomer = window.localStorage.getItem(customerSessionStorageKey);
@@ -198,6 +540,9 @@ export default function App() {
   });
   const [pageContent, setPageContent] = useState<PageContentSettings>(defaultPageContent);
   const [storeOperations, setStoreOperations] = useState<StoreOperationSettings>(defaultStoreOperations);
+  const [isPastHomeHero, setIsPastHomeHero] = useState(false);
+  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     const syncPageFromLocation = () => {
@@ -233,7 +578,59 @@ export default function App() {
     void loadProducts();
   }, []);
 
+  useEffect(() => {
+    const updateHeaderState = () => {
+      const scrollY = window.scrollY;
+      const footer = document.querySelector<HTMLElement>(".site-footer-home");
+      const footerTop = footer ? footer.offsetTop : Number.POSITIVE_INFINITY;
+      const footerIsReached = page === "home" && scrollY >= footerTop - 90;
+      const isScrollingDown = scrollY > lastScrollY.current;
+
+      setIsPastHomeHero(scrollY >= window.innerHeight - 72);
+      setIsHeaderHidden(footerIsReached && isScrollingDown);
+      lastScrollY.current = scrollY;
+    };
+
+    updateHeaderState();
+    window.addEventListener("scroll", updateHeaderState, { passive: true });
+    window.addEventListener("resize", updateHeaderState);
+
+    return () => {
+      window.removeEventListener("scroll", updateHeaderState);
+      window.removeEventListener("resize", updateHeaderState);
+    };
+  }, [page]);
+
+  useEffect(() => {
+    if (!isCartDrawerOpen && !isShopWindowOpen) {
+      return;
+    }
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsCartDrawerOpen(false);
+        setIsShopWindowOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isCartDrawerOpen, isShopWindowOpen]);
+
   const navigate = (nextPage: Page) => {
+    setIsCartDrawerOpen(false);
+    setIsShopWindowOpen(false);
+
     const nextPath =
       nextPage === "home"
         ? "/"
@@ -339,6 +736,11 @@ export default function App() {
     }
 
     void recordProductInterest(productId);
+    const toastId = Date.now();
+    setCartToasts((current) => [...current, { id: toastId, productName: product.name }].slice(-4));
+    window.setTimeout(() => {
+      setCartToasts((current) => current.filter((toast) => toast.id !== toastId));
+    }, 2400);
     const cartKey = getCartKey(productId, selection);
     setCartItems((currentItems) => {
       const existingItem = currentItems.find((item) => item.cartKey === cartKey);
@@ -364,6 +766,16 @@ export default function App() {
   const buyNow = (productId: number, selection: ProductSelection = {}) => {
     addToCart(productId, selection);
     navigate("checkout");
+  };
+
+  const openCartDrawer = () => {
+    setIsShopWindowOpen(false);
+    setIsCartDrawerOpen(true);
+  };
+
+  const openShopWindow = () => {
+    setIsCartDrawerOpen(false);
+    setIsShopWindowOpen(true);
   };
 
   const updateQuantity = (cartKey: string, change: number) => {
@@ -426,7 +838,7 @@ export default function App() {
   };
 
   return (
-    <div className="app-shell">
+    <div className={["app-shell", page === "home" ? "app-shell-home" : ""].filter(Boolean).join(" ")}>
       <div className="background-orb orb-left" />
       <div className="background-orb orb-right" />
 
@@ -435,15 +847,22 @@ export default function App() {
         cartCount={cartCount}
         customerName={customerAccount?.name}
         searchQuery={searchQuery}
+        isPastHero={isPastHomeHero}
+        isHidden={isHeaderHidden}
         onSearchChange={setSearchQuery}
         onNavigate={navigate}
+        onOpenShop={openShopWindow}
+        onOpenCart={openCartDrawer}
         onOpenAccount={() => setIsAccountModalOpen(true)}
       />
       {page !== "admin" ? (
         <MobileBottomNav
           currentPage={page}
+          isCartOpen={isCartDrawerOpen}
           onNavigate={navigate}
           onSearchChange={setSearchQuery}
+          onOpenShop={openShopWindow}
+          onOpenCart={openCartDrawer}
           onOpenAccount={() => setIsAccountModalOpen(true)}
         />
       ) : null}
@@ -454,7 +873,7 @@ export default function App() {
           flashSaleSettings={flashSaleSettings}
           pageContent={pageContent}
           storeOperations={storeOperations}
-          onBrowseProducts={() => navigate("products")}
+          onBrowseProducts={openShopWindow}
           onOpenProduct={openProductFromHome}
         />
       ) : page === "products" ? (
@@ -487,7 +906,7 @@ export default function App() {
           onIncreaseQuantity={(cartKey) => updateQuantity(cartKey, 1)}
           onDecreaseQuantity={(cartKey) => updateQuantity(cartKey, -1)}
           onRemoveItem={removeFromCart}
-          onContinueShopping={() => navigate("products")}
+          onContinueShopping={openShopWindow}
           onCheckout={() => navigate("checkout")}
         />
       ) : page === "checkout" ? (
@@ -513,6 +932,39 @@ export default function App() {
           <FooterSection showWelcome={page === "home"} showProductRequest={page === "home"} onNavigateSupport={() => navigate("support")} />
           <LiveChatWidget />
         </>
+      ) : null}
+
+      <CartDrawer
+        isOpen={isCartDrawerOpen}
+        items={cartProducts}
+        orderTotal={orderTotal}
+        onClose={() => setIsCartDrawerOpen(false)}
+        onIncreaseQuantity={(cartKey) => updateQuantity(cartKey, 1)}
+        onDecreaseQuantity={(cartKey) => updateQuantity(cartKey, -1)}
+        onRemoveItem={removeFromCart}
+        onCheckout={() => navigate("checkout")}
+        onContinueShopping={openShopWindow}
+      />
+
+      <ProductShopWindow
+        isOpen={isShopWindowOpen}
+        products={products}
+        cartCount={cartCount}
+        storeOperations={storeOperations}
+        onClose={() => setIsShopWindowOpen(false)}
+        onOpenCart={() => setIsCartDrawerOpen(true)}
+        onAddToCart={addToCart}
+      />
+
+      {cartToasts.length > 0 ? (
+        <div className="cart-toast-stack" role="status" aria-live="polite">
+          {cartToasts.map((toast) => (
+            <div className="cart-toast" key={toast.id}>
+              <span>Added to cart</span>
+              <strong>{toast.productName}</strong>
+            </div>
+          ))}
+        </div>
       ) : null}
 
       {isAccountModalOpen ? (

@@ -15,8 +15,9 @@ import {
   type PageContentSettings,
   type StoreOperationSettings,
   updateStoreOperationSettings,
-} from "../lib/api";
-import type { Product } from "../types/product";
+} from "../../lib/api";
+import type { Product } from "../../types/product";
+import styles from "./AdminPage.module.scss";
 
 const adminTokenStorageKey = "vinex-nepal-admin-token";
 
@@ -886,7 +887,7 @@ export function AdminPage() {
 
   if (!token) {
     return (
-      <main className="page-shell admin-shell">
+      <main className={`${styles.page} page-shell admin-shell`}>
         <section className="admin-login-card">
           <span className="section-tag">Admin Access</span>
           <h2>Private admin panel</h2>
@@ -919,7 +920,7 @@ export function AdminPage() {
 
   if (isLoadingDashboard || !dashboard) {
     return (
-      <main className="page-shell admin-shell">
+      <main className={`${styles.page} page-shell admin-shell`}>
         <section className="page-intro">
           <span className="section-tag">Admin Dashboard</span>
           <h2>Loading admin data...</h2>
@@ -929,7 +930,7 @@ export function AdminPage() {
   }
 
   return (
-    <main className="page-shell admin-shell">
+    <main className={`${styles.page} page-shell admin-shell`}>
       <section className="admin-header-card">
         <div>
           <span className="section-tag">Admin Dashboard</span>

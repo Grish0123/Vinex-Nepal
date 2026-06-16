@@ -1,0 +1,552 @@
+.page {
+  min-width: 0;
+}
+
+.heroImageSection {
+  position: relative;
+  left: 50%;
+  width: 100vw;
+  margin: calc(var(--fixed-header-offset) * -1) 0 10px;
+  transform: translateX(-50%);
+}
+
+.heroImage {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+  object-fit: cover;
+  object-position: center;
+}
+
+.brandIntro {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: clamp(22px, 5vw, 72px);
+  align-items: start;
+  min-height: 0;
+  padding: 12px 10px 18px;
+  background: #ffffff;
+}
+
+.brandIntroLogo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.brandIntroLogo img {
+  display: block;
+  width: 130px;
+  height: auto;
+  object-fit: contain;
+}
+
+.brandIntro p {
+  justify-self: end;
+  max-width: 850px;
+  margin: 0;
+  color: #050505;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.stackScene {
+  position: relative;
+  width: 100%;
+  height: 200vh;
+  margin: 180px 0 0;
+  background: #ffffff;
+}
+
+.stackSticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.collectionSection {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 28px 0 0;
+  background: #ffffff;
+}
+
+.collectionSection h2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 0 28px;
+  padding: 0 10px;
+  color: #1f120d;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.collectionSection h2 span {
+  font-size: 0.55em;
+  line-height: 1;
+}
+
+.collectionGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  padding: 0 10px;
+}
+
+.collectionCard {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: #ffffff;
+  color: #111111;
+  text-align: left;
+  overflow: visible;
+}
+
+button.collectionCard {
+  cursor: pointer;
+}
+
+.collectionImageWrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1 / 1.22;
+  overflow: hidden;
+  background: #f3f3f3;
+}
+
+.collectionImageWrapSoft {
+  background: #f0f0f0;
+}
+
+.collectionImagePrimary,
+.collectionImageHover {
+  grid-area: 1 / 1;
+  display: block;
+  width: 84%;
+  height: 84%;
+  object-fit: contain;
+  transition:
+    opacity 220ms ease,
+    transform 260ms ease;
+}
+
+.collectionImageHover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+}
+
+.collectionMeta {
+  display: grid;
+  gap: 11px;
+  padding: 16px 0 24px;
+  background: #ffffff;
+}
+
+.collectionMeta strong,
+.collectionMeta span {
+  color: #111111;
+  font-size: clamp(0.9rem, 1.18vw, 1.12rem);
+  font-weight: 300;
+  line-height: 1.16;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.collectionMeta span {
+  text-transform: none;
+}
+
+.collectionSelect {
+  position: absolute;
+  right: 8%;
+  bottom: 26px;
+  left: 8%;
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ffffff;
+  background: transparent;
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 300;
+  line-height: 1;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+  pointer-events: auto;
+}
+
+.collectionSelect:hover,
+.collectionCard:hover .collectionSelect:hover {
+  background: #2a160f;
+  color: #ffffff;
+}
+
+.collectionCard:hover .collectionSelect,
+.collectionCard:focus-visible .collectionSelect {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.collectionCard:hover .collectionImagePrimaryWithHover,
+.collectionCard:focus-visible .collectionImagePrimaryWithHover {
+  opacity: 0;
+}
+
+.collectionCard:hover .collectionImageHover,
+.collectionCard:focus-visible .collectionImageHover {
+  opacity: 1;
+}
+
+.collectionCard:hover .collectionImagePrimary,
+.collectionCard:hover .collectionImageHover,
+.collectionCard:focus-visible .collectionImagePrimary,
+.collectionCard:focus-visible .collectionImageHover {
+  transform: scale(1.035);
+}
+
+.flashParallaxSection {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  margin: 0;
+  background: #ffffff;
+  will-change: transform;
+}
+
+.flashPanel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #ffffff;
+  color: #050505;
+}
+
+.flashPanel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, #ffffff 0 50%, rgba(0, 0, 0, 0.2) 50% 100%),
+    var(--flash-image);
+  background-position: center;
+  background-size: cover;
+  opacity: 0.04;
+}
+
+.flashCopy {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  align-content: end;
+  min-width: 0;
+  padding: clamp(24px, 3vw, 56px) clamp(16px, 3vw, 42px);
+  border-right: 1px solid rgba(17, 17, 17, 0.08);
+}
+
+.flashEyebrow {
+  align-self: start;
+  color: #111111;
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.flashDescription {
+  align-self: end;
+  max-width: 920px;
+  margin: 0 0 18px;
+  color: #171717;
+  font-size: clamp(0.78rem, 1.1vw, 1rem);
+  font-weight: 400;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.flashTitleRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: end;
+}
+
+.flashTitleRow h2,
+.flashTitleRow strong {
+  margin: 0;
+  color: #050505;
+  font-size: 40px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.flashPriceRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: baseline;
+  padding-top: 18px;
+  color: #050505;
+  font-size: 1rem;
+}
+
+.flashPriceRow span {
+  color: rgba(17, 17, 17, 0.42);
+  text-decoration: line-through;
+}
+
+.flashPriceRow strong {
+  font-size: 1.24rem;
+}
+
+.flashPriceRow em {
+  font-style: normal;
+  text-transform: uppercase;
+}
+
+.flashMiniProducts {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  margin-top: 20px;
+}
+
+.flashMiniProducts button {
+  display: grid;
+  gap: 8px;
+  width: min(155px, 100%);
+  min-width: 86px;
+  padding: 0;
+  background: transparent;
+  color: #111111;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.12;
+  text-align: left;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.flashMiniProducts img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: #f0f0f0;
+}
+
+.flashQuickAdd {
+  position: absolute;
+  right: clamp(16px, 3vw, 42px);
+  bottom: clamp(18px, 2vw, 30px);
+  padding: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: #050505;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.2;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.flashImagePane {
+  display: block;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #050505;
+  cursor: pointer;
+}
+
+.flashImagePane img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.shopNowImageSection {
+  position: relative;
+  left: 50%;
+  display: block;
+  width: 100vw;
+  width: 100dvw;
+  height: 100vh;
+  min-height: 100vh;
+  margin: 0;
+  overflow: hidden;
+  background: #111111;
+  transform: translateX(-50%);
+}
+
+.shopNowImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.shopNowButton {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  display: inline-flex;
+  min-width: 148px;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 28px;
+  border: 1px solid #ffffff;
+  background: rgba(255, 255, 255, 0.9);
+  color: #050505;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.shopNowButton:hover,
+.shopNowButton:focus-visible {
+  background: #050505;
+  color: #ffffff;
+  transform: translate(-50%, calc(-50% - 2px));
+}
+
+@media (max-width: 640px) {
+  .heroImage {
+    min-height: 100vh;
+  }
+
+  .brandIntro {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    min-height: auto;
+    padding: 12px 10px 18px;
+  }
+
+  .brandIntroLogo img {
+    width: 110px;
+  }
+
+  .brandIntro p {
+    justify-self: stretch;
+    font-size: 32px;
+  }
+
+  .collectionSection {
+    padding-top: 20px;
+  }
+
+  .stackScene {
+    margin-top: 28px;
+  }
+
+  .collectionSection h2 {
+    gap: 10px;
+    margin-bottom: 18px;
+    font-size: 1.15rem;
+  }
+
+  .collectionMeta {
+    gap: 8px;
+    padding: 11px 0 18px;
+  }
+
+  .collectionMeta strong,
+  .collectionMeta span {
+    font-size: 0.72rem;
+  }
+
+  .collectionSelect {
+    right: 7px;
+    bottom: 9px;
+    left: 7px;
+    min-height: 30px;
+    font-size: 0.68rem;
+  }
+
+  .flashParallaxSection {
+    width: 100vw;
+    min-height: 100vh;
+    margin-top: 0;
+  }
+
+  .flashPanel {
+    grid-template-columns: 1fr;
+    grid-template-rows: 48vh 52vh;
+  }
+
+  .flashCopy {
+    order: 2;
+    padding: 18px 10px 20px;
+    border-right: 0;
+  }
+
+  .flashImagePane {
+    order: 1;
+  }
+
+  .flashDescription {
+    margin-bottom: 10px;
+    font-size: 0.68rem;
+  }
+
+  .flashQuickAdd {
+    right: 10px;
+    bottom: 12px;
+  }
+
+  .shopNowButton {
+    min-width: 132px;
+    min-height: 44px;
+    padding: 0 22px;
+    font-size: 0.76rem;
+  }
+}
