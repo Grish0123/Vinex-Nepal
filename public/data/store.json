@@ -1,0 +1,364 @@
+{
+  "nextProductId": 3,
+  "settings": {
+    "flashSale": {
+      "enabled": true,
+      "endsAt": "2026-05-05T15:37:01.326Z"
+    },
+    "pageContent": {
+      "bannerPrimary": "Hot Deal",
+      "bannerSecondary": "Premium picks only",
+      "bannerTertiary": "Auto-updating flash sale",
+      "heroPromos": [
+        {
+          "title": "Hot Sellers",
+          "subtitle": "Fresh style edits",
+          "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=700&q=80"
+        },
+        {
+          "title": "New Arrivals",
+          "subtitle": "Weekend ready",
+          "image": "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=700&q=80"
+        },
+        {
+          "title": "Home & Decor",
+          "subtitle": "Soft room upgrades",
+          "image": "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=700&q=80"
+        },
+        {
+          "title": "Top Deal",
+          "subtitle": "Smart picks",
+          "image": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=700&q=80"
+        },
+        {
+          "title": "Trending Now",
+          "subtitle": "Beauty and daily tech",
+          "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=700&q=80"
+        },
+        {
+          "title": "Premium Picks",
+          "subtitle": "Accessories edit",
+          "image": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=700&q=80"
+        }
+      ],
+      "heroImageOne": "/images/products/airbuds-display.png",
+      "heroImageTwo": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=900&q=80",
+      "heroTag": "Hot Dealsssss",
+      "heroButton": "Shop Now",
+      "flashTag": "Flash Window",
+      "flashTitle": "Hot deals end soon",
+      "flashActiveText": "The flash sale countdown is live and can be managed from the admin panel.",
+      "flashInactiveText": "Limited-time offers are still highlighted for shoppers right now.",
+      "sideTag": "Trending Now",
+      "sectionTag": "Flash Sale",
+      "sectionTitle": "Only two clean premium deals, front and center.",
+      "sectionText": "The storefront now focuses on a tighter, ad-driven experience with fast product discovery, visible discounts, and a hero area that keeps rotating between the airbuds and Apple Watch."
+    },
+    "operations": {
+      "categories": [
+        "Audio",
+        "Wearables"
+      ],
+      "coupons": [],
+      "deliveryCharge": 0,
+      "paymentMethods": [
+        "Cash on Delivery"
+      ],
+      "showCategorySection": true,
+      "showBestProductsSection": false,
+      "showFeaturedSection": true,
+      "showBestSellersSection": false,
+      "showNewArrivalsSection": false,
+      "showTrustSection": true,
+      "showRelatedProducts": false,
+      "showProductPageIntro": false,
+      "homeCategoryTitle": "Shop by category",
+      "homeBestProductsTitle": "Best products",
+      "homeFeaturedTitle": "Featured products",
+      "homeBestSellersTitle": "Best sellers",
+      "homeNewArrivalsTitle": "New arrivals",
+      "homeTrustTitle": "Why customers choose us",
+      "productPageTag": "Products",
+      "productPageTitle": "Shop all products",
+      "productPageText": "Browse every available product, filter by category, and open details before buying.",
+      "relatedProductsTitle": "Related products"
+    }
+  },
+  "products": [
+    {
+      "id": 1,
+      "name": "Airbuds Pro 2",
+      "price": 4499,
+      "originalPrice": 7000,
+      "featured": true,
+      "category": "Audio",
+      "image": "/images/products/airbuds-display.png",
+      "hoverImage": "/images/products/airbuds-hover.png",
+      "galleryImages": [
+        "/images/products/airbuds-display.png",
+        "/images/products/airbuds-hover.png",
+        "/images/products/airbuds-iphone-connection.png"
+      ],
+      "colorOptions": [
+        "White",
+        "Black"
+      ],
+      "sizeOptions": [
+        "Standard"
+      ],
+      "description": "Premium wireless airbuds with deep bass, long battery life, and a sharp launch discount for fast movers."
+    },
+    {
+      "id": 2,
+      "name": "Apple Watch Series 9",
+      "price": 4499,
+      "originalPrice": 7000,
+      "featured": true,
+      "category": "Wearables",
+      "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=900&q=80",
+      "hoverImage": "/images/products/watch-hover.png",
+      "description": "A clean, premium smartwatch deal with polished styling, fitness tracking, and an aggressive flash-sale price.",
+      "galleryImages": [
+        "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=900&q=80",
+        "/images/products/watch-hover.png"
+      ],
+      "colorOptions": [
+        "Midnight",
+        "Silver",
+        "Pink"
+      ],
+      "sizeOptions": [
+        "41mm",
+        "45mm"
+      ],
+      "inStock": true
+    }
+  ],
+  "productRequests": [],
+  "liveChats": [
+    {
+      "id": "chat-1777174895703",
+      "status": "answered",
+      "customerName": "Himal",
+      "contact": "9748285909",
+      "createdAt": "2026-04-26T03:41:35.703Z",
+      "updatedAt": "2026-04-26T06:21:59.759Z",
+      "messages": [
+        {
+          "id": "message-1777174895705",
+          "sender": "customer",
+          "text": "has my product delivered",
+          "createdAt": "2026-04-26T03:41:35.703Z"
+        },
+        {
+          "id": "message-1777174922496",
+          "sender": "admin",
+          "text": "on it's way",
+          "createdAt": "2026-04-26T03:42:02.494Z"
+        },
+        {
+          "id": "message-1777177755293",
+          "sender": "customer",
+          "text": "hello\nwhere is my proctoc my oerder no 1234",
+          "createdAt": "2026-04-26T04:29:15.292Z"
+        },
+        {
+          "id": "message-1777184497011",
+          "sender": "customer",
+          "text": "hey",
+          "createdAt": "2026-04-26T06:21:37.009Z"
+        },
+        {
+          "id": "message-1777184519760",
+          "sender": "admin",
+          "text": "gey",
+          "createdAt": "2026-04-26T06:21:59.759Z"
+        }
+      ]
+    },
+    {
+      "id": "chat-1777184912085",
+      "status": "answered",
+      "customerName": "grish",
+      "contact": "9748285909",
+      "createdAt": "2026-04-26T06:28:32.085Z",
+      "updatedAt": "2026-04-27T06:14:46.387Z",
+      "messages": [
+        {
+          "id": "message-1777184912086",
+          "sender": "customer",
+          "text": "where is my order",
+          "createdAt": "2026-04-26T06:28:32.085Z"
+        },
+        {
+          "id": "message-1777184940648",
+          "sender": "admin",
+          "text": "on its way sir",
+          "createdAt": "2026-04-26T06:29:00.646Z"
+        },
+        {
+          "id": "message-1777270486390",
+          "sender": "admin",
+          "text": "hi",
+          "createdAt": "2026-04-27T06:14:46.387Z"
+        }
+      ]
+    },
+    {
+      "id": "chat-1777270506900",
+      "status": "answered",
+      "customerName": "Kishna",
+      "contact": "98510",
+      "createdAt": "2026-04-27T06:15:06.900Z",
+      "updatedAt": "2026-04-27T06:15:57.427Z",
+      "messages": [
+        {
+          "id": "message-1777270506912",
+          "sender": "customer",
+          "text": "where is my order",
+          "createdAt": "2026-04-27T06:15:06.900Z"
+        },
+        {
+          "id": "message-1777270557429",
+          "sender": "admin",
+          "text": "on its way",
+          "createdAt": "2026-04-27T06:15:57.427Z"
+        }
+      ]
+    }
+  ],
+  "orders": [
+    {
+      "id": "order-1777038623952",
+      "status": "cancelled",
+      "customer": {
+        "firstName": "Grish",
+        "lastName": "Katwal",
+        "email": "katwalgrish@gmail.com",
+        "contactNumber": "9748285909",
+        "alternateContact": "",
+        "province": "Bagmati",
+        "city": "Kathmandu",
+        "area": "Pepsicola",
+        "postalCode": "44600",
+        "landmark": "Near tv today",
+        "country": "Nepal"
+      },
+      "items": [
+        {
+          "productId": 1,
+          "name": "Airbuds Pro 2",
+          "category": "Audio",
+          "quantity": 1,
+          "total": 4499
+        }
+      ],
+      "subtotal": 4499,
+      "createdAt": "2026-04-24T13:50:23.950Z",
+      "updatedAt": "2026-04-24T14:08:18.433Z",
+      "orderNumber": "GN-20260424-0001"
+    },
+    {
+      "id": "order-1777131001413",
+      "status": "cancelled",
+      "customer": {
+        "firstName": "Grish",
+        "lastName": "Katwal",
+        "email": "katwalgrish@gmail.com",
+        "contactNumber": "9748285909",
+        "alternateContact": "",
+        "province": "Bagmati",
+        "city": "Kathmandu",
+        "area": "Pepsicola",
+        "postalCode": "44600",
+        "landmark": "Tv Today",
+        "country": "Nepal"
+      },
+      "items": [
+        {
+          "productId": 1,
+          "name": "Airbuds Pro 2",
+          "category": "Audio",
+          "quantity": 1,
+          "total": 4499
+        }
+      ],
+      "subtotal": 4499,
+      "createdAt": "2026-04-25T15:30:01.412Z",
+      "updatedAt": "2026-04-26T02:53:46.528Z",
+      "orderNumber": "GN-20260425-0002"
+    },
+    {
+      "id": "order-1777131168252",
+      "status": "completed",
+      "customer": {
+        "firstName": "Grish",
+        "lastName": "Katwal",
+        "email": "katwalgrish@gmail.com",
+        "contactNumber": "9748285909",
+        "alternateContact": "",
+        "province": "Bagmati",
+        "city": "Kathmandu",
+        "area": "Pepsicola",
+        "postalCode": "44600",
+        "landmark": "Tv today",
+        "country": "Nepal"
+      },
+      "items": [
+        {
+          "productId": 1,
+          "name": "Airbuds Pro 2",
+          "category": "Audio",
+          "quantity": 1,
+          "total": 4499
+        }
+      ],
+      "subtotal": 4499,
+      "createdAt": "2026-04-25T15:32:48.248Z",
+      "updatedAt": "2026-04-25T15:34:10.661Z",
+      "orderNumber": "GN-20260425-0003"
+    },
+    {
+      "id": "order-1777175022289",
+      "clientOrderId": "a23d32db-6c21-427e-a203-8a4b157011da",
+      "status": "completed",
+      "customer": {
+        "firstName": "Grish",
+        "lastName": "Katwal",
+        "email": "katwalgrish@gmail.com",
+        "contactNumber": "9748285909",
+        "alternateContact": "",
+        "province": "Bagmati",
+        "city": "Kathmandu",
+        "area": "Pepsicola",
+        "postalCode": "44600",
+        "landmark": "tv today",
+        "country": "Nepal"
+      },
+      "items": [
+        {
+          "productId": 1,
+          "name": "Airbuds Pro 2",
+          "category": "Audio",
+          "quantity": 1,
+          "total": 4499
+        }
+      ],
+      "subtotal": 4499,
+      "createdAt": "2026-04-26T03:43:42.287Z",
+      "updatedAt": "2026-04-26T03:48:13.699Z",
+      "orderNumber": "GN-20260426-0004"
+    }
+  ],
+  "customers": [],
+  "productStats": {
+    "1": {
+      "interestCount": 14,
+      "soldCount": 4
+    },
+    "2": {
+      "interestCount": 2,
+      "soldCount": 0
+    }
+  }
+}
