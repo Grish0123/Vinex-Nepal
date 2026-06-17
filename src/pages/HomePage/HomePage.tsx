@@ -48,7 +48,7 @@ const defaultFlashProduct: Product = {
   description: "Premium wireless audio with deep bass, all-day battery life, and a clean launch discount.",
 };
 
-function CollectionSection({ products, onOpenProduct }: { products: Product[]; onOpenProduct: (productId: number) => void }) {
+function CollectionSection({ products, onBrowseProducts }: { products: Product[]; onBrowseProducts: () => void }) {
   const airbudsProduct = products.find((product) => product.name.toLowerCase().includes("airbud")) ?? products[0];
   const watchProduct = products.find((product) => product.name.toLowerCase().includes("watch")) ?? products[1];
   const collectionProducts = [
@@ -107,19 +107,15 @@ function CollectionSection({ products, onOpenProduct }: { products: Product[]; o
             </>
           );
 
-          return product.productId ? (
+          return (
             <button
               className={styles.collectionCard}
               key={product.title}
               type="button"
-              onClick={() => onOpenProduct(product.productId)}
+              onClick={onBrowseProducts}
             >
               {content}
             </button>
-          ) : (
-            <article className={styles.collectionCard} key={product.title}>
-              {content}
-            </article>
           );
         })}
       </div>
@@ -207,7 +203,15 @@ function FlashSaleParallaxSection({
   );
 }
 
-function CollectionStackSection({ products, onOpenProduct }: { products: Product[]; onOpenProduct: (productId: number) => void }) {
+function CollectionStackSection({
+  products,
+  onOpenProduct,
+  onBrowseProducts,
+}: {
+  products: Product[];
+  onOpenProduct: (productId: number) => void;
+  onBrowseProducts: () => void;
+}) {
   const stackRef = useRef<HTMLElement | null>(null);
   const { scrollYProgress } = useScroll({
     target: stackRef,
@@ -218,7 +222,7 @@ function CollectionStackSection({ products, onOpenProduct }: { products: Product
   return (
     <section ref={stackRef} className={styles.stackScene}>
       <div className={styles.stackSticky}>
-        <CollectionSection products={products} onOpenProduct={onOpenProduct} />
+        <CollectionSection products={products} onBrowseProducts={onBrowseProducts} />
         <FlashSaleParallaxSection products={products} onOpenProduct={onOpenProduct} y={flashY} />
       </div>
     </section>
@@ -241,7 +245,7 @@ export function HomePage({ products, onOpenProduct, onBrowseProducts }: HomePage
     <main className={`${styles.page} page-shell homepage-shell`}>
       <HomeHeroImage />
       <BrandIntroSection />
-      <CollectionStackSection products={products} onOpenProduct={onOpenProduct} />
+      <CollectionStackSection products={products} onOpenProduct={onOpenProduct} onBrowseProducts={onBrowseProducts} />
       <ShopNowImageSection onBrowseProducts={onBrowseProducts} />
     </main>
   );

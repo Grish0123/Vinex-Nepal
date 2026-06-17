@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { FormEvent } from "react";
 import { Header } from "./components/Header";
 import { HomePage } from "./pages/HomePage/HomePage";
+import { AboutPage } from "./pages/AboutPage/AboutPage";
 import { ProductPage, type ProductSelection } from "./pages/ProductPage/ProductPage";
 import { CartPage } from "./pages/CartPage/CartPage";
 import { CheckoutPage } from "./pages/CheckoutPage/CheckoutPage";
@@ -12,7 +14,7 @@ import { CustomerAccountModal } from "./components/CustomerAccountModal";
 import { fetchProducts, recordProductInterest, type CustomerAccount, type PageContentSettings, type StoreOperationSettings } from "./lib/api";
 import type { Product } from "./types/product";
 
-type Page = "home" | "products" | "cart" | "checkout" | "support" | "admin";
+type Page = "home" | "about" | "products" | "cart" | "checkout" | "support" | "admin";
 
 type CartItem = {
   cartKey: string;
@@ -110,12 +112,33 @@ const customerSessionStorageKey = "vinex-customer-session";
 function getPageFromPathname(pathname: string): Page {
   const normalizedPath = pathname.replace(/\/+$/, "") || "/";
 
-  if (normalizedPath === "/products") return "products";
+  if (normalizedPath === "/about") return "about";
+  if (normalizedPath === "/shopnow" || normalizedPath === "/products") return "products";
   if (normalizedPath === "/cart") return "cart";
   if (normalizedPath === "/checkout") return "checkout";
   if (normalizedPath === "/support") return "support";
   if (normalizedPath === "/admin") return "admin";
   return "home";
+}
+
+function getPathForPage(page: Page) {
+  if (page === "home") return "/";
+  if (page === "about") return "/about";
+  if (page === "products") return "/shopnow";
+  if (page === "cart") return "/cart";
+  if (page === "checkout") return "/checkout";
+  if (page === "support") return "/support";
+  return "/admin";
+}
+
+function getTitleForPage(page: Page) {
+  if (page === "about") return "About Us | Vinex Nepal";
+  if (page === "products") return "Shop Now | Vinex Nepal";
+  if (page === "cart") return "Cart | Vinex Nepal";
+  if (page === "checkout") return "Checkout | Vinex Nepal";
+  if (page === "support") return "Contact Us | Vinex Nepal";
+  if (page === "admin") return "Admin | Vinex Nepal";
+  return "Home | Vinex Nepal";
 }
 
 function MobileBottomNav({
@@ -187,8 +210,17 @@ function MobileBottomNav({
 function CartDrawer({
   isOpen,
   items,
+  subtotal,
+  discount,
+  deliveryCharge,
   orderTotal,
+  couponCode,
+  appliedCouponCode,
+  couponMessage,
   onClose,
+  onCouponCodeChange,
+  onApplyCoupon,
+  onClearCoupon,
   onIncreaseQuantity,
   onDecreaseQuantity,
   onRemoveItem,
@@ -197,8 +229,17 @@ function CartDrawer({
 }: {
   isOpen: boolean;
   items: CartProduct[];
+  subtotal: number;
+  discount: number;
+  deliveryCharge: number;
   orderTotal: number;
+  couponCode: string;
+  appliedCouponCode: string;
+  couponMessage: string;
   onClose: () => void;
+  onCouponCodeChange: (couponCode: string) => void;
+  onApplyCoupon: () => void;
+  onClearCoupon: () => void;
   onIncreaseQuantity: (cartKey: string) => void;
   onDecreaseQuantity: (cartKey: string) => void;
   onRemoveItem: (cartKey: string) => void;
@@ -206,6 +247,10 @@ function CartDrawer({
   onContinueShopping: () => void;
 }) {
   const formatPrice = (price: number) => `Rs ${price.toLocaleString()}`;
+  const submitCoupon = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onApplyCoupon();
+  };
 
   return (
     <div className={isOpen ? "cart-drawer-layer open" : "cart-drawer-layer"} aria-hidden={!isOpen}>
@@ -254,8 +299,49 @@ function CartDrawer({
             </div>
 
             <div className="cart-drawer-footer">
-              <span>Total</span>
-              <strong>{formatPrice(orderTotal)}</strong>
+              <div className="cart-drawer-summary">
+                <div className="cart-drawer-summary-row">
+                  <span>Subtotal</span>
+                  <strong>{formatPrice(subtotal)}</strong>
+                </div>
+
+                <form className="cart-drawer-coupon" onSubmit={submitCoupon}>
+                  <label htmlFor="cart-drawer-coupon">Coupon</label>
+                  <div>
+                    <input
+                      id="cart-drawer-coupon"
+                      value={couponCode}
+                      onChange={(event) => onCouponCodeChange(event.target.value)}
+                      placeholder="Enter coupon code"
+                    />
+                    <button type="submit">Apply</button>
+                  </div>
+                  {couponMessage ? <p>{couponMessage}</p> : null}
+                </form>
+
+                {appliedCouponCode ? (
+                  <div className="cart-drawer-summary-row">
+                    <span>Discount ({appliedCouponCode})</span>
+                    <strong>-{formatPrice(discount)}</strong>
+                  </div>
+                ) : null}
+
+                <div className="cart-drawer-summary-row">
+                  <span>Delivery</span>
+                  <strong>{formatPrice(deliveryCharge)}</strong>
+                </div>
+
+                <div className="cart-drawer-summary-row total">
+                  <span>Total</span>
+                  <strong>{formatPrice(orderTotal)}</strong>
+                </div>
+              </div>
+
+              {appliedCouponCode ? (
+                <button className="cart-drawer-secondary-action" type="button" onClick={onClearCoupon}>
+                  Remove Coupon
+                </button>
+              ) : null}
               <button type="button" onClick={onCheckout}>
                 Checkout
               </button>
@@ -269,18 +355,22 @@ function CartDrawer({
 
 function ProductShopWindow({
   isOpen,
+  isPage = false,
   products,
   cartCount,
   storeOperations,
   onClose,
+  onOpenAbout,
   onOpenCart,
   onAddToCart,
 }: {
   isOpen: boolean;
+  isPage?: boolean;
   products: Product[];
   cartCount: number;
   storeOperations: StoreOperationSettings;
   onClose: () => void;
+  onOpenAbout: () => void;
   onOpenCart: () => void;
   onAddToCart: (productId: number, selection?: ProductSelection) => void;
 }) {
@@ -336,27 +426,34 @@ function ProductShopWindow({
 
   const shopWindowClassName = [
     "shop-window",
+    isPage ? "shop-window-page" : "",
     isOpen ? "open" : "",
     selectedProduct || isProductPanelOpen ? "product-open" : "",
   ].filter(Boolean).join(" ");
 
   return (
     <section className={shopWindowClassName} aria-hidden={!isOpen}>
-      <div className="shop-window-panel" role="dialog" aria-modal="true" aria-label="Shop products">
-        <Header
-          currentPage="products"
-          cartCount={cartCount}
-          searchQuery=""
-          onSearchChange={() => undefined}
-          onNavigate={(nextPage) => {
-            if (nextPage === "home") {
+      <div className="shop-window-panel" role={isPage ? undefined : "dialog"} aria-modal={isPage ? undefined : true} aria-label="Shop products">
+        {isPage ? null : (
+          <Header
+            currentPage="products"
+            cartCount={cartCount}
+            searchQuery=""
+            onSearchChange={() => undefined}
+            onNavigate={(nextPage) => {
+              if (nextPage === "home") {
+                onClose();
+              }
+            }}
+            onOpenAbout={() => {
               onClose();
-            }
-          }}
-          onOpenShop={() => undefined}
-          onOpenCart={onOpenCart}
-          onOpenAccount={() => undefined}
-        />
+              onOpenAbout();
+            }}
+            onOpenShop={() => undefined}
+            onOpenCart={onOpenCart}
+            onOpenAccount={() => undefined}
+          />
+        )}
 
         <div className="shop-window-meta">
           <div className="shop-window-summary">
@@ -510,6 +607,52 @@ function ProductShopWindow({
   );
 }
 
+function AboutPanel({
+  isOpen,
+  cartCount,
+  onClose,
+  onOpenShop,
+  onOpenCart,
+}: {
+  isOpen: boolean;
+  cartCount: number;
+  onClose: () => void;
+  onOpenShop: () => void;
+  onOpenCart: () => void;
+}) {
+  const [isAboutHeaderHidden, setIsAboutHeaderHidden] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsAboutHeaderHidden(false);
+    }
+  }, [isOpen]);
+
+  return (
+    <section className={isOpen ? "about-panel open" : "about-panel"} aria-hidden={!isOpen}>
+      <div className="about-panel-content" role="dialog" aria-modal="true" aria-label="About Vinex Nepal">
+        <Header
+          currentPage="products"
+          cartCount={cartCount}
+          searchQuery=""
+          isHidden={isAboutHeaderHidden}
+          onSearchChange={() => undefined}
+          onNavigate={(nextPage) => {
+            if (nextPage === "home") {
+              onClose();
+            }
+          }}
+          onOpenAbout={() => undefined}
+          onOpenShop={onOpenShop}
+          onOpenCart={onOpenCart}
+          onOpenAccount={() => undefined}
+        />
+        <AboutPage onFooterVisibilityChange={setIsAboutHeaderHidden} />
+      </div>
+    </section>
+  );
+}
+
 export default function App() {
   const [page, setPage] = useState<Page>(() => getPageFromPathname(window.location.pathname));
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -522,6 +665,7 @@ export default function App() {
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const [isShopWindowOpen, setIsShopWindowOpen] = useState(false);
+  const [isAboutPanelOpen, setIsAboutPanelOpen] = useState(false);
   const [cartToasts, setCartToasts] = useState<CartToast[]>([]);
   const [customerAccount, setCustomerAccount] = useState<CustomerAccount | null>(() => {
     try {
@@ -547,12 +691,19 @@ export default function App() {
   useEffect(() => {
     const syncPageFromLocation = () => {
       setPage(getPageFromPathname(window.location.pathname));
+      setIsCartDrawerOpen(false);
+      setIsShopWindowOpen(false);
+      setIsAboutPanelOpen(false);
     };
 
     syncPageFromLocation();
     window.addEventListener("popstate", syncPageFromLocation);
     return () => window.removeEventListener("popstate", syncPageFromLocation);
   }, []);
+
+  useEffect(() => {
+    document.title = getTitleForPage(page);
+  }, [page]);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -602,7 +753,7 @@ export default function App() {
   }, [page]);
 
   useEffect(() => {
-    if (!isCartDrawerOpen && !isShopWindowOpen) {
+    if (!isCartDrawerOpen && !isShopWindowOpen && !isAboutPanelOpen) {
       return;
     }
 
@@ -615,6 +766,7 @@ export default function App() {
       if (event.key === "Escape") {
         setIsCartDrawerOpen(false);
         setIsShopWindowOpen(false);
+        setIsAboutPanelOpen(false);
       }
     };
 
@@ -625,24 +777,13 @@ export default function App() {
       document.documentElement.style.overflow = previousHtmlOverflow;
       window.removeEventListener("keydown", closeOnEscape);
     };
-  }, [isCartDrawerOpen, isShopWindowOpen]);
+  }, [isAboutPanelOpen, isCartDrawerOpen, isShopWindowOpen]);
 
   const navigate = (nextPage: Page) => {
     setIsCartDrawerOpen(false);
     setIsShopWindowOpen(false);
-
-    const nextPath =
-      nextPage === "home"
-        ? "/"
-        : nextPage === "products"
-          ? "/products"
-          : nextPage === "cart"
-            ? "/cart"
-            : nextPage === "checkout"
-              ? "/checkout"
-              : nextPage === "support"
-                ? "/support"
-                : "/admin";
+    setIsAboutPanelOpen(false);
+    const nextPath = getPathForPage(nextPage);
 
     if (window.location.pathname !== nextPath) {
       window.history.pushState({}, "", nextPath);
@@ -770,12 +911,17 @@ export default function App() {
 
   const openCartDrawer = () => {
     setIsShopWindowOpen(false);
+    setIsAboutPanelOpen(false);
     setIsCartDrawerOpen(true);
   };
 
   const openShopWindow = () => {
-    setIsCartDrawerOpen(false);
-    setIsShopWindowOpen(true);
+    setSearchQuery("");
+    navigate("products");
+  };
+
+  const openAboutPanel = () => {
+    navigate("about");
   };
 
   const updateQuantity = (cartKey: string, change: number) => {
@@ -838,7 +984,7 @@ export default function App() {
   };
 
   return (
-    <div className={["app-shell", page === "home" ? "app-shell-home" : ""].filter(Boolean).join(" ")}>
+    <div className={["app-shell", page === "home" ? "app-shell-home" : "", page === "about" ? "app-shell-about" : ""].filter(Boolean).join(" ")}>
       <div className="background-orb orb-left" />
       <div className="background-orb orb-right" />
 
@@ -851,6 +997,7 @@ export default function App() {
         isHidden={isHeaderHidden}
         onSearchChange={setSearchQuery}
         onNavigate={navigate}
+        onOpenAbout={openAboutPanel}
         onOpenShop={openShopWindow}
         onOpenCart={openCartDrawer}
         onOpenAccount={() => setIsAccountModalOpen(true)}
@@ -876,16 +1023,19 @@ export default function App() {
           onBrowseProducts={openShopWindow}
           onOpenProduct={openProductFromHome}
         />
+      ) : page === "about" ? (
+        <AboutPage onFooterVisibilityChange={setIsHeaderHidden} />
       ) : page === "products" ? (
-        <ProductPage
+        <ProductShopWindow
+          isOpen
+          isPage
           products={searchedProducts}
-          searchQuery={searchQuery}
+          cartCount={cartCount}
           storeOperations={storeOperations}
-          productToOpen={productToOpen}
-          onProductOpened={() => setProductToOpen(null)}
-          onClearSearch={() => setSearchQuery("")}
+          onClose={() => navigate("home")}
+          onOpenAbout={openAboutPanel}
+          onOpenCart={openCartDrawer}
           onAddToCart={addToCart}
-          onBuyNow={buyNow}
         />
       ) : page === "cart" ? (
         <CartPage
@@ -927,9 +1077,9 @@ export default function App() {
         <AdminPage />
       )}
 
-      {page !== "admin" ? (
+      {page !== "admin" && page !== "about" && page !== "products" ? (
         <>
-          <FooterSection showWelcome={page === "home"} showProductRequest={page === "home"} onNavigateSupport={() => navigate("support")} />
+          <FooterSection showWelcome={page === "home"} showProductRequest={true} onNavigateSupport={() => navigate("support")} />
           <LiveChatWidget />
         </>
       ) : null}
@@ -937,8 +1087,20 @@ export default function App() {
       <CartDrawer
         isOpen={isCartDrawerOpen}
         items={cartProducts}
+        subtotal={subtotal}
+        discount={discount}
+        deliveryCharge={deliveryCharge}
         orderTotal={orderTotal}
+        couponCode={couponCode}
+        appliedCouponCode={appliedCouponCode}
+        couponMessage={couponMessage}
         onClose={() => setIsCartDrawerOpen(false)}
+        onCouponCodeChange={setCouponCode}
+        onApplyCoupon={applyCoupon}
+        onClearCoupon={() => {
+          setAppliedCouponCode("");
+          setCouponMessage("");
+        }}
         onIncreaseQuantity={(cartKey) => updateQuantity(cartKey, 1)}
         onDecreaseQuantity={(cartKey) => updateQuantity(cartKey, -1)}
         onRemoveItem={removeFromCart}
@@ -952,8 +1114,17 @@ export default function App() {
         cartCount={cartCount}
         storeOperations={storeOperations}
         onClose={() => setIsShopWindowOpen(false)}
-        onOpenCart={() => setIsCartDrawerOpen(true)}
+        onOpenAbout={openAboutPanel}
+        onOpenCart={openCartDrawer}
         onAddToCart={addToCart}
+      />
+
+      <AboutPanel
+        isOpen={isAboutPanelOpen}
+        cartCount={cartCount}
+        onClose={() => setIsAboutPanelOpen(false)}
+        onOpenShop={openShopWindow}
+        onOpenCart={openCartDrawer}
       />
 
       {cartToasts.length > 0 ? (

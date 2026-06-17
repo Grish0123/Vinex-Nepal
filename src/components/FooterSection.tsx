@@ -344,7 +344,7 @@ export function FooterSection({ showProductRequest, onNavigateSupport }: FooterS
         <div className="footer-link-column">
           <h3>Site Index</h3>
           <div>
-            <a href="/products">Shop Now</a>
+            <a href="/shopnow">Shop Now</a>
             <a href="/">Home</a>
             <button type="button" onClick={onNavigateSupport}>Contact Us</button>
           </div>

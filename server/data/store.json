@@ -59,7 +59,13 @@
         "Audio",
         "Wearables"
       ],
-      "coupons": [],
+      "coupons": [
+        {
+          "code": "DISCOUNT",
+          "discount": 800,
+          "enabled": true
+        }
+      ],
       "deliveryCharge": 0,
       "paymentMethods": [
         "Cash on Delivery"
@@ -134,7 +140,18 @@
       "inStock": true
     }
   ],
-  "productRequests": [],
+  "productRequests": [
+    {
+      "id": "request-1781632878158",
+      "status": "sourcing",
+      "customerName": "Sanskar kc",
+      "contact": "sanskarkc51@gmail.com",
+      "productName": "Vape",
+      "details": "Its illegal tara chahiyo. Color raya d3 ko blueberry",
+      "createdAt": "2026-06-16T18:01:18.158Z",
+      "updatedAt": "2026-06-16T18:01:38.970Z"
+    }
+  ],
   "liveChats": [
     {
       "id": "chat-1777174895703",
@@ -726,6 +743,81 @@
       "paymentMethod": "Cash on Delivery",
       "createdAt": "2026-06-16T06:02:39.627Z",
       "updatedAt": "2026-06-16T06:04:09.822Z"
+    },
+    {
+      "id": "order-1781631780587",
+      "orderNumber": "VN-20260616-0014",
+      "clientOrderId": "e62bf9a7-c85c-4c21-99e8-4cd238189fdb",
+      "status": "cancelled",
+      "customer": {
+        "firstName": "Sans",
+        "lastName": "Kc",
+        "email": "sanskarkc51@gmail.com",
+        "contactNumber": "9823098692",
+        "alternateContact": "",
+        "province": "Bagmati",
+        "city": "Kathmandu",
+        "area": "Dhapasi",
+        "postalCode": "",
+        "landmark": "",
+        "country": "Nepal"
+      },
+      "items": [
+        {
+          "productId": 2,
+          "name": "Apple Watch Series 9",
+          "category": "Wearables",
+          "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=900&q=80",
+          "quantity": 1,
+          "selectedColor": "Midnight",
+          "selectedSize": "41mm",
+          "total": 4499
+        }
+      ],
+      "subtotal": 4499,
+      "discount": 0,
+      "deliveryCharge": 0,
+      "total": 4499,
+      "paymentMethod": "Cash on Delivery",
+      "createdAt": "2026-06-16T17:43:00.585Z",
+      "updatedAt": "2026-06-16T17:45:49.047Z"
+    },
+    {
+      "id": "order-1781631991645",
+      "orderNumber": "VN-20260616-0015",
+      "clientOrderId": "83c17ed2-609d-4e26-9aee-cb18a35f9e0c",
+      "status": "new",
+      "customer": {
+        "firstName": "Sans",
+        "lastName": "Kc",
+        "email": "sanskarkc51@gmail.com",
+        "contactNumber": "9823098692",
+        "alternateContact": "",
+        "province": "Bagmati",
+        "city": "Kathmandu",
+        "area": "Dhapasi",
+        "postalCode": "",
+        "landmark": "",
+        "country": "Nepal"
+      },
+      "items": [
+        {
+          "productId": 1,
+          "name": "Airbuds Pro 2",
+          "category": "Audio",
+          "image": "/images/products/airbuds-display.png",
+          "quantity": 1,
+          "selectedColor": "Black",
+          "selectedSize": "Standard",
+          "total": 4499
+        }
+      ],
+      "subtotal": 4499,
+      "discount": 0,
+      "deliveryCharge": 0,
+      "total": 4499,
+      "paymentMethod": "Cash on Delivery",
+      "createdAt": "2026-06-16T17:46:31.644Z"
     }
   ],
   "customers": [
@@ -752,12 +844,12 @@
   ],
   "productStats": {
     "1": {
-      "interestCount": 20,
-      "soldCount": 10
+      "interestCount": 24,
+      "soldCount": 11
     },
     "2": {
-      "interestCount": 6,
-      "soldCount": 3
+      "interestCount": 17,
+      "soldCount": 4
     }
   }
 }
