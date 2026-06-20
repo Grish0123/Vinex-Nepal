@@ -6,16 +6,26 @@
   position: relative;
   left: 50%;
   width: 100vw;
+  min-height: 100vh;
+  overflow: hidden;
   margin: calc(var(--fixed-header-offset) * -1) 0 10px;
   transform: translateX(-50%);
 }
 
 .heroImage {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
   object-fit: cover;
   object-position: center;
+  opacity: 0;
+  transition: opacity 720ms ease;
+}
+
+.heroImageActive {
+  opacity: 1;
 }
 
 .brandIntro {
@@ -56,7 +66,7 @@
 .stackScene {
   position: relative;
   width: 100%;
-  height: 200vh;
+  height: var(--stack-scene-height, 200vh);
   margin: 180px 0 0;
   background: #ffffff;
 }
@@ -158,6 +168,30 @@ button.collectionCard {
   opacity: 0;
 }
 
+.collectionDiscountBadge,
+.collectionStockBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  background: #050505;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.collectionStockBadge {
+  right: auto;
+  left: 10px;
+}
+
 .collectionMeta {
   display: grid;
   gap: 11px;
@@ -169,13 +203,17 @@ button.collectionCard {
 .collectionMeta span {
   color: #111111;
   font-size: clamp(0.9rem, 1.18vw, 1.12rem);
-  font-weight: 300;
   line-height: 1.16;
   letter-spacing: 0;
   text-transform: uppercase;
 }
 
+.collectionMeta strong {
+  font-weight: 600;
+}
+
 .collectionMeta span {
+  font-weight: 500;
   text-transform: none;
 }
 
@@ -244,6 +282,15 @@ button.collectionCard {
   will-change: transform;
 }
 
+.flashPanelLayer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  background: #ffffff;
+  will-change: transform;
+}
+
 .flashPanel {
   position: relative;
   z-index: 1;
@@ -297,6 +344,42 @@ button.collectionCard {
   font-weight: 400;
   line-height: 1.25;
   text-transform: uppercase;
+}
+
+.flashCountdown {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(58px, 1fr));
+  gap: 8px;
+  max-width: 430px;
+  margin: 0 0 18px;
+}
+
+.flashCountdown span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 8px;
+  border: 1px solid rgba(17, 17, 17, 0.16);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.flashCountdown strong,
+.flashCountdown em {
+  color: #050505;
+  font-style: normal;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.flashCountdown strong {
+  font-size: clamp(1rem, 1.5vw, 1.42rem);
+  font-weight: 900;
+}
+
+.flashCountdown em {
+  font-size: 0.62rem;
+  font-weight: 600;
 }
 
 .flashTitleRow {
@@ -460,43 +543,91 @@ button.collectionCard {
 }
 
 @media (max-width: 640px) {
+  .heroImageSection {
+    min-height: 50vh;
+    min-height: 50dvh;
+    height: 50vh;
+    height: 50dvh;
+    margin-bottom: 0;
+  }
+
   .heroImage {
-    min-height: 100vh;
+    min-height: 0;
   }
 
   .brandIntro {
     grid-template-columns: 1fr;
-    gap: 14px;
-    min-height: auto;
-    padding: 12px 10px 18px;
+    align-content: start;
+    gap: 16px;
+    min-height: 50vh;
+    min-height: 50dvh;
+    padding: 32px 12px 18px;
   }
 
   .brandIntroLogo img {
-    width: 110px;
+    width: min(118px, 30vw);
   }
 
   .brandIntro p {
     justify-self: stretch;
-    font-size: 32px;
+    font-size: clamp(1.55rem, 7.4vw, 2rem);
+    line-height: 1.03;
   }
 
   .collectionSection {
-    padding-top: 20px;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    position: relative;
+    min-height: auto;
+    padding-top: 56px;
   }
 
   .stackScene {
+    height: auto;
     margin-top: 28px;
+  }
+
+  .stackSticky {
+    position: relative;
+    height: auto;
+    overflow: visible;
   }
 
   .collectionSection h2 {
     gap: 10px;
-    margin-bottom: 18px;
+    margin-bottom: 14px;
     font-size: 1.15rem;
+  }
+
+  .collectionGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    height: auto;
+    min-height: 0;
+    padding-bottom: 18px;
+  }
+
+  .collectionCard {
+    grid-template-rows: minmax(0, 1fr) auto;
+    min-height: 0;
+  }
+
+  .collectionImageWrap {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+  }
+
+  .collectionImagePrimary,
+  .collectionImageHover {
+    width: 86%;
+    height: 86%;
+    object-fit: contain;
   }
 
   .collectionMeta {
     gap: 8px;
-    padding: 11px 0 18px;
+    padding: 11px 0 0;
   }
 
   .collectionMeta strong,
@@ -513,9 +644,20 @@ button.collectionCard {
   }
 
   .flashParallaxSection {
+    position: relative;
+    inset: auto;
+    transform: none !important;
     width: 100vw;
+    height: auto;
     min-height: 100vh;
     margin-top: 0;
+  }
+
+  .flashPanelLayer {
+    position: relative;
+    height: auto;
+    min-height: 100vh;
+    transform: none !important;
   }
 
   .flashPanel {
@@ -536,6 +678,16 @@ button.collectionCard {
   .flashDescription {
     margin-bottom: 10px;
     font-size: 0.68rem;
+  }
+
+  .flashCountdown {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .flashCountdown span {
+    padding: 8px 4px;
   }
 
   .flashQuickAdd {

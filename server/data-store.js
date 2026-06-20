@@ -10,6 +10,21 @@ const defaultPageContent = {
   bannerPrimary: "Hot Deals",
   bannerSecondary: "Premium picks only",
   bannerTertiary: "Auto-updating flash sale",
+  homeHeroImage: "/images/Herosection.png",
+  homeHeroImages: [
+    "/images/HeroSection/Hero1.png",
+    "/images/HeroSection/Hero2.png",
+    "/images/HeroSection/Hero3.png",
+  ],
+  brandIntroText:
+    "Vinex Nepal is built for everyday style, useful tech, and smart essentials that feel easy to choose and better to own. We bring clean, reliable products together with a shopping experience made for Nepal.",
+  collectionTitle: "Our Collection",
+  collectionProductIds: [1, 2],
+  flashProductIds: [1],
+  flashDescription:
+    "Limited-time Vinex picks with sharp pricing, clean utility, and fast local support.",
+  flashCta: "Quick Add",
+  shopNowImage: "/images/shopnow.png",
   heroPromos: [
     {
       title: "Hot Sellers",
@@ -58,6 +73,58 @@ const defaultPageContent = {
     "The storefront now focuses on a tighter, ad-driven experience with fast product discovery, visible discounts, and a hero area that keeps rotating between the airbuds and Apple Watch.",
 };
 
+const defaultAboutContent = {
+  heroMetaLeft: "Est. 2025",
+  heroMetaRight: "#About",
+  heroTitle:
+    "Vinex Nepal brings carefully picked gadgets, accessories, and daily essentials into one simple store, built for easy discovery, fair prices, and reliable local support.",
+  storyImages: [
+    "/images/About Us Images/1st image.png",
+    "/images/About Us Images/2nd image.png",
+    "/images/About Us Images/3rd image.png",
+  ],
+  teamMembers: [
+    {
+      name: "Grish Katwal",
+      titles: ["Founder", "CEO", "Managing Director"],
+      message:
+        "Building Vinex Nepal as a cleaner way to discover practical products, with a focus on trust, speed, and everyday value for local customers.",
+      imageLabel: "Grish Katwal",
+      imageSrc: "/images/Team Images/Grish Katwal.jpg",
+    },
+    {
+      name: "Himalaya Jung Katwal",
+      titles: ["Cofounder", "Executive Director"],
+      message:
+        "Shaping the operations behind Vinex Nepal so each order feels simple, responsive, and supported from product selection to delivery.",
+      imageLabel: "Himalaya Jung Katwal",
+      imageSrc: "/images/Team Images/Himalaya Katwal.jpg",
+    },
+  ],
+  storyHeadline:
+    'Vinex takes "Vin" from Vinayak, Lord Ganesh, and pairs it with "ex" for modern expression. Together, it reflects thoughtful, quick, and smarter shopping.',
+  storyParagraphs: [
+    "We started Vinex Nepal because finding useful, good-looking products should not feel scattered. Customers should be able to discover practical gadgets, accessories, and daily essentials without guessing where to buy, what to trust, or whether support will be available after checkout.",
+    "Our store is shaped around clarity: focused collections, fair pricing, simple ordering, and local communication that feels human. Vinex is not trying to make shopping louder. We are building a cleaner place to choose products that fit real routines.",
+    "Every product we highlight has to earn its space. It should be easy to understand, useful to own, and backed by a team that cares about the full experience from first look to final delivery.",
+    "That is the long-term idea behind Vinex Nepal: a modern ecommerce brand rooted in local trust, built carefully enough that customers can come back with confidence.",
+  ],
+  galleryLogo: "/images/brand/VinexLogo.png",
+  galleryText:
+    "Join our community for new drops, behind-the-scenes updates, and product stories made for everyday Nepal.",
+  galleryImages: [
+    "/images/Gallery Images/1st.png",
+    "/images/Gallery Images/2nd.png",
+    "/images/Gallery Images/3rd.png",
+    "/images/Gallery Images/4th.png",
+  ],
+  socialLinks: [
+    { label: "Instagram", url: "https://www.instagram.com/vinexnepal/" },
+    { label: "TikTok", url: "https://www.tiktok.com/@vinexnepal" },
+    { label: "Facebook", url: "https://www.facebook.com/" },
+  ],
+};
+
 const defaultStore = {
   nextProductId: 3,
   settings: {
@@ -66,6 +133,7 @@ const defaultStore = {
       endsAt: new Date(Date.now() + (((3 * 24 + 22) * 60 + 35) * 60 + 22) * 1000).toISOString(),
     },
     pageContent: defaultPageContent,
+    aboutContent: defaultAboutContent,
     operations: {
       categories: ["Audio", "Wearables"],
       coupons: [],
@@ -89,6 +157,20 @@ const defaultStore = {
       productPageTitle: "Shop all products",
       productPageText: "Browse every available product, filter by category, and open details before buying.",
       relatedProductsTitle: "Related products",
+      supportPageTag: "Help & Support",
+      supportPageTitle: "We are here to help",
+      supportPageText: "For order updates, product questions, or quick support, message us directly on your preferred platform.",
+      supportContactTitle: "Direct Contact",
+      supportContactText: "Reach Vinex Nepal on WhatsApp, Instagram, TikTok, or call us at",
+      supportPhone: "+977 9748285909",
+      supportWhatsappUrl: "https://wa.me/9779748285909",
+      supportInstagramUrl: "https://www.instagram.com/vinexnepal/",
+      supportInstagramLabel: "vinexnepal",
+      supportTiktokUrl: "https://www.tiktok.com/@vinexnepal",
+      supportTiktokLabel: "@vinexnepal",
+      supportHoursTag: "Support Hours",
+      supportHoursTitle: "Fast replies on social",
+      supportHoursText: "WhatsApp and Instagram are best for quick order questions.",
     },
   },
   products: [
@@ -136,6 +218,7 @@ const defaultStore = {
   orders: [],
   customers: [],
   productRequests: [],
+  contactMessages: [],
   liveChats: [],
   productStats: {
     1: { interestCount: 0, soldCount: 0 },

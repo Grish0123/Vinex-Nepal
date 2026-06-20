@@ -1,3 +1,1293 @@
 .page {
   min-width: 0;
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  color: #050505;
+  background: #f7f8fa;
+  font-family: var(--font-primary);
+}
+
+.page:global(.admin-shell) {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  grid-auto-rows: max-content;
+  align-content: start;
+  align-items: start;
+  gap: 0;
+  width: 100%;
+  min-height: 100vh;
+  padding: 0;
+}
+
+.page:global(.admin-shell)::before {
+  display: none !important;
+  content: none !important;
+}
+
+.page :global(*) {
+  letter-spacing: 0;
+}
+
+.page > :global(:not(.admin-sidebar)) {
+  grid-column: 2;
+  min-width: 0;
+  margin: 0;
+}
+
+.page :global(.admin-shell) {
+  display: grid;
+  gap: 22px;
+  color: #050505;
+  background: #ffffff;
+}
+
+.page :global(.admin-sidebar) {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 80;
+  grid-column: 1;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  width: 88px;
+  height: 100vh;
+  max-height: 100vh;
+  padding: 14px 10px;
+  overflow: visible;
+  border: 0;
+  border-right: 1px solid #e5e7eb;
+  background: #f3f4f6;
+  transition:
+    width 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+.page :global(.admin-sidebar:hover),
+.page :global(.admin-sidebar:focus-within) {
+  width: 260px;
+  border-color: #d1d5db;
+  box-shadow: 16px 0 38px rgba(15, 23, 42, 0.08);
+}
+
+.page :global(.admin-sidebar-brand),
+.page :global(.admin-sidebar-profile),
+.page :global(.admin-sidebar-link) {
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+.page :global(.admin-sidebar:hover .admin-sidebar-brand),
+.page :global(.admin-sidebar:focus-within .admin-sidebar-brand),
+.page :global(.admin-sidebar:hover .admin-sidebar-profile),
+.page :global(.admin-sidebar:focus-within .admin-sidebar-profile),
+.page :global(.admin-sidebar:hover .admin-sidebar-link),
+.page :global(.admin-sidebar:focus-within .admin-sidebar-link) {
+  gap: 12px;
+}
+
+.page :global(.admin-sidebar-brand) {
+  min-height: 46px;
+  padding-top: 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.page :global(.admin-sidebar-brand span),
+.page :global(.admin-sidebar-profile > span),
+.page :global(.admin-sidebar-icon) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #6b7280;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.page :global(.admin-sidebar-brand span) {
+  overflow: hidden;
+  background: #ffffff;
+  color: #050505;
+  border-color: #e5e7eb;
+}
+
+.page :global(.admin-sidebar-brand img) {
+  display: block;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.page :global(.admin-sidebar-profile > span) {
+  background: #ffffff;
+  color: #050505;
+  border-color: #e5e7eb;
+}
+
+.page :global(.admin-sidebar svg) {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.page :global(.admin-sidebar-brand span) {
+  font-size: 0.92rem;
+}
+
+.page :global(.admin-sidebar-brand strong),
+.page :global(.admin-sidebar-profile div),
+.page :global(.admin-sidebar-copy) {
+  overflow: hidden;
+  min-width: 0;
+  opacity: 0;
+  transform: translateX(-6px);
+  white-space: nowrap;
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.page :global(.admin-sidebar:hover .admin-sidebar-brand strong),
+.page :global(.admin-sidebar:focus-within .admin-sidebar-brand strong),
+.page :global(.admin-sidebar:hover .admin-sidebar-profile div),
+.page :global(.admin-sidebar:focus-within .admin-sidebar-profile div),
+.page :global(.admin-sidebar:hover .admin-sidebar-copy),
+.page :global(.admin-sidebar:focus-within .admin-sidebar-copy) {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.page :global(.admin-sidebar-brand strong),
+.page :global(.admin-sidebar-profile strong),
+.page :global(.admin-sidebar-copy strong) {
+  color: #050505;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.page :global(.admin-sidebar-profile) {
+  min-height: 56px;
+  padding-top: 6px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.page :global(.admin-sidebar-profile small) {
+  display: block;
+  margin-top: 4px;
+  color: rgba(5, 5, 5, 0.55);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.page :global(.admin-sidebar-nav) {
+  display: grid;
+  gap: 4px;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0;
+}
+
+.page :global(.admin-sidebar-link) {
+  width: 100%;
+  min-height: 42px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #050505;
+  cursor: pointer;
+  text-align: left;
+}
+
+.page :global(.admin-sidebar-link.active .admin-sidebar-icon),
+.page :global(.admin-sidebar-link:hover .admin-sidebar-icon),
+.page :global(.admin-sidebar-link:focus-visible .admin-sidebar-icon) {
+  background: #ffffff;
+  color: #050505;
+  border-color: #e5e7eb;
+}
+
+.page :global(.admin-sidebar-link.active) {
+  background: transparent !important;
+  color: #050505 !important;
+  box-shadow: none !important;
+}
+
+.page :global(.admin-sidebar-link.active .admin-sidebar-icon) {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+  box-shadow: 0 8px 18px rgba(49, 84, 184, 0.18);
+}
+
+.page :global(.admin-sidebar-link.active .admin-sidebar-copy strong) {
+  color: #050505 !important;
+}
+
+.page :global(.admin-sidebar-link em) {
+  min-width: 22px;
+  padding: 4px 6px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.page :global(.admin-sidebar [data-tooltip]::after) {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 12px);
+  z-index: 10;
+  width: max-content;
+  max-width: 240px;
+  padding: 8px 10px;
+  background: #050505;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.2;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) translateX(-6px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.page :global(.admin-sidebar:not(:hover):not(:focus-within) [data-tooltip]:hover::after),
+.page :global(.admin-sidebar:not(:hover):not(:focus-within) [data-tooltip]:focus-visible::after) {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+.page :global(.admin-mobile-menu-button),
+.page :global(.admin-menu-scrim) {
+  display: none;
+}
+
+.page :global(.admin-shell::before),
+.page :global(.admin-section-card::after),
+.page :global(.admin-metric-card::after),
+.page :global(.admin-report-card::after),
+.page :global(.admin-page-preview::after) {
+  display: none !important;
+}
+
+.page :global(.section-tag) {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  color: rgba(5, 5, 5, 0.58) !important;
+  box-shadow: none !important;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.page :global(.admin-login-card),
+.page :global(.admin-header-card),
+.page :global(.admin-panel-card),
+.page :global(.admin-metric-card),
+.page :global(.admin-section-card),
+.page :global(.admin-report-card),
+.page :global(.admin-page-preview),
+.page :global(.admin-highlight-card),
+.page :global(.admin-promo-edit-card),
+.page :global(.admin-product-row),
+.page :global(.admin-order-row),
+.page :global(.admin-order-card),
+.page :global(.admin-care-card),
+.page :global(.admin-chat-empty),
+.page :global(.nested-card) {
+  overflow: hidden;
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  animation: none !important;
+}
+
+.page :global(.admin-login-card),
+.page :global(.admin-header-card),
+.page :global(.admin-panel-card),
+.page :global(.admin-metric-card),
+.page :global(.admin-section-card),
+.page :global(.admin-report-card),
+.page :global(.admin-page-preview) {
+  padding: clamp(18px, 2vw, 26px);
+}
+
+.page :global(.admin-header-card) {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 0;
+  padding: 26px 28px 20px;
+  border: 0 !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  border-radius: 0 !important;
+  background: #f7f8fa !important;
+  backdrop-filter: none !important;
+}
+
+.page :global(.admin-login-card) {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.page:global(.admin-login-shell) {
+  display: grid;
+  width: 100%;
+  min-height: 100vh;
+  max-width: none;
+  padding: 0;
+  background:
+    linear-gradient(120deg, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.1) 48%, rgba(0, 0, 0, 0.5)),
+    url("/images/Login.png") center / cover no-repeat;
+}
+
+.page:global(.admin-login-shell) :global(.site-header) {
+  z-index: 1200;
+}
+
+.page:global(.admin-login-shell) > :global(*) {
+  grid-column: 1;
+}
+
+.page :global(.admin-login-center) {
+  display: grid;
+  align-items: center;
+  justify-items: start;
+  width: 100%;
+  min-height: 100vh;
+  padding: 0 clamp(24px, 5vw, 96px);
+}
+
+.page :global(.admin-login-center .admin-login-card) {
+  width: min(460px, 100%);
+  max-width: 460px;
+  margin: 0;
+  padding: clamp(24px, 4vw, 38px);
+  border: 1px solid rgba(255, 255, 255, 0.32) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24) !important;
+  backdrop-filter: blur(22px) saturate(140%) !important;
+}
+
+.page :global(.admin-login-center .admin-login-card h2),
+.page :global(.admin-login-center .admin-login-card p),
+.page :global(.admin-login-center .admin-login-card .section-tag) {
+  color: #ffffff !important;
+}
+
+.page :global(.admin-login-center .admin-login-card p) {
+  color: rgba(255, 255, 255, 0.74) !important;
+}
+
+.page :global(.admin-login-center .form-field span) {
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+
+.page :global(.admin-login-center .form-field input) {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+}
+
+.page :global(.admin-header-card h2),
+.page :global(.admin-panel-card h3),
+.page :global(.admin-login-card h2),
+.page :global(.admin-product-copy h4),
+.page :global(.admin-section-card h3),
+.page :global(.admin-page-preview h3),
+.page :global(.admin-page-preview strong),
+.page :global(.admin-highlight-card h3),
+.page :global(.admin-care-card strong),
+.page :global(.admin-chat-empty strong) {
+  margin: 0;
+  color: #050505 !important;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.page :global(.admin-header-card h2) {
+  margin: 0;
+  font-size: clamp(1.35rem, 1.8vw, 1.65rem);
+  line-height: 1.1;
+  text-transform: none;
+}
+
+.page :global(.admin-panel-card h3),
+.page :global(.admin-login-card h2) {
+  font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+  line-height: 1.1;
+  text-transform: none;
+}
+
+.page :global(.admin-section-card h3) {
+  font-size: 1.1rem;
+  text-transform: uppercase;
+}
+
+.page :global(.admin-header-card p),
+.page :global(.admin-panel-card p),
+.page :global(.admin-login-card p),
+.page :global(.admin-section-card p),
+.page :global(.admin-page-preview p),
+.page :global(.admin-product-copy p),
+.page :global(.admin-order-row strong),
+.page :global(.admin-order-row span),
+.page :global(.admin-order-row small),
+.page :global(.admin-order-card strong),
+.page :global(.admin-order-card span),
+.page :global(.admin-order-card small),
+.page :global(.admin-care-card p),
+.page :global(.admin-care-card span),
+.page :global(.admin-care-card small),
+.page :global(.admin-chat-empty p) {
+  color: rgba(5, 5, 5, 0.66) !important;
+}
+
+.page :global(.admin-header-card p) {
+  margin: 6px 0 0;
+  max-width: 680px;
+}
+
+.page :global(.admin-section-grid) {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 0;
+  padding: 0 28px 28px;
+}
+
+.page :global(.admin-section-card) {
+  min-height: 142px;
+  gap: 14px;
+  text-align: left;
+}
+
+.page :global(.admin-section-card:hover),
+.page :global(.admin-section-card.active),
+.page :global(.admin-metric-card:hover),
+.page :global(.admin-report-card:hover),
+.page :global(.admin-product-row:hover),
+.page :global(.admin-order-card:hover),
+.page :global(.admin-order-card.active),
+.page :global(.admin-page-preview:hover) {
+  transform: none !important;
+  background: #f5f5f5 !important;
+  border-color: #050505 !important;
+  box-shadow: none !important;
+}
+
+.page :global(.admin-card-index) {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #050505;
+  border-radius: 0;
+  background: #050505 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  font-weight: 900;
+}
+
+.page :global(.admin-section-card:hover .admin-card-index) {
+  transform: none !important;
+}
+
+.page :global(.admin-card-badge) {
+  top: 14px;
+  right: 14px;
+  border-radius: 0;
+  background: #050505 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.page :global(.admin-metric-grid),
+.page :global(.admin-report-grid) {
+  gap: 14px;
+  margin-bottom: 0;
+  padding: 0 28px;
+}
+
+.page :global(.admin-metric-card),
+.page :global(.admin-report-card) {
+  min-height: 112px;
+  align-content: space-between;
+}
+
+.page :global(.admin-metric-card span),
+.page :global(.admin-report-card span) {
+  color: rgba(5, 5, 5, 0.58) !important;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.page :global(.admin-metric-card strong),
+.page :global(.admin-report-card strong),
+.page :global(.admin-report-card.revenue-card strong) {
+  display: block;
+  margin-top: 14px;
+  color: #050505 !important;
+  font-size: clamp(1.55rem, 2.4vw, 2.4rem);
+  font-weight: 900;
+  line-height: 0.95;
+}
+
+.page :global(.admin-report-card.revenue-card),
+.page :global(.admin-report-card.revenue-card span),
+.page :global(.admin-report-card.revenue-card strong) {
+  background: #050505 !important;
+  color: #ffffff !important;
+}
+
+.page :global(.admin-layout),
+.page :global(.admin-page-editor-layout) {
+  gap: 16px;
+}
+
+.page :global(.admin-orders-layout) {
+  grid-template-columns: minmax(0, 2.1fr) minmax(340px, 0.9fr);
+  align-items: start;
+  gap: 18px;
+  margin: 0 0 0;
+}
+
+.page :global(.admin-care-layout) {
+  grid-template-columns: minmax(0, 1.65fr) minmax(360px, 0.75fr);
+  align-items: start;
+  gap: 18px;
+  margin: 18px 0 0;
+}
+
+.page :global(.admin-care-request-panel),
+.page :global(.admin-care-contact-panel),
+.page :global(.admin-care-chat-panel) {
+  align-self: start;
+  align-content: start;
+  grid-auto-rows: max-content;
+  gap: 12px;
+  padding: 22px !important;
+}
+
+.page :global(.admin-care-request-panel) {
+  min-height: 0;
+}
+
+.page :global(.admin-care-request-panel .admin-panel-header),
+.page :global(.admin-care-contact-panel .admin-panel-header),
+.page :global(.admin-care-chat-panel .admin-panel-header) {
+  padding-bottom: 10px;
+  margin: 0;
+}
+
+.page :global(.admin-care-list) {
+  gap: 10px;
+  align-content: start;
+}
+
+.page :global(.admin-care-request-panel .admin-care-card),
+.page :global(.admin-care-contact-panel .admin-care-card) {
+  gap: 8px;
+  padding: 14px !important;
+}
+
+.page :global(.admin-care-request-panel .admin-status-actions),
+.page :global(.admin-care-contact-panel .admin-status-actions) {
+  margin-top: 2px;
+}
+
+.page :global(.admin-order-list-panel),
+.page :global(.admin-order-details-panel) {
+  align-self: start;
+}
+
+.page :global(.admin-order-details-panel) {
+  display: grid;
+  gap: 16px;
+  padding: 22px !important;
+}
+
+.page :global(.admin-order-details-panel .admin-mini-list) {
+  gap: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.page :global(.admin-order-details-panel .summary-row) {
+  min-height: 42px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.page :global(.admin-order-details-panel .summary-row:last-child) {
+  border-bottom: 0;
+}
+
+.page :global(.admin-order-details-panel .summary-row span) {
+  color: rgba(5, 5, 5, 0.62) !important;
+  font-size: 0.84rem;
+}
+
+.page :global(.admin-order-details-panel .summary-row strong) {
+  max-width: 58%;
+  color: #050505 !important;
+  text-align: right;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.page :global(.admin-order-items) {
+  gap: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.page :global(.admin-order-status-panel) {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f7f8fa;
+}
+
+.page :global(.admin-order-status-panel h4) {
+  margin: 6px 0 0;
+  color: #050505;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.page :global(.admin-order-status-panel .admin-status-actions) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.page :global(.admin-order-status-panel .admin-status-actions button) {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+}
+
+.page :global(.admin-panel-card),
+.page :global(.admin-layout),
+.page :global(.admin-page-editor-layout),
+.page :global(.admin-report-table-card) {
+  margin: 16px 16px 16px;
+}
+
+.page :global(.admin-panel-card > .admin-orders-layout) {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.page :global(.admin-panel-card > .admin-care-layout) {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.page :global(.admin-panel-header),
+.page :global(.admin-product-topline) {
+  align-items: center;
+  border-bottom: 1px solid rgba(5, 5, 5, 0.12);
+  padding-bottom: 14px;
+}
+
+.page :global(.admin-product-form),
+.page :global(.admin-image-field),
+.page :global(.admin-collection-picker) {
+  gap: 14px;
+}
+
+.page :global(.form-field) {
+  display: grid;
+  gap: 8px;
+  color: #050505 !important;
+  font-weight: 900;
+}
+
+.page :global(.form-field span) {
+  color: rgba(5, 5, 5, 0.7) !important;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.page :global(.form-field input),
+.page :global(.form-field textarea),
+.page :global(.form-field select),
+.page :global(.form-select-button) {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  color: #050505 !important;
+  box-shadow: none !important;
+  font-weight: 700;
+}
+
+.page :global(.form-field textarea) {
+  min-height: 116px;
+}
+
+.page :global(.form-field input:hover),
+.page :global(.form-field textarea:hover),
+.page :global(.form-field select:hover),
+.page :global(.form-field input:focus),
+.page :global(.form-field textarea:focus),
+.page :global(.form-field select:focus),
+.page :global(.form-select-button:focus-visible) {
+  border-color: #050505 !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  transform: none !important;
+  outline: none;
+}
+
+.page :global(.admin-login-center .form-field input) {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+}
+
+.page :global(.admin-login-center .form-field input:hover),
+.page :global(.admin-login-center .form-field input:focus) {
+  border-color: rgba(255, 255, 255, 0.74) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+}
+
+.page :global(.primary-button),
+.page :global(.ghost-button),
+.page :global(.nav-button),
+.page :global(.remove-link),
+.page :global(.admin-table-actions button),
+.page :global(.admin-status-actions button) {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 7px !important;
+  box-shadow: none !important;
+  font-weight: 900;
+  text-transform: uppercase;
+  transform: none !important;
+}
+
+.page :global(.primary-button),
+.page :global(.nav-button.active) {
+  border: 1px solid #15803d !important;
+  background: #15803d !important;
+  color: #ffffff !important;
+}
+
+.page :global(.admin-login-card .primary-button),
+.page :global(.nav-button.active) {
+  border-color: #050505 !important;
+  background: #050505 !important;
+}
+
+.page :global(.ghost-button),
+.page :global(.nav-button),
+.page :global(.remove-link),
+.page :global(.admin-table-actions button),
+.page :global(.admin-status-actions button) {
+  border: 1px solid rgba(5, 5, 5, 0.22) !important;
+  background: #ffffff !important;
+  color: #050505 !important;
+}
+
+.page :global(.primary-button:hover),
+.page :global(.ghost-button:hover),
+.page :global(.nav-button:hover),
+.page :global(.admin-table-actions button:hover),
+.page :global(.admin-status-actions button:hover) {
+  border-color: #050505 !important;
+  background: #050505 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.page :global(.primary-button:hover) {
+  border-color: #166534 !important;
+  background: #166534 !important;
+}
+
+.page :global(.remove-link),
+.page :global(.admin-table-actions .remove-link),
+.page :global(.admin-status-actions .remove-link) {
+  border-color: #dc2626 !important;
+  background: #ffffff !important;
+  color: #dc2626 !important;
+}
+
+.page :global(.remove-link:hover),
+.page :global(.admin-table-actions .remove-link:hover),
+.page :global(.admin-status-actions .remove-link:hover) {
+  border-color: #dc2626 !important;
+  background: #dc2626 !important;
+  color: #ffffff !important;
+}
+
+.page :global(.admin-logout-button:hover) {
+  border-color: #dc2626 !important;
+  background: #dc2626 !important;
+  color: #ffffff !important;
+}
+
+.page :global(.admin-toast-stack) {
+  position: fixed;
+  top: 24px;
+  right: 28px;
+  z-index: 1600;
+  display: grid;
+  gap: 10px;
+  min-width: min(320px, calc(100vw - 32px));
+  max-width: min(360px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.page :global(.admin-toast) {
+  display: grid;
+  gap: 5px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(5, 5, 5, 0.94);
+  color: #ffffff;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.22);
+  animation: cartToastIn 260ms cubic-bezier(0.2, 0.82, 0.22, 1) both;
+}
+
+.page :global(.admin-toast.error) {
+  background: rgba(220, 38, 38, 0.96);
+}
+
+.page :global(.admin-toast span),
+.page :global(.admin-toast strong) {
+  color: currentColor !important;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.page :global(.admin-toast strong) {
+  color: rgba(255, 255, 255, 0.68) !important;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.page :global(button:disabled) {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.page :global(.admin-table-wrap) {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.page :global(.admin-table) {
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.page :global(.admin-table th),
+.page :global(.admin-table td) {
+  border-bottom: 1px solid #e5e7eb !important;
+  color: rgba(5, 5, 5, 0.72) !important;
+}
+
+.page :global(.admin-table th) {
+  background: #f3f4f6;
+  color: #050505 !important;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.page :global(.admin-checkbox) {
+  min-height: 46px;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff !important;
+  color: #050505 !important;
+  box-shadow: none !important;
+}
+
+.page :global(.admin-checkbox input) {
+  width: 42px;
+  height: 24px;
+  border: 1px solid #050505;
+  border-radius: 999px;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.page :global(.admin-checkbox input::after) {
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #050505 !important;
+  box-shadow: none !important;
+}
+
+.page :global(.admin-checkbox input:checked) {
+  background: #050505 !important;
+}
+
+.page :global(.admin-checkbox input:checked::after) {
+  background: #ffffff !important;
+  transform: translateX(18px);
+}
+
+.page :global(.admin-product-row),
+.page :global(.admin-order-card),
+.page :global(.admin-care-card),
+.page :global(.admin-order-row) {
+  padding: 14px;
+}
+
+.page :global(.admin-product-image),
+.page :global(.admin-product-image.preview) {
+  border-radius: 0;
+  background: #f5f5f5;
+  border: 1px solid rgba(5, 5, 5, 0.12);
+}
+
+.page :global(.admin-product-stats span),
+.page :global(.order-status-pill),
+.page :global(.status-new),
+.page :global(.status-processing),
+.page :global(.status-shipped),
+.page :global(.status-completed),
+.page :global(.status-cancelled) {
+  border: 1px solid rgba(5, 5, 5, 0.18);
+  border-radius: 999px !important;
+  background: #f5f5f5 !important;
+  color: #050505 !important;
+  box-shadow: none !important;
+  font-weight: 900;
+}
+
+.page :global(.admin-preview-banner),
+.page :global(.admin-preview-promo-card),
+.page :global(.live-chat-messages),
+.page :global(.admin-chat-thread),
+.page :global(.tracked-order-card) {
+  border: 1px solid rgba(5, 5, 5, 0.16);
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  color: #050505 !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+
+.page :global(.admin-preview-banner span),
+.page :global(.admin-preview-promo-card span),
+.page :global(.admin-preview-promo-card strong),
+.page :global(.tracked-order-card h4),
+.page :global(.tracked-order-card p) {
+  color: #050505 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.page :global(.admin-preview-hero) {
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.page :global(.admin-preview-hero span),
+.page :global(.admin-preview-hero strong) {
+  border-radius: 6px;
+  background: #ffffff !important;
+  color: #050505 !important;
+  backdrop-filter: none;
+}
+
+.page :global(.chat-bubble) {
+  border: 1px solid rgba(5, 5, 5, 0.16);
+  border-radius: 8px;
+  background: #ffffff !important;
+  color: #050505 !important;
+  box-shadow: none;
+}
+
+.page :global(.chat-bubble-admin) {
+  background: #050505 !important;
+  color: #ffffff !important;
+}
+
+.page :global(.chat-bubble-admin span),
+.page :global(.chat-bubble-admin p) {
+  color: #ffffff !important;
+}
+
+.page :global(.form-status) {
+  border: 1px solid rgba(5, 5, 5, 0.16);
+  border-radius: 0;
+  background: #f5f5f5 !important;
+  color: #050505 !important;
+}
+
+.page :global(.form-status-error) {
+  background: #ffffff !important;
+  color: #050505 !important;
+  border-color: #050505 !important;
+}
+
+.page :global(.full-span) {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 980px) {
+  .page:global(.admin-shell) {
+    grid-template-columns: 1fr;
+    padding-top: 0 !important;
+  }
+
+  .page :global(.admin-login-center) {
+    justify-items: center;
+    padding: 84px 18px 28px;
+  }
+
+  .page > :global(:not(.admin-sidebar)) {
+    grid-column: 1;
+  }
+
+  .page :global(.admin-sidebar) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1700;
+    width: min(320px, calc(100vw - 56px));
+    height: 100vh;
+    max-height: 100vh;
+    padding: 18px 12px;
+    overflow-y: auto;
+    border-right: 1px solid #d1d5db;
+    box-shadow: 24px 0 46px rgba(15, 23, 42, 0.16);
+    transform: translateX(-110%);
+    transition: transform 260ms cubic-bezier(0.2, 0.82, 0.22, 1);
+  }
+
+  .page :global(.admin-sidebar:hover),
+  .page :global(.admin-sidebar:focus-within) {
+    width: min(320px, calc(100vw - 56px));
+  }
+
+  .page :global(.admin-sidebar.open) {
+    transform: translateX(0);
+  }
+
+  .page :global(.admin-menu-scrim) {
+    position: fixed;
+    inset: 0;
+    z-index: 1650;
+    display: block;
+    border: 0;
+    background: rgba(5, 5, 5, 0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+  }
+
+  .page :global(.admin-menu-scrim.open) {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .page :global(.admin-sidebar-brand strong),
+  .page :global(.admin-sidebar-profile div),
+  .page :global(.admin-sidebar-copy) {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .page :global(.admin-sidebar-nav) {
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+
+  .page :global(.admin-header-card) {
+    position: sticky;
+    top: 0;
+    z-index: 1200;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    margin-top: 0 !important;
+    padding: 14px 18px !important;
+    border-top: 0 !important;
+    border-right: 0 !important;
+    border-left: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .page :global(.admin-mobile-menu-button) {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #050505;
+    cursor: pointer;
+  }
+
+  .page :global(.admin-mobile-menu-button span) {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+  }
+
+  .page :global(.admin-layout),
+  .page :global(.admin-page-editor-layout),
+  .page :global(.admin-product-form),
+  .page :global(.admin-image-field),
+  .page :global(.admin-collection-picker),
+  .page :global(.admin-report-grid) {
+    grid-template-columns: 1fr;
+  }
+
+  .page :global(.admin-report-grid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 0;
+  }
+
+  .page :global(.admin-report-card.revenue-card) {
+    grid-column: auto;
+  }
+
+  .page :global(.admin-report-card) {
+    min-height: 82px;
+    padding: 14px !important;
+  }
+
+  .page :global(.admin-report-card span) {
+    font-size: 0.62rem;
+    line-height: 1.18;
+  }
+
+  .page :global(.admin-report-card strong),
+  .page :global(.admin-report-card.revenue-card strong) {
+    margin-top: 10px;
+    font-size: clamp(1.05rem, 5.2vw, 1.45rem);
+    line-height: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .page:global(.admin-login-shell) {
+    padding: 0;
+  }
+
+  .page :global(.admin-login-center) {
+    justify-items: center;
+    padding: 78px 14px 24px;
+  }
+
+  .page :global(.admin-login-center .admin-login-card) {
+    border-radius: 14px !important;
+  }
+
+  .page :global(.admin-header-card),
+  .page :global(.admin-panel-header),
+  .page :global(.admin-product-topline) {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .page :global(.admin-header-card) {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    padding: 12px 14px !important;
+  }
+
+  .page :global(.admin-product-row) {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+
+  .page :global(.admin-report-grid) {
+    gap: 8px;
+  }
+
+  .page :global(.admin-report-card) {
+    min-height: 76px;
+    padding: 12px !important;
+  }
+
+  .page :global(.admin-report-card span) {
+    font-size: 0.58rem;
+  }
+
+  .page :global(.admin-report-card strong),
+  .page :global(.admin-report-card.revenue-card strong) {
+    font-size: clamp(0.95rem, 5.6vw, 1.2rem);
+  }
 }

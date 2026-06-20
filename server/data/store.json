@@ -1,5 +1,5 @@
 {
-  "nextProductId": 3,
+  "nextProductId": 5,
   "settings": {
     "flashSale": {
       "enabled": true,
@@ -9,6 +9,26 @@
       "bannerPrimary": "Hot Deal",
       "bannerSecondary": "Premium picks only",
       "bannerTertiary": "Auto-updating flash sale",
+      "homeHeroImage": "/images/HeroSection/Hero1.png",
+      "homeHeroImages": [
+        "/images/HeroSection/Hero1.png",
+        "/images/HeroSection/Hero2.png",
+        "/images/HeroSection/Hero3.png"
+      ],
+      "brandIntroText": "Vinex Nepal is built for everyday style, useful tech, and smart essentials that feel easy to choose and better to own. We bring clean, reliable products together with a shopping experience made for Nepal.",
+      "collectionTitle": "Featured Products",
+      "collectionProductIds": [
+        1,
+        2,
+        3
+      ],
+      "flashProductIds": [
+        1,
+        3
+      ],
+      "flashDescription": "Limited-time Vinex picks with sharp pricing, clean utility, and fast local support.",
+      "flashCta": "Shop now",
+      "shopNowImage": "/uploads/shopnow-1781781979965-0d626e4e.png",
       "heroPromos": [
         {
           "title": "Hot Sellers",
@@ -45,7 +65,7 @@
       "heroImageTwo": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=900&q=80",
       "heroTag": "Hot Dealsssss",
       "heroButton": "Shop Now",
-      "flashTag": "Flash Window",
+      "flashTag": "Flash Sale",
       "flashTitle": "Hot deals end soon",
       "flashActiveText": "The flash sale countdown is live and can be managed from the admin panel.",
       "flashInactiveText": "Limited-time offers are still highlighted for shoppers right now.",
@@ -88,6 +108,68 @@
       "productPageTitle": "Shop all products",
       "productPageText": "Browse every available product, filter by category, and open details before buying.",
       "relatedProductsTitle": "Related products"
+    },
+    "aboutContent": {
+      "heroMetaLeft": "Est. 2025",
+      "heroMetaRight": "#About",
+      "heroTitle": "Vinex Nepal brings carefully picked gadgets, accessories, and daily essentials into one simple store, built for easy discovery, fair prices, and reliable local support.",
+      "storyImages": [
+        "/images/About Us Images/1st image.png",
+        "/images/About Us Images/2nd image.png",
+        "/images/About Us Images/3rd image.png"
+      ],
+      "teamMembers": [
+        {
+          "name": "Grish Katwal",
+          "titles": [
+            "Founder",
+            "CEO",
+            "Managing Director"
+          ],
+          "message": "Building Vinex Nepal as a cleaner way to discover practical products, with a focus on trust, speed, and everyday value for local customers.",
+          "imageLabel": "Grish Katwal",
+          "imageSrc": "/images/Team Images/Grish Katwal.jpg"
+        },
+        {
+          "name": "Himalaya Jung Katwal",
+          "titles": [
+            "Cofounder",
+            "Executive Director"
+          ],
+          "message": "Shaping the operations behind Vinex Nepal so each order feels simple, responsive, and supported from product selection to delivery.",
+          "imageLabel": "Himalaya Jung Katwal",
+          "imageSrc": "/images/Team Images/Himalaya Katwal.jpg"
+        }
+      ],
+      "storyHeadline": "Vinex takes \"Vin\" from Vinayak, Lord Ganesh, and pairs it with \"ex\" for modern expression. Together, it reflects thoughtful, quick, and smarter shopping.",
+      "storyParagraphs": [
+        "We started Vinex Nepal because finding useful, good-looking products should not feel scattered. Customers should be able to discover practical gadgets, accessories, and daily essentials without guessing where to buy, what to trust, or whether support will be available after checkout.",
+        "Our store is shaped around clarity: focused collections, fair pricing, simple ordering, and local communication that feels human. Vinex is not trying to make shopping louder. We are building a cleaner place to choose products that fit real routines.",
+        "Every product we highlight has to earn its space. It should be easy to understand, useful to own, and backed by a team that cares about the full experience from first look to final delivery.",
+        "That is the long-term idea behind Vinex Nepal: a modern ecommerce brand rooted in local trust, built carefully enough that customers can come back with confidence."
+      ],
+      "galleryLogo": "/images/brand/VinexLogo.png",
+      "galleryText": "Join our community for new drops, behind-the-scenes updates, and product stories made for everyday Nepal.",
+      "galleryImages": [
+        "/images/Gallery Images/1st.png",
+        "/images/Gallery Images/2nd.png",
+        "/images/Gallery Images/3rd.png",
+        "/images/Gallery Images/4th.png"
+      ],
+      "socialLinks": [
+        {
+          "label": "Instagram",
+          "url": "https://www.instagram.com/vinexnepal/"
+        },
+        {
+          "label": "TikTok",
+          "url": "https://www.tiktok.com/@vinexnepal"
+        },
+        {
+          "label": "Facebook",
+          "url": "https://www.facebook.com/"
+        }
+      ]
     }
   },
   "products": [
@@ -138,18 +220,37 @@
         "45mm"
       ],
       "inStock": true
+    },
+    {
+      "id": 3,
+      "name": "Headphones",
+      "price": 5000,
+      "originalPrice": 10000,
+      "featured": true,
+      "category": "Audio",
+      "image": "/uploads/headphones-1781798789455-72afd7e3.png",
+      "hoverImage": "/uploads/headphones-hover-1781798797897-0df3e03f.png",
+      "galleryImages": [],
+      "colorOptions": [
+        "Black, White"
+      ],
+      "sizeOptions": [
+        "Free size"
+      ],
+      "description": "Premium wireless airbuds with deep bass, long battery life, and a sharp launch discount for fast movers",
+      "inStock": true
     }
   ],
   "productRequests": [
     {
       "id": "request-1781632878158",
-      "status": "sourcing",
+      "status": "reviewed",
       "customerName": "Sanskar kc",
       "contact": "sanskarkc51@gmail.com",
       "productName": "Vape",
       "details": "Its illegal tara chahiyo. Color raya d3 ko blueberry",
       "createdAt": "2026-06-16T18:01:18.158Z",
-      "updatedAt": "2026-06-16T18:01:38.970Z"
+      "updatedAt": "2026-06-19T17:12:46.140Z"
     }
   ],
   "liveChats": [
@@ -382,7 +483,7 @@
     {
       "id": "order-1777175022289",
       "clientOrderId": "a23d32db-6c21-427e-a203-8a4b157011da",
-      "status": "completed",
+      "status": "shipped",
       "customer": {
         "firstName": "Grish",
         "lastName": "Katwal",
@@ -407,7 +508,7 @@
       ],
       "subtotal": 4499,
       "createdAt": "2026-04-26T03:43:42.287Z",
-      "updatedAt": "2026-04-26T03:48:13.699Z",
+      "updatedAt": "2026-06-18T18:14:23.908Z",
       "orderNumber": "GN-20260426-0004"
     },
     {
@@ -666,7 +767,7 @@
       "total": 4499,
       "paymentMethod": "Cash on Delivery",
       "createdAt": "2026-05-09T06:09:49.784Z",
-      "updatedAt": "2026-05-09T06:10:37.520Z"
+      "updatedAt": "2026-06-18T18:05:21.389Z"
     },
     {
       "id": "order-1778998426844",
@@ -786,7 +887,7 @@
       "id": "order-1781631991645",
       "orderNumber": "VN-20260616-0015",
       "clientOrderId": "83c17ed2-609d-4e26-9aee-cb18a35f9e0c",
-      "status": "new",
+      "status": "shipped",
       "customer": {
         "firstName": "Sans",
         "lastName": "Kc",
@@ -817,7 +918,8 @@
       "deliveryCharge": 0,
       "total": 4499,
       "paymentMethod": "Cash on Delivery",
-      "createdAt": "2026-06-16T17:46:31.644Z"
+      "createdAt": "2026-06-16T17:46:31.644Z",
+      "updatedAt": "2026-06-18T18:33:12.538Z"
     }
   ],
   "customers": [
@@ -844,12 +946,16 @@
   ],
   "productStats": {
     "1": {
-      "interestCount": 24,
+      "interestCount": 26,
       "soldCount": 11
     },
     "2": {
-      "interestCount": 17,
+      "interestCount": 32,
       "soldCount": 4
+    },
+    "3": {
+      "interestCount": 1,
+      "soldCount": 0
     }
   }
 }

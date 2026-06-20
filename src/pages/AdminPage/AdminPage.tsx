@@ -5,18 +5,23 @@ import {
   deleteAdminProduct,
   fetchAdminDashboard,
   replyToLiveChat,
+  updateAboutContentSettings,
   updateAdminProduct,
   updateFlashSaleSettings,
   updatePageContentSettings,
   updateOrderStatus,
+  updateContactMessageStatus,
   updateProductRequestStatus,
+  uploadAdminImage,
   type AdminDashboard,
+  type AboutContentSettings,
   type OrderStatus,
   type PageContentSettings,
   type StoreOperationSettings,
   updateStoreOperationSettings,
 } from "../../lib/api";
 import type { Product } from "../../types/product";
+import { Header } from "../../components/Header";
 import styles from "./AdminPage.module.scss";
 
 const adminTokenStorageKey = "vinex-nepal-admin-token";
@@ -37,7 +42,6 @@ type ProductForm = {
 };
 
 type AdminView =
-  | "home"
   | "add-product"
   | "product-details"
   | "orders"
@@ -45,10 +49,17 @@ type AdminView =
   | "customer-care"
   | "flash-time"
   | "page-editing"
+  | "about-editing"
   | "store-setup"
   | "customers";
-type PageEditingSection = "home" | "top-banner" | "middle-hero" | "side-promos" | "flash-window" | "lower-section";
+type PageEditingSection = "home" | "middle-hero" | "flash-window";
 type OrderFilter = "all" | OrderStatus;
+type AdminToast = {
+  id: number;
+  label: string;
+  message: string;
+  tone?: "success" | "error";
+};
 type FlashSaleForm = {
   enabled: boolean;
   days: string;
@@ -56,6 +67,122 @@ type FlashSaleForm = {
   minutes: string;
   seconds: string;
 };
+
+type AdminPageProps = {
+  cartCount: number;
+  onSearchChange: (query: string) => void;
+  onNavigate: (page: "home" | "about" | "products" | "cart" | "checkout" | "support" | "admin") => void;
+  onOpenAbout: () => void;
+  onOpenShop: () => void;
+  onOpenCart: () => void;
+};
+
+const adminNavigationItems: Array<{
+  view: AdminView;
+  label: string;
+  description: string;
+}> = [
+  { view: "analytics", label: "Analytics", description: "Revenue, sales, and performance reports" },
+  { view: "add-product", label: "Add Product", description: "Create or edit product listings" },
+  { view: "product-details", label: "Products", description: "Manage catalog, stock, and product records" },
+  { view: "orders", label: "Orders", description: "Review orders and update fulfillment status" },
+  { view: "customer-care", label: "Customer Care", description: "Product requests and live chat replies" },
+  { view: "flash-time", label: "Flash Time", description: "Configure the storefront countdown timer" },
+  { view: "page-editing", label: "Home CMS", description: "Edit homepage and promotional content" },
+  { view: "about-editing", label: "About CMS", description: "Edit about page, team, gallery, and socials" },
+  { view: "store-setup", label: "Store Setup", description: "Coupons, categories, delivery, and payment" },
+  { view: "customers", label: "Customers", description: "Customer accounts, orders, and activity" },
+];
+
+function AdminNavIcon({ view }: { view: AdminView }) {
+  const commonProps = {
+    viewBox: "0 0 24 24",
+    "aria-hidden": true,
+  };
+
+  if (view === "add-product") {
+    return (
+      <svg {...commonProps}>
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+    );
+  }
+
+  if (view === "product-details") {
+    return (
+      <svg {...commonProps}>
+        <path d="M4 7h16M4 12h16M4 17h16" />
+      </svg>
+    );
+  }
+
+  if (view === "orders") {
+    return (
+      <svg {...commonProps}>
+        <path d="M7 4h10l2 4v12H5V8z" />
+        <path d="M9 12h6M9 16h4" />
+      </svg>
+    );
+  }
+
+  if (view === "analytics") {
+    return (
+      <svg {...commonProps}>
+        <path d="M5 19V9M12 19V5M19 19v-7" />
+      </svg>
+    );
+  }
+
+  if (view === "customer-care") {
+    return (
+      <svg {...commonProps}>
+        <path d="M4 6h16v10H8l-4 4z" />
+        <path d="M8 10h8M8 13h5" />
+      </svg>
+    );
+  }
+
+  if (view === "flash-time") {
+    return (
+      <svg {...commonProps}>
+        <path d="M13 2 5 14h6l-1 8 9-13h-6z" />
+      </svg>
+    );
+  }
+
+  if (view === "page-editing") {
+    return (
+      <svg {...commonProps}>
+        <path d="M5 4h14v16H5z" />
+        <path d="M8 8h8M8 12h8M8 16h5" />
+      </svg>
+    );
+  }
+
+  if (view === "about-editing") {
+    return (
+      <svg {...commonProps}>
+        <circle cx="12" cy="8" r="3" />
+        <path d="M5 20a7 7 0 0 1 14 0" />
+      </svg>
+    );
+  }
+
+  if (view === "store-setup") {
+    return (
+      <svg {...commonProps}>
+        <path d="M4 10h16l-1-5H5zM6 10v10h12V10" />
+        <path d="M9 20v-6h6v6" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...commonProps}>
+      <path d="M8 7a4 4 0 1 0 8 0 4 4 0 0 0-8 0ZM4 21a8 8 0 0 1 16 0" />
+    </svg>
+  );
+}
 
 const initialProductForm: ProductForm = {
   name: "",
@@ -76,6 +203,21 @@ const initialPageContentForm: PageContentSettings = {
   bannerPrimary: "Hot Deals",
   bannerSecondary: "Premium picks only",
   bannerTertiary: "Auto-updating flash sale",
+  homeHeroImage: "/images/Herosection.png",
+  homeHeroImages: [
+    "/images/HeroSection/Hero1.png",
+    "/images/HeroSection/Hero2.png",
+    "/images/HeroSection/Hero3.png",
+  ],
+  brandIntroText:
+    "Vinex Nepal is built for everyday style, useful tech, and smart essentials that feel easy to choose and better to own. We bring clean, reliable products together with a shopping experience made for Nepal.",
+  collectionTitle: "Our Collection",
+  collectionProductIds: [1, 2],
+  flashProductIds: [1],
+  flashDescription:
+    "Limited-time Vinex picks with sharp pricing, clean utility, and fast local support.",
+  flashCta: "Quick Add",
+  shopNowImage: "/images/shopnow.png",
   heroPromos: [
     {
       title: "Hot Sellers",
@@ -123,6 +265,58 @@ const initialPageContentForm: PageContentSettings = {
     "The storefront now focuses on a tighter, ad-driven experience with fast product discovery, visible discounts, and a hero area that keeps rotating between the airbuds and Apple Watch.",
 };
 
+const initialAboutContentForm: AboutContentSettings = {
+  heroMetaLeft: "Est. 2025",
+  heroMetaRight: "#About",
+  heroTitle:
+    "Vinex Nepal brings carefully picked gadgets, accessories, and daily essentials into one simple store, built for easy discovery, fair prices, and reliable local support.",
+  storyImages: [
+    "/images/About Us Images/1st image.png",
+    "/images/About Us Images/2nd image.png",
+    "/images/About Us Images/3rd image.png",
+  ],
+  teamMembers: [
+    {
+      name: "Grish Katwal",
+      titles: ["Founder", "CEO", "Managing Director"],
+      message:
+        "Building Vinex Nepal as a cleaner way to discover practical products, with a focus on trust, speed, and everyday value for local customers.",
+      imageLabel: "Grish Katwal",
+      imageSrc: "/images/Team Images/Grish Katwal.jpg",
+    },
+    {
+      name: "Himalaya Jung Katwal",
+      titles: ["Cofounder", "Executive Director"],
+      message:
+        "Shaping the operations behind Vinex Nepal so each order feels simple, responsive, and supported from product selection to delivery.",
+      imageLabel: "Himalaya Jung Katwal",
+      imageSrc: "/images/Team Images/Himalaya Katwal.jpg",
+    },
+  ],
+  storyHeadline:
+    'Vinex takes "Vin" from Vinayak, Lord Ganesh, and pairs it with "ex" for modern expression. Together, it reflects thoughtful, quick, and smarter shopping.',
+  storyParagraphs: [
+    "We started Vinex Nepal because finding useful, good-looking products should not feel scattered. Customers should be able to discover practical gadgets, accessories, and daily essentials without guessing where to buy, what to trust, or whether support will be available after checkout.",
+    "Our store is shaped around clarity: focused collections, fair pricing, simple ordering, and local communication that feels human. Vinex is not trying to make shopping louder. We are building a cleaner place to choose products that fit real routines.",
+    "Every product we highlight has to earn its space. It should be easy to understand, useful to own, and backed by a team that cares about the full experience from first look to final delivery.",
+    "That is the long-term idea behind Vinex Nepal: a modern ecommerce brand rooted in local trust, built carefully enough that customers can come back with confidence.",
+  ],
+  galleryLogo: "/images/brand/VinexLogo.png",
+  galleryText:
+    "Join our community for new drops, behind-the-scenes updates, and product stories made for everyday Nepal.",
+  galleryImages: [
+    "/images/Gallery Images/1st.png",
+    "/images/Gallery Images/2nd.png",
+    "/images/Gallery Images/3rd.png",
+    "/images/Gallery Images/4th.png",
+  ],
+  socialLinks: [
+    { label: "Instagram", url: "https://www.instagram.com/vinexnepal/" },
+    { label: "TikTok", url: "https://www.tiktok.com/@vinexnepal" },
+    { label: "Facebook", url: "https://www.facebook.com/" },
+  ],
+};
+
 const initialStoreOperationForm: StoreOperationSettings = {
   categories: ["Audio", "Wearables"],
   coupons: [],
@@ -146,6 +340,20 @@ const initialStoreOperationForm: StoreOperationSettings = {
   productPageTitle: "Shop all products",
   productPageText: "Browse every available product, filter by category, and open details before buying.",
   relatedProductsTitle: "Related products",
+  supportPageTag: "Help & Support",
+  supportPageTitle: "We are here to help",
+  supportPageText: "For order updates, product questions, or quick support, message us directly on your preferred platform.",
+  supportContactTitle: "Direct Contact",
+  supportContactText: "Reach Vinex Nepal on WhatsApp, Instagram, TikTok, or call us at",
+  supportPhone: "+977 9748285909",
+  supportWhatsappUrl: "https://wa.me/9779748285909",
+  supportInstagramUrl: "https://www.instagram.com/vinexnepal/",
+  supportInstagramLabel: "vinexnepal",
+  supportTiktokUrl: "https://www.tiktok.com/@vinexnepal",
+  supportTiktokLabel: "@vinexnepal",
+  supportHoursTag: "Support Hours",
+  supportHoursTitle: "Fast replies on social",
+  supportHoursText: "WhatsApp and Instagram are best for quick order questions.",
 };
 
 function formatPrice(value: number) {
@@ -196,10 +404,55 @@ function clearStoredAdminToken() {
   }
 }
 
-export function AdminPage() {
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+        return;
+      }
+      reject(new Error("Unable to read image file."));
+    };
+    reader.onerror = () => reject(new Error("Unable to read image file."));
+    reader.readAsDataURL(file);
+  });
+}
+
+type ImageUrlFieldProps = {
+  label: string;
+  value: string;
+  placeholder?: string;
+  previewAlt: string;
+  onChange: (value: string) => void;
+  onUpload: (event: ChangeEvent<HTMLInputElement>) => void;
+};
+
+function ImageUrlField({ label, value, placeholder, previewAlt, onChange, onUpload }: ImageUrlFieldProps) {
+  return (
+    <div className="admin-image-field full-span">
+      <label className="form-field">
+        <span>{label}</span>
+        <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder ?? "Paste an image URL or upload from computer"} />
+      </label>
+      <label className="form-field">
+        <span>Upload From Computer</span>
+        <input type="file" accept="image/*" onChange={onUpload} />
+      </label>
+      {value ? (
+        <div className="admin-upload-preview full-span">
+          <img src={value} alt={previewAlt} className="admin-product-image preview" />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, onOpenShop, onOpenCart }: AdminPageProps) {
   const [token, setToken] = useState(getStoredAdminToken);
   const [dashboard, setDashboard] = useState<AdminDashboard | null>(null);
-  const [adminView, setAdminView] = useState<AdminView>("home");
+  const [adminView, setAdminView] = useState<AdminView>("analytics");
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const [pageEditingSection, setPageEditingSection] = useState<PageEditingSection>("home");
   const [orderFilter, setOrderFilter] = useState<OrderFilter>("all");
   const [selectedOrderId, setSelectedOrderId] = useState("");
@@ -212,8 +465,10 @@ export function AdminPage() {
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [productMessage, setProductMessage] = useState("");
   const [orderMessage, setOrderMessage] = useState("");
+  const [adminToasts, setAdminToasts] = useState<AdminToast[]>([]);
   const [flashSaleMessage, setFlashSaleMessage] = useState("");
   const [pageContentMessage, setPageContentMessage] = useState("");
+  const [aboutContentMessage, setAboutContentMessage] = useState("");
   const [storeSetupMessage, setStoreSetupMessage] = useState("");
   const [customerCareMessage, setCustomerCareMessage] = useState("");
   const [selectedChatId, setSelectedChatId] = useState("");
@@ -222,10 +477,13 @@ export function AdminPage() {
   const [isUpdatingOrder, setIsUpdatingOrder] = useState(false);
   const [isSavingFlashSale, setIsSavingFlashSale] = useState(false);
   const [isSavingPageContent, setIsSavingPageContent] = useState(false);
+  const [isSavingAboutContent, setIsSavingAboutContent] = useState(false);
   const [isSavingStoreSetup, setIsSavingStoreSetup] = useState(false);
   const [isSendingChatReply, setIsSendingChatReply] = useState(false);
   const [pageContentForm, setPageContentForm] =
     useState<PageContentSettings>(initialPageContentForm);
+  const [aboutContentForm, setAboutContentForm] =
+    useState<AboutContentSettings>(initialAboutContentForm);
   const [storeOperationForm, setStoreOperationForm] =
     useState<StoreOperationSettings>(initialStoreOperationForm);
   const [flashSaleForm, setFlashSaleForm] = useState<FlashSaleForm>({
@@ -248,6 +506,10 @@ export function AdminPage() {
       setPageContentForm({
         ...initialPageContentForm,
         ...(result.settings?.pageContent ?? {}),
+      });
+      setAboutContentForm({
+        ...initialAboutContentForm,
+        ...(result.settings?.aboutContent ?? {}),
       });
       setStoreOperationForm({
         ...initialStoreOperationForm,
@@ -317,6 +579,8 @@ export function AdminPage() {
   const topSellingProduct = dashboard?.topSelling[0] ?? null;
   const pendingOrderCount = dashboard?.orders.filter((order) => order.status === "new").length ?? 0;
   const newProductRequestCount = dashboard?.productRequests.filter((request) => request.status === "new").length ?? 0;
+  const contactMessages = dashboard?.contactMessages ?? [];
+  const newContactMessageCount = contactMessages.filter((message) => message.status === "new").length;
   const openChatCount = dashboard?.liveChats.filter((chat) => chat.status === "open").length ?? 0;
   const selectedChat = dashboard?.liveChats.find((chat) => chat.id === selectedChatId) ?? null;
   const analyticsReport = useMemo(() => {
@@ -538,15 +802,33 @@ export function AdminPage() {
     setProductForm(initialProductForm);
   };
 
-  const goToAdminHome = () => {
-    setAdminView("home");
+  const showAdminToast = (toast: Omit<AdminToast, "id">) => {
+    const toastId = Date.now();
+    setAdminToasts((current) => [...current, { ...toast, id: toastId }].slice(-4));
+    window.setTimeout(() => {
+      setAdminToasts((current) => current.filter((entry) => entry.id !== toastId));
+    }, 2400);
+  };
+
+  const openAdminView = (nextView: AdminView) => {
     setProductMessage("");
     setOrderMessage("");
     setFlashSaleMessage("");
     setPageContentMessage("");
+    setAboutContentMessage("");
     setStoreSetupMessage("");
     setCustomerCareMessage("");
-    setPageEditingSection("home");
+
+    if (nextView === "add-product") {
+      resetProductForm();
+    }
+
+    if (nextView === "page-editing") {
+      setPageEditingSection("home");
+    }
+
+    setAdminView(nextView);
+    setIsAdminMenuOpen(false);
   };
 
   const mapProductToForm = (product: Product): ProductForm => ({
@@ -580,67 +862,167 @@ export function AdminPage() {
     }
   };
 
-  const handleImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
+  const uploadSelectedAdminImage = async (
+    event: ChangeEvent<HTMLInputElement>,
+    onUploaded: (url: string) => void,
+    onMessage: (message: string) => void,
+    previousUrl: string,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const imageResult = reader.result;
-      if (typeof imageResult === "string") {
-        setProductForm((current) => ({
-          ...current,
-          image: imageResult,
-        }));
-      }
-    };
-    reader.readAsDataURL(file);
+    if (!token) {
+      onMessage("Log in again before uploading images.");
+      return;
+    }
+
+    onMessage("Uploading image...");
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      onUploaded(dataUrl);
+      const result = await uploadAdminImage(token, { fileName: file.name, dataUrl });
+      onUploaded(result.url);
+      onMessage("Image uploaded successfully.");
+    } catch (error) {
+      onUploaded(previousUrl);
+      onMessage(error instanceof Error ? error.message : "Unable to upload image.");
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  const handleImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    void uploadSelectedAdminImage(
+      event,
+      (image) => setProductForm((current) => ({ ...current, image })),
+      setProductMessage,
+      productForm.image,
+    );
   };
 
   const handleHoverImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const imageResult = reader.result;
-      if (typeof imageResult === "string") {
-        setProductForm((current) => ({
-          ...current,
-          hoverImage: imageResult,
-        }));
-      }
-    };
-    reader.readAsDataURL(file);
+    void uploadSelectedAdminImage(
+      event,
+      (hoverImage) => setProductForm((current) => ({ ...current, hoverImage })),
+      setProductMessage,
+      productForm.hoverImage,
+    );
   };
 
-  const handleGalleryImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleGalleryImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
     if (files.length === 0) {
       return;
     }
 
-    Promise.all(
-      files.map(
-        (file) =>
-          new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
-            reader.readAsDataURL(file);
-          }),
-      ),
-    ).then((images) => {
-      const existingImages = productForm.galleryImages
-        .split("\n")
-        .map((image) => image.trim())
-        .filter(Boolean);
-      const nextImages = [...existingImages, ...images.filter(Boolean)];
+    if (!token) {
+      setProductMessage("Log in again before uploading images.");
+      return;
+    }
+
+    setProductMessage("Uploading gallery images...");
+    const previousGalleryImages = productForm.galleryImages;
+    try {
+      const dataUrls = await Promise.all(files.map((file) => readFileAsDataUrl(file)));
+      setProductForm((current) => ({ ...current, galleryImages: dataUrls.join("\n") }));
+
+      const images = await Promise.all(
+        files.map(async (file, index) => {
+          const dataUrl = dataUrls[index];
+          const result = await uploadAdminImage(token, { fileName: file.name, dataUrl });
+          return result.url;
+        }),
+      );
+      const nextImages = images.filter(Boolean);
       setProductForm((current) => ({ ...current, galleryImages: nextImages.join("\n") }));
+      setProductMessage("Gallery images uploaded successfully.");
+    } catch (error) {
+      setProductForm((current) => ({ ...current, galleryImages: previousGalleryImages }));
+      setProductMessage(error instanceof Error ? error.message : "Unable to upload gallery images.");
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  const handlePageImageUpload =
+    (field: "homeHeroImage" | "shopNowImage") =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      void uploadSelectedAdminImage(
+        event,
+        (imageUrl) => setPageContentForm((current) => ({ ...current, [field]: imageUrl })),
+        setPageContentMessage,
+        pageContentForm[field],
+      );
+    };
+
+  const updateHeroCarouselImage = (index: number, imageUrl: string) => {
+    setPageContentForm((current) => {
+      const nextImages = [...(current.homeHeroImages?.length ? current.homeHeroImages : [current.homeHeroImage])];
+      nextImages[index] = imageUrl;
+      return {
+        ...current,
+        homeHeroImage: index === 0 ? imageUrl : current.homeHeroImage,
+        homeHeroImages: nextImages,
+      };
     });
+  };
+
+  const handleHeroCarouselImageUpload =
+    (index: number) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const currentImages = pageContentForm.homeHeroImages?.length
+        ? pageContentForm.homeHeroImages
+        : [pageContentForm.homeHeroImage];
+      void uploadSelectedAdminImage(
+        event,
+        (imageUrl) => updateHeroCarouselImage(index, imageUrl),
+        setPageContentMessage,
+        currentImages[index] ?? "",
+      );
+    };
+
+  const handleAboutImageUpload =
+    (field: "galleryLogo") =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      void uploadSelectedAdminImage(
+        event,
+        (imageUrl) => setAboutContentForm((current) => ({ ...current, [field]: imageUrl })),
+        setAboutContentMessage,
+        aboutContentForm[field],
+      );
+    };
+
+  const handleAboutArrayImageUpload =
+    (field: "storyImages" | "galleryImages", index: number) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      void uploadSelectedAdminImage(
+        event,
+        (imageUrl) =>
+          setAboutContentForm((current) => {
+            const nextImages = [...current[field]];
+            nextImages[index] = imageUrl;
+            return { ...current, [field]: nextImages };
+          }),
+        setAboutContentMessage,
+        aboutContentForm[field][index] ?? "",
+      );
+    };
+
+  const handleTeamImageUpload = (index: number) => (event: ChangeEvent<HTMLInputElement>) => {
+    void uploadSelectedAdminImage(
+      event,
+      (imageUrl) =>
+        setAboutContentForm((current) => ({
+          ...current,
+          teamMembers: current.teamMembers.map((member, memberIndex) =>
+            memberIndex === index ? { ...member, imageSrc: imageUrl } : member,
+          ),
+        })),
+      setAboutContentMessage,
+      aboutContentForm.teamMembers[index]?.imageSrc ?? "",
+    );
   };
 
   const handleSaveProduct = async (event: FormEvent<HTMLFormElement>) => {
@@ -751,9 +1133,22 @@ export function AdminPage() {
       const nextDashboard = await updateOrderStatus(token, selectedOrder.id, status);
       setDashboard(nextDashboard);
       setSelectedOrderId(selectedOrder.id);
-      setOrderMessage(`Order marked as ${formatOrderStatus(status).toLowerCase()}.`);
+      const nextStatus = formatOrderStatus(status).toLowerCase();
+      const message = `Order marked as ${nextStatus}.`;
+      setOrderMessage(message);
+      showAdminToast({
+        label: "Order status updated",
+        message,
+        tone: "success",
+      });
     } catch (error) {
-      setOrderMessage(error instanceof Error ? error.message : "Unable to update order.");
+      const message = error instanceof Error ? error.message : "Unable to update order.";
+      setOrderMessage(message);
+      showAdminToast({
+        label: "Order update failed",
+        message,
+        tone: "error",
+      });
     } finally {
       setIsUpdatingOrder(false);
     }
@@ -762,7 +1157,7 @@ export function AdminPage() {
   const handleLogout = () => {
     setToken("");
     setDashboard(null);
-    setAdminView("home");
+    setAdminView("analytics");
     setSelectedOrderId("");
     setLoginUsername("");
     setLoginPassword("");
@@ -814,17 +1209,56 @@ export function AdminPage() {
     setPageContentMessage("");
 
     try {
-      const nextDashboard = await updatePageContentSettings(token, pageContentForm);
+      const homeHeroImages = (pageContentForm.homeHeroImages?.length
+        ? pageContentForm.homeHeroImages
+        : initialPageContentForm.homeHeroImages
+      ).map((image) => image.trim()).filter(Boolean);
+      const submittedPageContent = {
+        ...pageContentForm,
+        homeHeroImage: homeHeroImages[0] ?? pageContentForm.homeHeroImage,
+        homeHeroImages,
+        flashProductIds: pageContentForm.flashProductIds.map((productId) => Number(productId)).filter(Number.isFinite),
+      };
+      const nextDashboard = await updatePageContentSettings(token, submittedPageContent);
+      const savedPageContent = nextDashboard.settings?.pageContent ?? {};
       setDashboard(nextDashboard);
       setPageContentForm({
         ...initialPageContentForm,
-        ...(nextDashboard.settings?.pageContent ?? {}),
+        ...submittedPageContent,
+        ...savedPageContent,
+        flashProductIds: Array.isArray(savedPageContent.flashProductIds)
+          ? savedPageContent.flashProductIds
+          : submittedPageContent.flashProductIds,
       });
       setPageContentMessage("Homepage writing updated successfully.");
     } catch (error) {
       setPageContentMessage(error instanceof Error ? error.message : "Unable to update homepage writing.");
     } finally {
       setIsSavingPageContent(false);
+    }
+  };
+
+  const handleSaveAboutContent = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!token) {
+      return;
+    }
+
+    setIsSavingAboutContent(true);
+    setAboutContentMessage("");
+
+    try {
+      const nextDashboard = await updateAboutContentSettings(token, aboutContentForm);
+      setDashboard(nextDashboard);
+      setAboutContentForm({
+        ...initialAboutContentForm,
+        ...(nextDashboard.settings?.aboutContent ?? {}),
+      });
+      setAboutContentMessage("About page content updated successfully.");
+    } catch (error) {
+      setAboutContentMessage(error instanceof Error ? error.message : "Unable to update about page content.");
+    } finally {
+      setIsSavingAboutContent(false);
     }
   };
 
@@ -865,6 +1299,19 @@ export function AdminPage() {
     }
   };
 
+  const handleContactMessageStatus = async (messageId: string, status: string) => {
+    if (!token) return;
+
+    setCustomerCareMessage("");
+    try {
+      const nextDashboard = await updateContactMessageStatus(token, messageId, status);
+      setDashboard(nextDashboard);
+      setCustomerCareMessage("Contact message updated.");
+    } catch (error) {
+      setCustomerCareMessage(error instanceof Error ? error.message : "Unable to update contact message.");
+    }
+  };
+
   const handleSendChatReply = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!token || !selectedChat || !chatReply.trim()) return;
@@ -887,33 +1334,47 @@ export function AdminPage() {
 
   if (!token) {
     return (
-      <main className={`${styles.page} page-shell admin-shell`}>
-        <section className="admin-login-card">
-          <span className="section-tag">Admin Access</span>
-          <h2>Private admin panel</h2>
-          <p>Only your admin login can enter here and manage products, orders, and store data.</p>
+      <main className={`${styles.page} page-shell admin-login-shell`}>
+        <Header
+          currentPage="admin"
+          cartCount={cartCount}
+          searchQuery=""
+          onSearchChange={onSearchChange}
+          onNavigate={onNavigate}
+          onOpenAbout={onOpenAbout}
+          onOpenShop={onOpenShop}
+          onOpenCart={onOpenCart}
+          onOpenAccount={() => undefined}
+        />
 
-          <form className="admin-login-form" onSubmit={handleLogin}>
-            <label className="form-field">
-              <span>Username</span>
-              <input value={loginUsername} onChange={(event) => setLoginUsername(event.target.value)} />
-            </label>
-            <label className="form-field">
-              <span>Password</span>
-              <input
-                type="password"
-                value={loginPassword}
-                onChange={(event) => setLoginPassword(event.target.value)}
-              />
-            </label>
+        <div className="admin-login-center">
+          <section className="admin-login-card">
+            <span className="section-tag">Admin Access</span>
+            <h2>Private admin panel</h2>
+            <p>Only your admin login can enter here and manage products, orders, and store data.</p>
 
-            {loginMessage ? <div className="form-status form-status-error">{loginMessage}</div> : null}
+            <form className="admin-login-form" onSubmit={handleLogin}>
+              <label className="form-field">
+                <span>Username</span>
+                <input value={loginUsername} onChange={(event) => setLoginUsername(event.target.value)} />
+              </label>
+              <label className="form-field">
+                <span>Password</span>
+                <input
+                  type="password"
+                  value={loginPassword}
+                  onChange={(event) => setLoginPassword(event.target.value)}
+                />
+              </label>
 
-            <button type="submit" className="primary-button" disabled={isLoggingIn}>
-              {isLoggingIn ? "Checking..." : "Enter Admin Panel"}
-            </button>
-          </form>
-        </section>
+              {loginMessage ? <div className="form-status form-status-error">{loginMessage}</div> : null}
+
+              <button type="submit" className="primary-button" disabled={isLoggingIn}>
+                {isLoggingIn ? "Checking..." : "Enter Admin Panel"}
+              </button>
+            </form>
+          </section>
+        </div>
       </main>
     );
   }
@@ -929,135 +1390,100 @@ export function AdminPage() {
     );
   }
 
+  const activeNavigationItem = adminNavigationItems.find((item) => item.view === adminView) ?? adminNavigationItems[0];
+  const careBadgeCount = newProductRequestCount + newContactMessageCount + openChatCount;
+
   return (
     <main className={`${styles.page} page-shell admin-shell`}>
-      <section className="admin-header-card">
-        <div>
-          <span className="section-tag">Admin Dashboard</span>
-          <h2>Admin Home</h2>
-          <p>Open the section you want to manage.</p>
+      <button
+        className={isAdminMenuOpen ? "admin-menu-scrim open" : "admin-menu-scrim"}
+        type="button"
+        onClick={() => setIsAdminMenuOpen(false)}
+        aria-label="Close admin menu"
+        tabIndex={isAdminMenuOpen ? 0 : -1}
+      />
+
+      <aside className={isAdminMenuOpen ? "admin-sidebar open" : "admin-sidebar"} aria-label="Admin CMS navigation">
+        <div className="admin-sidebar-brand" title="Vinex Nepal Admin" data-tooltip="Vinex Nepal Admin">
+          <span aria-hidden="true">
+            <img src="/images/brand/VinexLogo.png" alt="" />
+          </span>
+          <strong>Vinex Nepal</strong>
         </div>
-        <button className="ghost-button" onClick={handleLogout}>
+
+        <div className="admin-sidebar-profile" title="Signed in as admin" data-tooltip="Signed in as admin">
+          <span aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="3" />
+              <path d="M5 20a7 7 0 0 1 14 0" />
+            </svg>
+          </span>
+          <div>
+            <strong>Admin</strong>
+            <small>CMS Control</small>
+          </div>
+        </div>
+
+        <nav className="admin-sidebar-nav" aria-label="Admin sections">
+          {adminNavigationItems.map((item) => {
+            const badgeCount = item.view === "customer-care" ? careBadgeCount : 0;
+
+            return (
+              <button
+                type="button"
+                className={adminView === item.view ? "admin-sidebar-link active" : "admin-sidebar-link"}
+                onClick={() => openAdminView(item.view)}
+                title={item.description}
+                data-tooltip={item.description}
+                key={item.view}
+              >
+                <span className="admin-sidebar-icon">
+                  <AdminNavIcon view={item.view} />
+                </span>
+                <span className="admin-sidebar-copy">
+                  <strong>{item.label}</strong>
+                </span>
+                {badgeCount > 0 ? <em>{badgeCount}</em> : null}
+              </button>
+            );
+          })}
+        </nav>
+      </aside>
+
+      <section className="admin-header-card">
+        <button
+          className="admin-mobile-menu-button"
+          type="button"
+          onClick={() => setIsAdminMenuOpen((current) => !current)}
+          aria-expanded={isAdminMenuOpen}
+          aria-label={isAdminMenuOpen ? "Close admin menu" : "Open admin menu"}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+        <div>
+          <h2>{activeNavigationItem.label}</h2>
+        </div>
+        <button className="ghost-button admin-logout-button" onClick={handleLogout} title="End the admin session">
           Log Out
         </button>
       </section>
 
-      {adminView === "home" ? (
-        <>
-          <section className="admin-metric-grid" aria-label="Admin overview">
-            <article className="admin-metric-card">
-              <span>Products</span>
-              <strong>{dashboard.overview.totalProducts}</strong>
-            </article>
-            <article className="admin-metric-card">
-              <span>Orders</span>
-              <strong>{dashboard.overview.totalOrders}</strong>
-            </article>
-            <article className="admin-metric-card">
-              <span>Pending</span>
-              <strong>{pendingOrderCount}</strong>
-            </article>
-            <article className="admin-metric-card">
-              <span>Revenue</span>
-              <strong>{formatPrice(dashboard.overview.totalRevenue)}</strong>
-            </article>
-            <article className="admin-metric-card">
-              <span>Sold Units</span>
-              <strong>{dashboard.overview.totalSoldUnits}</strong>
-            </article>
-            <article className="admin-metric-card">
-              <span>Care Inbox</span>
-              <strong>{newProductRequestCount + openChatCount}</strong>
-            </article>
-            <article className="admin-metric-card">
-              <span>Total Users</span>
-              <strong>{dashboard.accountStats?.totalUsers ?? 0}</strong>
-            </article>
-            <article className="admin-metric-card">
-              <span>User Logins</span>
-              <strong>{dashboard.accountStats?.totalLogins ?? 0}</strong>
-            </article>
-          </section>
-
-          <section className="admin-section-grid">
-          <button
-            className="admin-section-card"
-            onClick={() => {
-              resetProductForm();
-              setAdminView("add-product");
-            }}
-          >
-            <span className="admin-card-index">1</span>
-            <h3>Add Product</h3>
-            <p>Open a separate page to add product name, display image, hover image, description, price, and discount.</p>
-          </button>
-
-          <button className="admin-section-card" onClick={() => setAdminView("product-details")}>
-            <span className="admin-card-index">2</span>
-            <h3>Product Details</h3>
-            <p>See all products in a table and review the highest sold product with sold quantity.</p>
-          </button>
-
-        <button className="admin-section-card" onClick={() => setAdminView("orders")}>
-            <span className="admin-card-index">3</span>
-            <h3>Orders</h3>
-          <p>Check new, processing, shipped, completed, cancelled orders, and full order time details.</p>
-        </button>
-
-        <button className="admin-section-card" onClick={() => setAdminView("analytics")}>
-          <span className="admin-card-index">4</span>
-          <h3>Analytics & Reports</h3>
-          <p>See all-time revenue, monthly revenue, today's revenue, total orders, and orders today.</p>
-        </button>
-
-        <button className="admin-section-card" onClick={() => setAdminView("customer-care")}>
-          <span className="admin-card-index">5</span>
-          {newProductRequestCount + openChatCount > 0 ? (
-            <span className="admin-card-badge">{newProductRequestCount + openChatCount}</span>
-          ) : null}
-          <h3>Customer Care</h3>
-          <p>Review requested products and answer customer live chat messages from one inbox.</p>
-        </button>
-
-        <button className="admin-section-card" onClick={() => setAdminView("flash-time")}>
-          <span className="admin-card-index">6</span>
-          <h3>Flash Time</h3>
-          <p>Increase, decrease, hide, or reset the countdown timer from admin only.</p>
-        </button>
-
-        <button
-          className="admin-section-card"
-          onClick={() => {
-            setPageEditingSection("home");
-            setAdminView("page-editing");
-          }}
-        >
-          <span className="admin-card-index">7</span>
-          <h3>Page Editing</h3>
-          <p>Edit the homepage ad banner, hero writing, flash window text, and section copy.</p>
-        </button>
-
-        <button className="admin-section-card" onClick={() => setAdminView("store-setup")}>
-          <span className="admin-card-index">8</span>
-          <h3>Store Setup</h3>
-          <p>Manage categories, coupons, delivery charge, and payment methods from separate input boxes.</p>
-        </button>
-
-        <button className="admin-section-card" onClick={() => setAdminView("customers")}>
-          <span className="admin-card-index">9</span>
-          <h3>Customers</h3>
-          <p>Review customer names, contact numbers, email addresses, and order counts.</p>
-        </button>
-          </section>
-        </>
+      {adminToasts.length > 0 ? (
+        <div className="admin-toast-stack" role="status" aria-live="polite">
+          {adminToasts.map((toast) => (
+            <div className={toast.tone === "error" ? "admin-toast error" : "admin-toast"} key={toast.id}>
+              <span>{toast.label}</span>
+              <strong>{toast.message}</strong>
+            </div>
+          ))}
+        </div>
       ) : null}
 
       {adminView === "add-product" ? (
         <section className="admin-panel-card">
           <div className="admin-panel-header">
-            <button className="ghost-button" onClick={goToAdminHome}>
-              Back To Admin Home
-            </button>
             <span className="section-tag">Add Product</span>
           </div>
 
@@ -1078,32 +1504,21 @@ export function AdminPage() {
                 onChange={(event) => setProductForm({ ...productForm, category: event.target.value })}
               />
             </label>
-            <label className="form-field full-span">
-              <span>Display Image</span>
-              <input type="file" accept="image/*" onChange={handleImageUpload} />
-            </label>
-            {productForm.image ? (
-              <div className="admin-upload-preview full-span">
-                <img src={productForm.image} alt="Display preview" className="admin-product-image preview" />
-              </div>
-            ) : null}
-            <label className="form-field full-span">
-              <span>Hover Image</span>
-              <input type="file" accept="image/*" onChange={handleHoverImageUpload} />
-            </label>
-            <label className="form-field full-span">
-              <span>Hover Image URL (optional)</span>
-              <input
-                value={productForm.hoverImage}
-                onChange={(event) => setProductForm({ ...productForm, hoverImage: event.target.value })}
-                placeholder="Second image shown when a customer points at the product"
-              />
-            </label>
-            {productForm.hoverImage ? (
-              <div className="admin-upload-preview full-span">
-                <img src={productForm.hoverImage} alt="Hover preview" className="admin-product-image preview" />
-              </div>
-            ) : null}
+            <ImageUrlField
+              label="Display Image URL"
+              value={productForm.image}
+              previewAlt="Display preview"
+              onChange={(image) => setProductForm((current) => ({ ...current, image }))}
+              onUpload={handleImageUpload}
+            />
+            <ImageUrlField
+              label="Hover Image URL"
+              value={productForm.hoverImage}
+              previewAlt="Hover preview"
+              placeholder="Second image shown when a customer points at the product"
+              onChange={(hoverImage) => setProductForm((current) => ({ ...current, hoverImage }))}
+              onUpload={handleHoverImageUpload}
+            />
             <label className="form-field full-span">
               <span>Gallery Images</span>
               <input type="file" accept="image/*" multiple onChange={handleGalleryImageUpload} />
@@ -1196,11 +1611,6 @@ export function AdminPage() {
               </button>
             </div>
 
-            <div className="checkout-actions full-span">
-              <button type="button" className="ghost-button" onClick={goToAdminHome}>
-                Back
-              </button>
-            </div>
           </form>
         </section>
       ) : null}
@@ -1208,9 +1618,6 @@ export function AdminPage() {
       {adminView === "product-details" ? (
         <section className="admin-panel-card">
           <div className="admin-panel-header">
-            <button className="ghost-button" onClick={goToAdminHome}>
-              Back To Admin Home
-            </button>
             <span className="section-tag">Product Details</span>
           </div>
 
@@ -1279,20 +1686,12 @@ export function AdminPage() {
             </table>
           </div>
 
-          <div className="checkout-actions full-span">
-            <button type="button" className="ghost-button" onClick={goToAdminHome}>
-              Back
-            </button>
-          </div>
         </section>
       ) : null}
 
       {adminView === "orders" ? (
         <section className="admin-panel-card">
           <div className="admin-panel-header">
-            <button className="ghost-button" onClick={goToAdminHome}>
-              Back To Admin Home
-            </button>
             <span className="section-tag">Orders</span>
           </div>
 
@@ -1335,8 +1734,8 @@ export function AdminPage() {
             </button>
           </div>
 
-          <section className="admin-layout">
-            <div className="admin-panel-card nested-card">
+          <section className="admin-layout admin-orders-layout">
+            <div className="admin-panel-card nested-card admin-order-list-panel">
               <h3>Order list</h3>
               <div className="admin-order-list">
                 {filteredOrders.length === 0 ? (
@@ -1364,7 +1763,7 @@ export function AdminPage() {
               </div>
             </div>
 
-            <div className="admin-panel-card nested-card">
+            <div className="admin-panel-card nested-card admin-order-details-panel">
               <h3>Order details</h3>
               {selectedOrder ? (
                 <>
@@ -1430,37 +1829,45 @@ export function AdminPage() {
                     ))}
                   </div>
 
-                  {orderMessage ? <div className="form-status">{orderMessage}</div> : null}
-
-                  <div className="admin-status-actions">
-                    <button
-                      className="ghost-button"
-                      onClick={() => handleOrderStatusChange("processing")}
-                      disabled={isUpdatingOrder}
-                    >
-                      Processing
-                    </button>
-                    <button
-                      className="ghost-button"
-                      onClick={() => handleOrderStatusChange("shipped")}
-                      disabled={isUpdatingOrder}
-                    >
-                      Shipped
-                    </button>
-                    <button
-                      className="ghost-button"
-                      onClick={() => handleOrderStatusChange("completed")}
-                      disabled={isUpdatingOrder}
-                    >
-                      Complete Order
-                    </button>
-                    <button
-                      className="remove-link"
-                      onClick={() => handleOrderStatusChange("cancelled")}
-                      disabled={isUpdatingOrder}
-                    >
-                      Cancel Order
-                    </button>
+                  <div className="admin-order-status-panel">
+                    <div>
+                      <span className="section-tag">Delivery Status</span>
+                      <h4>Update order state</h4>
+                    </div>
+                    <div className="admin-status-actions">
+                      <button
+                        className="ghost-button"
+                        onClick={() => handleOrderStatusChange("processing")}
+                        disabled={isUpdatingOrder}
+                        title="Mark order as processing"
+                      >
+                        Processing
+                      </button>
+                      <button
+                        className="ghost-button"
+                        onClick={() => handleOrderStatusChange("shipped")}
+                        disabled={isUpdatingOrder}
+                        title="Mark order as shipped"
+                      >
+                        Shipped
+                      </button>
+                      <button
+                        className="ghost-button"
+                        onClick={() => handleOrderStatusChange("completed")}
+                        disabled={isUpdatingOrder}
+                        title="Mark order as completed"
+                      >
+                        Complete Order
+                      </button>
+                      <button
+                        className="remove-link"
+                        onClick={() => handleOrderStatusChange("cancelled")}
+                        disabled={isUpdatingOrder}
+                        title="Mark order as cancelled"
+                      >
+                        Cancel Order
+                      </button>
+                    </div>
                   </div>
                 </>
               ) : (
@@ -1469,20 +1876,12 @@ export function AdminPage() {
             </div>
           </section>
 
-          <div className="checkout-actions full-span">
-            <button type="button" className="ghost-button" onClick={goToAdminHome}>
-              Back
-            </button>
-          </div>
         </section>
       ) : null}
 
       {adminView === "analytics" ? (
         <section className="admin-panel-card">
           <div className="admin-panel-header">
-            <button className="ghost-button" onClick={goToAdminHome}>
-              Back To Admin Home
-            </button>
             <span className="section-tag">Analytics & Reports</span>
           </div>
 
@@ -1531,8 +1930,8 @@ export function AdminPage() {
             </article>
           </section>
 
-          <section className="admin-layout">
-            <div className="admin-panel-card nested-card">
+          <section className="admin-layout admin-care-layout">
+            <div className="admin-panel-card nested-card admin-care-request-panel">
               <h3>Order health</h3>
               <div className="admin-mini-list">
                 <div className="summary-row">
@@ -1558,7 +1957,7 @@ export function AdminPage() {
               </div>
             </div>
 
-            <div className="admin-panel-card nested-card">
+            <div className="admin-panel-card nested-card admin-care-chat-panel">
               <h3>Top sales</h3>
               <div className="admin-mini-list">
                 <div className="summary-row">
@@ -1625,27 +2024,19 @@ export function AdminPage() {
             </div>
           </section>
 
-          <div className="checkout-actions full-span">
-            <button type="button" className="ghost-button" onClick={goToAdminHome}>
-              Back
-            </button>
-          </div>
         </section>
       ) : null}
 
       {adminView === "customer-care" ? (
         <section className="admin-panel-card">
           <div className="admin-panel-header">
-            <button className="ghost-button" onClick={goToAdminHome}>
-              Back To Admin Home
-            </button>
             <span className="section-tag">Customer Care</span>
           </div>
 
           <h3>Requests and live chat</h3>
 
-          <section className="admin-layout">
-            <div className="admin-panel-card nested-card">
+          <section className="admin-layout admin-care-layout">
+            <div className="admin-panel-card nested-card admin-care-request-panel">
               <div className="admin-panel-header">
                 <div>
                   <span className="section-tag">Product Requests</span>
@@ -1687,7 +2078,53 @@ export function AdminPage() {
               </div>
             </div>
 
-            <div className="admin-panel-card nested-card">
+            <div className="admin-panel-card nested-card admin-care-contact-panel">
+              <div className="admin-panel-header">
+                <div>
+                  <span className="section-tag">Contact Messages</span>
+                  <h3>{newContactMessageCount} new message(s)</h3>
+                </div>
+              </div>
+
+              <div className="admin-care-list">
+                {contactMessages.length === 0 ? (
+                  <p>No contact form messages yet.</p>
+                ) : (
+                  contactMessages.map((message) => (
+                    <article className="admin-care-card" key={message.id}>
+                      <div className="admin-order-card-top">
+                        <strong>{message.requestType}</strong>
+                        <span className={`order-status-pill ${message.status === "new" ? "status-new" : "status-completed"}`}>
+                          {message.status}
+                        </span>
+                      </div>
+                      <span>{`${message.firstName} ${message.lastName}`.trim()}</span>
+                      <small>{message.email}</small>
+                      {message.phone ? <small>{message.phone}</small> : null}
+                      <small>{message.title} / {message.language}</small>
+                      {message.message ? <p>{message.message}</p> : null}
+                      <small>Submitted at: {new Date(message.createdAt).toLocaleString()}</small>
+                      <div className="admin-status-actions">
+                        <button
+                          className="ghost-button"
+                          onClick={() => handleContactMessageStatus(message.id, "reviewed")}
+                        >
+                          Mark Reviewed
+                        </button>
+                        <button
+                          className="ghost-button"
+                          onClick={() => handleContactMessageStatus(message.id, "handled")}
+                        >
+                          Mark Handled
+                        </button>
+                      </div>
+                    </article>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="admin-panel-card nested-card admin-care-chat-panel">
               <div className="admin-panel-header">
                 <div>
                   <span className="section-tag">Live Chat</span>
@@ -1762,20 +2199,12 @@ export function AdminPage() {
 
           {customerCareMessage ? <div className="form-status">{customerCareMessage}</div> : null}
 
-          <div className="checkout-actions full-span">
-            <button type="button" className="ghost-button" onClick={goToAdminHome}>
-              Back
-            </button>
-          </div>
         </section>
       ) : null}
 
       {adminView === "flash-time" ? (
         <section className="admin-panel-card">
           <div className="admin-panel-header">
-            <button className="ghost-button" onClick={goToAdminHome}>
-              Back To Admin Home
-            </button>
             <span className="section-tag">Flash Time</span>
           </div>
 
@@ -1849,11 +2278,6 @@ export function AdminPage() {
               </button>
             </div>
 
-            <div className="checkout-actions full-span">
-              <button type="button" className="ghost-button" onClick={goToAdminHome}>
-                Back
-              </button>
-            </div>
           </form>
         </section>
       ) : null}
@@ -1861,9 +2285,6 @@ export function AdminPage() {
       {adminView === "store-setup" ? (
         <section className="admin-panel-card">
           <div className="admin-panel-header">
-            <button className="ghost-button" onClick={goToAdminHome}>
-              Back To Admin Home
-            </button>
             <span className="section-tag">Store Setup</span>
           </div>
 
@@ -2041,14 +2462,307 @@ export function AdminPage() {
               />
             </label>
 
+            <div className="admin-promo-edit-card full-span">
+              <div className="admin-panel-header full-span">
+                <div>
+                  <span className="section-tag">Support Page</span>
+                  <h3>Contact page content</h3>
+                </div>
+              </div>
+              {[
+                ["supportPageTag", "Support Page Tag"],
+                ["supportPageTitle", "Support Page Title"],
+                ["supportContactTitle", "Contact Card Title"],
+                ["supportPhone", "Phone Number"],
+                ["supportWhatsappUrl", "WhatsApp URL"],
+                ["supportInstagramUrl", "Instagram URL"],
+                ["supportInstagramLabel", "Instagram Label"],
+                ["supportTiktokUrl", "TikTok URL"],
+                ["supportTiktokLabel", "TikTok Label"],
+                ["supportHoursTag", "Support Hours Tag"],
+                ["supportHoursTitle", "Support Hours Title"],
+              ].map(([field, label]) => (
+                <label className="form-field" key={field}>
+                  <span>{label}</span>
+                  <input
+                    value={String(storeOperationForm[field as keyof StoreOperationSettings] ?? "")}
+                    onChange={(event) =>
+                      setStoreOperationForm((current) => ({
+                        ...current,
+                        [field]: event.target.value,
+                      }))
+                    }
+                  />
+                </label>
+              ))}
+              <label className="form-field full-span">
+                <span>Support Page Text</span>
+                <textarea
+                  rows={3}
+                  value={storeOperationForm.supportPageText}
+                  onChange={(event) => setStoreOperationForm((current) => ({ ...current, supportPageText: event.target.value }))}
+                />
+              </label>
+              <label className="form-field full-span">
+                <span>Contact Card Text</span>
+                <textarea
+                  rows={3}
+                  value={storeOperationForm.supportContactText}
+                  onChange={(event) => setStoreOperationForm((current) => ({ ...current, supportContactText: event.target.value }))}
+                />
+              </label>
+              <label className="form-field full-span">
+                <span>Support Hours Text</span>
+                <textarea
+                  rows={3}
+                  value={storeOperationForm.supportHoursText}
+                  onChange={(event) => setStoreOperationForm((current) => ({ ...current, supportHoursText: event.target.value }))}
+                />
+              </label>
+            </div>
+
             {storeSetupMessage ? <div className="form-status">{storeSetupMessage}</div> : null}
 
             <div className="checkout-actions full-span">
               <button type="submit" className="primary-button" disabled={isSavingStoreSetup}>
                 {isSavingStoreSetup ? "Saving..." : "Save Store Setup"}
               </button>
-              <button type="button" className="ghost-button" onClick={goToAdminHome}>
-                Back
+            </div>
+          </form>
+        </section>
+      ) : null}
+
+      {adminView === "about-editing" ? (
+        <section className="admin-panel-card">
+          <div className="admin-panel-header">
+            <span className="section-tag">About Page Editing</span>
+          </div>
+
+          <h3>About page content</h3>
+
+          <form className="admin-product-form" onSubmit={handleSaveAboutContent}>
+            <label className="form-field">
+              <span>Hero Meta Left</span>
+              <input
+                value={aboutContentForm.heroMetaLeft}
+                onChange={(event) => setAboutContentForm((current) => ({ ...current, heroMetaLeft: event.target.value }))}
+              />
+            </label>
+            <label className="form-field">
+              <span>Hero Meta Right</span>
+              <input
+                value={aboutContentForm.heroMetaRight}
+                onChange={(event) => setAboutContentForm((current) => ({ ...current, heroMetaRight: event.target.value }))}
+              />
+            </label>
+            <label className="form-field full-span">
+              <span>Hero Heading</span>
+              <textarea
+                rows={4}
+                value={aboutContentForm.heroTitle}
+                onChange={(event) => setAboutContentForm((current) => ({ ...current, heroTitle: event.target.value }))}
+              />
+            </label>
+            <div className="admin-promo-edit-card full-span">
+              <div className="admin-panel-header full-span">
+                <div>
+                  <span className="section-tag">Story Images</span>
+                  <h3>About story photos</h3>
+                </div>
+              </div>
+              {Array.from({ length: Math.max(3, aboutContentForm.storyImages.length) }).map((_, imageIndex) => (
+                <ImageUrlField
+                  key={`story-image-${imageIndex}`}
+                  label={`Story Image ${imageIndex + 1} URL`}
+                  value={aboutContentForm.storyImages[imageIndex] ?? ""}
+                  previewAlt={`Story image ${imageIndex + 1} preview`}
+                  onChange={(image) =>
+                    setAboutContentForm((current) => {
+                      const storyImages = [...current.storyImages];
+                      storyImages[imageIndex] = image;
+                      return { ...current, storyImages };
+                    })
+                  }
+                  onUpload={handleAboutArrayImageUpload("storyImages", imageIndex)}
+                />
+              ))}
+            </div>
+
+            {aboutContentForm.teamMembers.map((member, index) => (
+              <div className="admin-promo-edit-card full-span" key={`team-member-${index}`}>
+                <div className="admin-panel-header full-span">
+                  <div>
+                    <span className="section-tag">Team Member {index + 1}</span>
+                    <h3>{member.name || "Team member"}</h3>
+                  </div>
+                </div>
+                <label className="form-field">
+                  <span>Name</span>
+                  <input
+                    value={member.name}
+                    onChange={(event) =>
+                      setAboutContentForm((current) => ({
+                        ...current,
+                        teamMembers: current.teamMembers.map((entry, entryIndex) =>
+                          entryIndex === index ? { ...entry, name: event.target.value } : entry,
+                        ),
+                      }))
+                    }
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Titles</span>
+                  <textarea
+                    rows={3}
+                    value={member.titles.join("\n")}
+                    onChange={(event) =>
+                      setAboutContentForm((current) => ({
+                        ...current,
+                        teamMembers: current.teamMembers.map((entry, entryIndex) =>
+                          entryIndex === index
+                            ? { ...entry, titles: event.target.value.split("\n").map((value) => value.trim()).filter(Boolean) }
+                            : entry,
+                        ),
+                      }))
+                    }
+                  />
+                </label>
+                <label className="form-field full-span">
+                  <span>Message</span>
+                  <textarea
+                    rows={3}
+                    value={member.message}
+                    onChange={(event) =>
+                      setAboutContentForm((current) => ({
+                        ...current,
+                        teamMembers: current.teamMembers.map((entry, entryIndex) =>
+                          entryIndex === index ? { ...entry, message: event.target.value } : entry,
+                        ),
+                      }))
+                    }
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Image Label</span>
+                  <input
+                    value={member.imageLabel}
+                    onChange={(event) =>
+                      setAboutContentForm((current) => ({
+                        ...current,
+                        teamMembers: current.teamMembers.map((entry, entryIndex) =>
+                          entryIndex === index ? { ...entry, imageLabel: event.target.value } : entry,
+                        ),
+                      }))
+                    }
+                  />
+                </label>
+                <ImageUrlField
+                  label="Image URL"
+                  value={member.imageSrc}
+                  previewAlt={`${member.name || "Team member"} preview`}
+                  onChange={(imageSrc) =>
+                    setAboutContentForm((current) => ({
+                      ...current,
+                      teamMembers: current.teamMembers.map((entry, entryIndex) =>
+                        entryIndex === index ? { ...entry, imageSrc } : entry,
+                      ),
+                    }))
+                  }
+                  onUpload={handleTeamImageUpload(index)}
+                />
+              </div>
+            ))}
+
+            <label className="form-field full-span">
+              <span>Story Headline</span>
+              <textarea
+                rows={4}
+                value={aboutContentForm.storyHeadline}
+                onChange={(event) => setAboutContentForm((current) => ({ ...current, storyHeadline: event.target.value }))}
+              />
+            </label>
+            <label className="form-field full-span">
+              <span>Story Paragraphs</span>
+              <textarea
+                rows={8}
+                value={aboutContentForm.storyParagraphs.join("\n\n")}
+                onChange={(event) =>
+                  setAboutContentForm((current) => ({
+                    ...current,
+                    storyParagraphs: event.target.value.split(/\n\s*\n/).map((value) => value.trim()).filter(Boolean),
+                  }))
+                }
+                placeholder="Separate paragraphs with a blank line"
+              />
+            </label>
+            <ImageUrlField
+              label="Gallery Logo URL"
+              value={aboutContentForm.galleryLogo}
+              previewAlt="Gallery logo preview"
+              onChange={(galleryLogo) => setAboutContentForm((current) => ({ ...current, galleryLogo }))}
+              onUpload={handleAboutImageUpload("galleryLogo")}
+            />
+            <label className="form-field full-span">
+              <span>Gallery Text</span>
+              <textarea
+                rows={3}
+                value={aboutContentForm.galleryText}
+                onChange={(event) => setAboutContentForm((current) => ({ ...current, galleryText: event.target.value }))}
+              />
+            </label>
+            <div className="admin-promo-edit-card full-span">
+              <div className="admin-panel-header full-span">
+                <div>
+                  <span className="section-tag">Gallery Images</span>
+                  <h3>Social gallery photos</h3>
+                </div>
+              </div>
+              {Array.from({ length: Math.max(4, aboutContentForm.galleryImages.length) }).map((_, imageIndex) => (
+                <ImageUrlField
+                  key={`gallery-image-${imageIndex}`}
+                  label={`Gallery Image ${imageIndex + 1} URL`}
+                  value={aboutContentForm.galleryImages[imageIndex] ?? ""}
+                  previewAlt={`Gallery image ${imageIndex + 1} preview`}
+                  onChange={(image) =>
+                    setAboutContentForm((current) => {
+                      const galleryImages = [...current.galleryImages];
+                      galleryImages[imageIndex] = image;
+                      return { ...current, galleryImages };
+                    })
+                  }
+                  onUpload={handleAboutArrayImageUpload("galleryImages", imageIndex)}
+                />
+              ))}
+            </div>
+            <label className="form-field full-span">
+              <span>Social Links</span>
+              <textarea
+                rows={4}
+                value={aboutContentForm.socialLinks.map((link) => `${link.label}, ${link.url}`).join("\n")}
+                onChange={(event) =>
+                  setAboutContentForm((current) => ({
+                    ...current,
+                    socialLinks: event.target.value
+                      .split("\n")
+                      .map((line) => {
+                        const [label = "", ...urlParts] = line.split(",");
+                        return {
+                          label: label.trim(),
+                          url: urlParts.join(",").trim(),
+                        };
+                      })
+                      .filter((link) => link.label && link.url),
+                  }))
+                }
+                placeholder="Instagram, https://www.instagram.com/vinexnepal/"
+              />
+            </label>
+
+            {aboutContentMessage ? <div className="form-status">{aboutContentMessage}</div> : null}
+
+            <div className="checkout-actions full-span">
+              <button type="submit" className="primary-button" disabled={isSavingAboutContent}>
+                {isSavingAboutContent ? "Saving..." : "Save About Page"}
               </button>
             </div>
           </form>
@@ -2058,9 +2772,6 @@ export function AdminPage() {
       {adminView === "customers" ? (
         <section className="admin-panel-card">
           <div className="admin-panel-header">
-            <button className="ghost-button" onClick={goToAdminHome}>
-              Back To Admin Home
-            </button>
             <span className="section-tag">Customers</span>
           </div>
 
@@ -2132,20 +2843,12 @@ export function AdminPage() {
             </table>
           </div>
 
-          <div className="checkout-actions full-span">
-            <button type="button" className="ghost-button" onClick={goToAdminHome}>
-              Back
-            </button>
-          </div>
         </section>
       ) : null}
 
       {adminView === "page-editing" ? (
         <section className="admin-panel-card">
           <div className="admin-panel-header">
-            <button className="ghost-button" onClick={goToAdminHome}>
-              Back To Admin Home
-            </button>
             <span className="section-tag">Page Editing</span>
           </div>
 
@@ -2160,36 +2863,18 @@ export function AdminPage() {
                       <span className="section-tag">Home Page</span>
                       <h3>Choose what you want to edit</h3>
                     </div>
-                    <button className="ghost-button" onClick={goToAdminHome}>
-                      Back
-                    </button>
                   </div>
 
                   <div className="admin-section-grid page-editing-grid">
-                    <button className="admin-section-card" onClick={() => setPageEditingSection("top-banner")}>
-                      <span className="section-tag">Top</span>
-                      <h3>Top Banner</h3>
-                      <p>Edit the three small banner writings above the main hero.</p>
-                    </button>
                     <button className="admin-section-card" onClick={() => setPageEditingSection("middle-hero")}>
-                      <span className="section-tag">Middle</span>
-                      <h3>Hero Area</h3>
-                      <p>Edit hero image links, label writing, button text, and side-card tag.</p>
-                    </button>
-                    <button className="admin-section-card" onClick={() => setPageEditingSection("side-promos")}>
-                      <span className="section-tag">Promos</span>
-                      <h3>Hero Promo Cards</h3>
-                      <p>Edit the six side banner names, subtitles, and campaign images.</p>
+                      <span className="section-tag">Home</span>
+                      <h3>Main Home Sections</h3>
+                      <p>Edit the main hero image, brand intro, collection title, and shop-now section.</p>
                     </button>
                     <button className="admin-section-card" onClick={() => setPageEditingSection("flash-window")}>
                       <span className="section-tag">Flash</span>
                       <h3>Flash Window</h3>
-                      <p>Edit the flash window tag, heading, and active/inactive text.</p>
-                    </button>
-                    <button className="admin-section-card" onClick={() => setPageEditingSection("lower-section")}>
-                      <span className="section-tag">Below</span>
-                      <h3>Lower Section</h3>
-                      <p>Edit the writing below the hero and above the product cards.</p>
+                      <p>Edit the flash tag, description, inactive text, and button label. Product names come from product listings.</p>
                     </button>
                   </div>
                 </>
@@ -2198,17 +2883,7 @@ export function AdminPage() {
                   <div className="admin-panel-header full-span">
                     <div>
                       <span className="section-tag">Home Page</span>
-                      <h3>
-                        {pageEditingSection === "top-banner"
-                          ? "Top banner"
-                          : pageEditingSection === "middle-hero"
-                            ? "Middle hero area"
-                            : pageEditingSection === "side-promos"
-                              ? "Hero promo cards"
-                              : pageEditingSection === "flash-window"
-                                ? "Flash window"
-                                : "Lower section"}
-                      </h3>
+                      <h3>{pageEditingSection === "middle-hero" ? "Main home sections" : "Flash window"}</h3>
                     </div>
                     <button
                       type="button"
@@ -2219,69 +2894,74 @@ export function AdminPage() {
                     </button>
                   </div>
 
-                  {pageEditingSection === "top-banner" ? (
-                    <>
-                      <label className="form-field">
-                        <span>Top Banner Text 1</span>
-                        <input
-                          value={pageContentForm.bannerPrimary}
-                          onChange={(event) =>
-                            setPageContentForm((current) => ({ ...current, bannerPrimary: event.target.value }))
-                          }
-                        />
-                      </label>
-                      <label className="form-field">
-                        <span>Top Banner Text 2</span>
-                        <input
-                          value={pageContentForm.bannerSecondary}
-                          onChange={(event) =>
-                            setPageContentForm((current) => ({ ...current, bannerSecondary: event.target.value }))
-                          }
-                        />
-                      </label>
-                      <label className="form-field full-span">
-                        <span>Top Banner Text 3</span>
-                        <input
-                          value={pageContentForm.bannerTertiary}
-                          onChange={(event) =>
-                            setPageContentForm((current) => ({ ...current, bannerTertiary: event.target.value }))
-                          }
-                        />
-                      </label>
-                    </>
-                  ) : null}
-
                   {pageEditingSection === "middle-hero" ? (
                     <>
-                      <label className="form-field full-span">
-                        <span>Hero Picture 1 URL</span>
-                        <input
-                          value={pageContentForm.heroImageOne}
-                          onChange={(event) =>
-                            setPageContentForm((current) => ({ ...current, heroImageOne: event.target.value }))
-                          }
+                      {(pageContentForm.homeHeroImages?.length
+                        ? pageContentForm.homeHeroImages
+                        : initialPageContentForm.homeHeroImages
+                      ).slice(0, 3).map((image, index) => (
+                        <ImageUrlField
+                          label={`Hero Carousel Slide ${index + 1} URL`}
+                          value={image}
+                          previewAlt={`Home hero slide ${index + 1} preview`}
+                          onChange={(imageUrl) => updateHeroCarouselImage(index, imageUrl)}
+                          onUpload={handleHeroCarouselImageUpload(index)}
+                          key={`hero-slide-${index}`}
                         />
-                      </label>
+                      ))}
                       <label className="form-field full-span">
-                        <span>Hero Picture 2 URL</span>
-                        <input
-                          value={pageContentForm.heroImageTwo}
+                        <span>Brand Intro Text</span>
+                        <textarea
+                          rows={3}
+                          value={pageContentForm.brandIntroText}
                           onChange={(event) =>
-                            setPageContentForm((current) => ({ ...current, heroImageTwo: event.target.value }))
+                            setPageContentForm((current) => ({ ...current, brandIntroText: event.target.value }))
                           }
                         />
                       </label>
                       <label className="form-field">
-                        <span>Hero Tag</span>
+                        <span>Collection Title</span>
                         <input
-                          value={pageContentForm.heroTag}
+                          value={pageContentForm.collectionTitle}
                           onChange={(event) =>
-                            setPageContentForm((current) => ({ ...current, heroTag: event.target.value }))
+                            setPageContentForm((current) => ({ ...current, collectionTitle: event.target.value }))
                           }
                         />
                       </label>
+                      <div className="admin-promo-edit-card full-span">
+                        <div className="admin-panel-header full-span">
+                          <div>
+                            <span className="section-tag">Our Collection</span>
+                            <h3>Featured collection products</h3>
+                          </div>
+                        </div>
+                        <div className="admin-collection-picker full-span">
+                          {dashboard.products.map((product) => {
+                            const isSelected = pageContentForm.collectionProductIds.includes(product.id);
+                            return (
+                              <label className="admin-checkbox" key={product.id}>
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={(event) =>
+                                    setPageContentForm((current) => ({
+                                      ...current,
+                                      collectionProductIds: event.target.checked
+                                        ? [...new Set([...current.collectionProductIds, product.id])]
+                                        : current.collectionProductIds.filter((productId) => productId !== product.id),
+                                    }))
+                                  }
+                                />
+                                <span>
+                                  {product.name} / Rs {product.price.toLocaleString()}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
                       <label className="form-field">
-                        <span>Hero Button</span>
+                        <span>Shop Now Button Text</span>
                         <input
                           value={pageContentForm.heroButton}
                           onChange={(event) =>
@@ -2289,72 +2969,13 @@ export function AdminPage() {
                           }
                         />
                       </label>
-                      <label className="form-field full-span">
-                        <span>Side Card Tag</span>
-                        <input
-                          value={pageContentForm.sideTag}
-                          onChange={(event) =>
-                            setPageContentForm((current) => ({ ...current, sideTag: event.target.value }))
-                          }
-                        />
-                      </label>
-                    </>
-                  ) : null}
-
-                  {pageEditingSection === "side-promos" ? (
-                    <>
-                      {pageContentForm.heroPromos.map((promo, index) => (
-                        <div className="admin-promo-edit-card full-span" key={`hero-promo-${index}`}>
-                          <div className="admin-panel-header full-span">
-                            <div>
-                              <span className="section-tag">Card {index + 1}</span>
-                              <h3>{promo.title || "Promo card"}</h3>
-                            </div>
-                          </div>
-                          <label className="form-field">
-                            <span>Card Title</span>
-                            <input
-                              value={promo.title}
-                              onChange={(event) =>
-                                setPageContentForm((current) => ({
-                                  ...current,
-                                  heroPromos: current.heroPromos.map((entry, entryIndex) =>
-                                    entryIndex === index ? { ...entry, title: event.target.value } : entry,
-                                  ),
-                                }))
-                              }
-                            />
-                          </label>
-                          <label className="form-field">
-                            <span>Card Subtitle</span>
-                            <input
-                              value={promo.subtitle}
-                              onChange={(event) =>
-                                setPageContentForm((current) => ({
-                                  ...current,
-                                  heroPromos: current.heroPromos.map((entry, entryIndex) =>
-                                    entryIndex === index ? { ...entry, subtitle: event.target.value } : entry,
-                                  ),
-                                }))
-                              }
-                            />
-                          </label>
-                          <label className="form-field full-span">
-                            <span>Card Image URL</span>
-                            <input
-                              value={promo.image}
-                              onChange={(event) =>
-                                setPageContentForm((current) => ({
-                                  ...current,
-                                  heroPromos: current.heroPromos.map((entry, entryIndex) =>
-                                    entryIndex === index ? { ...entry, image: event.target.value } : entry,
-                                  ),
-                                }))
-                              }
-                            />
-                          </label>
-                        </div>
-                      ))}
+                      <ImageUrlField
+                        label="Shop Now Image URL"
+                        value={pageContentForm.shopNowImage}
+                        previewAlt="Shop now preview"
+                        onChange={(shopNowImage) => setPageContentForm((current) => ({ ...current, shopNowImage }))}
+                        onUpload={handlePageImageUpload("shopNowImage")}
+                      />
                     </>
                   ) : null}
 
@@ -2369,25 +2990,6 @@ export function AdminPage() {
                           }
                         />
                       </label>
-                      <label className="form-field">
-                        <span>Flash Window Heading</span>
-                        <input
-                          value={pageContentForm.flashTitle}
-                          onChange={(event) =>
-                            setPageContentForm((current) => ({ ...current, flashTitle: event.target.value }))
-                          }
-                        />
-                      </label>
-                      <label className="form-field full-span">
-                        <span>Text When Timer Is On</span>
-                        <textarea
-                          rows={3}
-                          value={pageContentForm.flashActiveText}
-                          onChange={(event) =>
-                            setPageContentForm((current) => ({ ...current, flashActiveText: event.target.value }))
-                          }
-                        />
-                      </label>
                       <label className="form-field full-span">
                         <span>Text When Timer Is Off</span>
                         <textarea
@@ -2398,39 +3000,57 @@ export function AdminPage() {
                           }
                         />
                       </label>
-                    </>
-                  ) : null}
-
-                  {pageEditingSection === "lower-section" ? (
-                    <>
-                      <label className="form-field">
-                        <span>Lower Section Tag</span>
-                        <input
-                          value={pageContentForm.sectionTag}
-                          onChange={(event) =>
-                            setPageContentForm((current) => ({ ...current, sectionTag: event.target.value }))
-                          }
-                        />
-                      </label>
-                      <label className="form-field">
-                        <span>Lower Section Heading</span>
-                        <input
-                          value={pageContentForm.sectionTitle}
-                          onChange={(event) =>
-                            setPageContentForm((current) => ({ ...current, sectionTitle: event.target.value }))
-                          }
-                        />
-                      </label>
                       <label className="form-field full-span">
-                        <span>Lower Section Text</span>
+                        <span>Flash Description</span>
                         <textarea
-                          rows={4}
-                          value={pageContentForm.sectionText}
+                          rows={3}
+                          value={pageContentForm.flashDescription}
                           onChange={(event) =>
-                            setPageContentForm((current) => ({ ...current, sectionText: event.target.value }))
+                            setPageContentForm((current) => ({ ...current, flashDescription: event.target.value }))
                           }
                         />
                       </label>
+                      <label className="form-field">
+                        <span>Flash Button Text</span>
+                        <input
+                          value={pageContentForm.flashCta}
+                          onChange={(event) =>
+                            setPageContentForm((current) => ({ ...current, flashCta: event.target.value }))
+                          }
+                        />
+                      </label>
+                      <div className="admin-promo-edit-card full-span">
+                        <div className="admin-panel-header full-span">
+                          <div>
+                            <span className="section-tag">Flash Items</span>
+                            <h3>Flash sale products</h3>
+                          </div>
+                        </div>
+                        <div className="admin-collection-picker full-span">
+                          {dashboard.products.map((product) => {
+                            const isSelected = pageContentForm.flashProductIds.includes(product.id);
+                            return (
+                              <label className="admin-checkbox" key={product.id}>
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={(event) =>
+                                    setPageContentForm((current) => ({
+                                      ...current,
+                                      flashProductIds: event.target.checked
+                                        ? [...new Set([...current.flashProductIds, product.id])]
+                                        : current.flashProductIds.filter((productId) => productId !== product.id),
+                                    }))
+                                  }
+                                />
+                                <span>
+                                  {product.name} / Rs {product.price.toLocaleString()}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </>
                   ) : null}
 
@@ -2454,38 +3074,21 @@ export function AdminPage() {
 
             <aside className="admin-page-preview">
               <span className="section-tag">Live Preview</span>
-              <div className="admin-preview-banner">
-                <span>{pageContentForm.bannerPrimary}</span>
-                <span>{pageContentForm.bannerSecondary}</span>
-                <span>{pageContentForm.bannerTertiary}</span>
-              </div>
               <div
                 className="admin-preview-hero"
                 style={{
-                  backgroundImage: `linear-gradient(90deg, rgba(34, 17, 7, 0.76), rgba(34, 17, 7, 0.18)), url(${pageContentForm.heroImageOne})`,
+                  backgroundImage: `linear-gradient(90deg, rgba(34, 17, 7, 0.76), rgba(34, 17, 7, 0.18)), url(${pageContentForm.homeHeroImages?.[0] ?? pageContentForm.homeHeroImage})`,
                 }}
               >
-                <span>{pageContentForm.heroTag}</span>
+                <span>{pageContentForm.collectionTitle}</span>
                 <strong>{pageContentForm.heroButton}</strong>
               </div>
-              <div className="admin-preview-promo-grid">
-                {pageContentForm.heroPromos.map((promo, index) => (
-                  <div
-                    className="admin-preview-promo-card"
-                    key={`preview-promo-${index}`}
-                    style={{
-                      backgroundImage: `linear-gradient(90deg, rgba(20, 8, 3, 0.72), rgba(20, 8, 3, 0.22)), url(${promo.image})`,
-                    }}
-                  >
-                    <span>{promo.title}</span>
-                    <strong>{promo.subtitle}</strong>
-                  </div>
-                ))}
-              </div>
-              <h3>{pageContentForm.flashTitle}</h3>
-              <p>{pageContentForm.flashActiveText}</p>
-              <strong>{pageContentForm.sectionTitle}</strong>
-              <p>{pageContentForm.sectionText}</p>
+              <h3>
+                {pageContentForm.flashProductIds.length > 1
+                  ? `${pageContentForm.flashProductIds.length} flash products selected`
+                  : "Flash product name comes from Product Details"}
+              </h3>
+              <p>{pageContentForm.flashDescription}</p>
             </aside>
           </div>
         </section>

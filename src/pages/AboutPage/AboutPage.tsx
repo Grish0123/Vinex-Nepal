@@ -1,6 +1,7 @@
 import { useEffect, useRef, type RefObject, type WheelEvent } from 'react';
 import { motion, useScroll, useSpring, useTransform, type MotionValue } from 'framer-motion';
 import { FooterSection } from '../../components/FooterSection';
+import type { AboutContentSettings } from '../../lib/api';
 import styles from './AboutPage.module.scss';
 
 type TeamMemberPanelProps = {
@@ -53,25 +54,25 @@ function TeamMemberPanel({
   );
 }
 
-function ImageStorySection() {
+function ImageStorySection({ images }: { images: string[] }) {
   return (
     <section className={styles.imageStory} aria-label="Vinex Nepal product story">
       <div className={styles.imageGrid}>
         <figure className={styles.tallImage}>
           <img
-            src="/images/About Us Images/1st image.png"
+            src={images[0] ?? '/images/About Us Images/1st image.png'}
             alt="Vinex Nepal about story image one"
           />
         </figure>
         <figure className={styles.shortImage}>
           <img
-            src="/images/About Us Images/2nd image.png"
+            src={images[1] ?? '/images/About Us Images/2nd image.png'}
             alt="Vinex Nepal about story image two"
           />
         </figure>
         <figure className={styles.midImage}>
           <img
-            src="/images/About Us Images/3rd image.png"
+            src={images[2] ?? '/images/About Us Images/3rd image.png'}
             alt="Vinex Nepal about story image three"
           />
         </figure>
@@ -80,7 +81,13 @@ function ImageStorySection() {
   );
 }
 
-function ImageTeamStackSection({ containerRef }: { containerRef: RefObject<HTMLElement> }) {
+function ImageTeamStackSection({
+  containerRef,
+  aboutContent,
+}: {
+  containerRef: RefObject<HTMLElement>;
+  aboutContent: AboutContentSettings;
+}) {
   const stackRef = useRef<HTMLElement | null>(null);
   const { scrollYProgress } = useScroll({
     container: containerRef,
@@ -101,23 +108,23 @@ function ImageTeamStackSection({ containerRef }: { containerRef: RefObject<HTMLE
       aria-label="Vinex Nepal products and leadership"
     >
       <div className={styles.storySticky}>
-        <ImageStorySection />
+        <ImageStorySection images={aboutContent.storyImages} />
         <TeamMemberPanel
           imageSide="left"
-          name="Grish Katwal"
-          titles={['Founder', 'CEO', 'Managing Director']}
-          message="Building Vinex Nepal as a cleaner way to discover practical products, with a focus on trust, speed, and everyday value for local customers."
-          imageLabel="Grish Katwal"
-          imageSrc="/images/Team Images/Grish Katwal.jpg"
+          name={aboutContent.teamMembers[0]?.name ?? 'Grish Katwal'}
+          titles={aboutContent.teamMembers[0]?.titles ?? ['Founder', 'CEO', 'Managing Director']}
+          message={aboutContent.teamMembers[0]?.message ?? ''}
+          imageLabel={aboutContent.teamMembers[0]?.imageLabel ?? aboutContent.teamMembers[0]?.name ?? 'Grish Katwal'}
+          imageSrc={aboutContent.teamMembers[0]?.imageSrc ?? '/images/Team Images/Grish Katwal.jpg'}
           y={ceoY}
         />
         <TeamMemberPanel
           imageSide="right"
-          name="Himalaya Jung Katwal"
-          titles={['Cofounder', 'Executive Director']}
-          message="Shaping the operations behind Vinex Nepal so each order feels simple, responsive, and supported from product selection to delivery."
-          imageLabel="Himalaya Jung Katwal"
-          imageSrc="/images/Team Images/Himalaya Katwal.jpg"
+          name={aboutContent.teamMembers[1]?.name ?? 'Himalaya Jung Katwal'}
+          titles={aboutContent.teamMembers[1]?.titles ?? ['Cofounder', 'Executive Director']}
+          message={aboutContent.teamMembers[1]?.message ?? ''}
+          imageLabel={aboutContent.teamMembers[1]?.imageLabel ?? aboutContent.teamMembers[1]?.name ?? 'Himalaya Jung Katwal'}
+          imageSrc={aboutContent.teamMembers[1]?.imageSrc ?? '/images/Team Images/Himalaya Katwal.jpg'}
           y={edY}
         />
       </div>
@@ -125,45 +132,31 @@ function ImageTeamStackSection({ containerRef }: { containerRef: RefObject<HTMLE
   );
 }
 
-function StorySection() {
+function StorySection({ aboutContent }: { aboutContent: AboutContentSettings }) {
   return (
     <section className={styles.storySection} aria-labelledby="about-story-title">
       <div className={styles.storyLogo}>
         <img src="/images/brand/VinexLogo.png" alt="Vinex Nepal" />
       </div>
       <div className={styles.storyContent}>
-        <h2 id="about-story-title">
-          Vinex takes “Vin” from Vinayak, Lord Ganesh, and pairs it with “ex” for modern expression.
-          Together, it reflects a clever fox: thoughtful, quick, and built for smarter shopping.
-        </h2>
+        <h2 id="about-story-title">{aboutContent.storyHeadline}</h2>
         <div className={styles.storyColumns}>
-          <p>
-            We started Vinex Nepal because finding useful, good-looking products should not feel
-            scattered. Customers should be able to discover practical gadgets, accessories, and
-            daily essentials without guessing where to buy, what to trust, or whether support will
-            be available after checkout.
-          </p>
-          <p>
-            Our store is shaped around clarity: focused collections, fair pricing, simple ordering,
-            and local communication that feels human. Vinex is not trying to make shopping louder.
-            We are building a cleaner place to choose products that fit real routines.
-          </p>
-          <p>
-            Every product we highlight has to earn its space. It should be easy to understand,
-            useful to own, and backed by a team that cares about the full experience from first look
-            to final delivery.
-          </p>
-          <p>
-            That is the long-term idea behind Vinex Nepal: a modern ecommerce brand rooted in local
-            trust, built carefully enough that customers can come back with confidence.
-          </p>
+          {aboutContent.storyParagraphs.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-function GalleryStackSection({ containerRef }: { containerRef: RefObject<HTMLElement> }) {
+function GalleryStackSection({
+  containerRef,
+  aboutContent,
+}: {
+  containerRef: RefObject<HTMLElement>;
+  aboutContent: AboutContentSettings;
+}) {
   const galleryRef = useRef<HTMLElement | null>(null);
   const { scrollYProgress } = useScroll({
     container: containerRef,
@@ -182,25 +175,25 @@ function GalleryStackSection({ containerRef }: { containerRef: RefObject<HTMLEle
 
   const galleryImages = [
     {
-      src: '/images/Gallery Images/1st.png',
+      src: aboutContent.galleryImages[0] ?? '/images/Gallery Images/1st.png',
       alt: 'Vinex Nepal gallery image one',
       className: styles.galleryImageOne,
       y: springOne,
     },
     {
-      src: '/images/Gallery Images/2nd.png',
+      src: aboutContent.galleryImages[1] ?? '/images/Gallery Images/2nd.png',
       alt: 'Vinex Nepal gallery image two',
       className: styles.galleryImageTwo,
       y: springTwo,
     },
     {
-      src: '/images/Gallery Images/3rd.png',
+      src: aboutContent.galleryImages[2] ?? '/images/Gallery Images/3rd.png',
       alt: 'Vinex Nepal gallery image three',
       className: styles.galleryImageThree,
       y: springThree,
     },
     {
-      src: '/images/Gallery Images/4th.png',
+      src: aboutContent.galleryImages[3] ?? '/images/Gallery Images/4th.png',
       alt: 'Vinex Nepal gallery image four',
       className: styles.galleryImageFour,
       y: springFour,
@@ -211,21 +204,14 @@ function GalleryStackSection({ containerRef }: { containerRef: RefObject<HTMLEle
     <section ref={galleryRef} className={styles.galleryStack} aria-label="Vinex Nepal gallery">
       <div className={styles.gallerySticky}>
         <div className={styles.galleryReveal}>
-          <img src="/images/brand/VinexLogo.png" alt="Vinex Nepal" />
-          <p>
-            Join our community for new drops, behind-the-scenes updates, and product stories made
-            for everyday Nepal.
-          </p>
+          <img src={aboutContent.galleryLogo} alt="Vinex Nepal" />
+          <p>{aboutContent.galleryText}</p>
           <nav aria-label="Vinex Nepal social links">
-            <a href="https://www.instagram.com/vinexnepal/" target="_blank" rel="noreferrer">
-              Instagram
-            </a>
-            <a href="https://www.tiktok.com/@vinexnepal" target="_blank" rel="noreferrer">
-              TikTok
-            </a>
-            <a href="https://www.facebook.com/" target="_blank" rel="noreferrer">
-              Facebook
-            </a>
+            {aboutContent.socialLinks.map((link) => (
+              <a href={link.url} target="_blank" rel="noreferrer" key={`${link.label}-${link.url}`}>
+                {link.label}
+              </a>
+            ))}
           </nav>
         </div>
         {galleryImages.map((image, index) => (
@@ -243,10 +229,11 @@ function GalleryStackSection({ containerRef }: { containerRef: RefObject<HTMLEle
 }
 
 type AboutPageProps = {
+  aboutContent: AboutContentSettings;
   onFooterVisibilityChange?: (isVisible: boolean) => void;
 };
 
-export function AboutPage({ onFooterVisibilityChange }: AboutPageProps) {
+export function AboutPage({ aboutContent, onFooterVisibilityChange }: AboutPageProps) {
   const pageRef = useRef<HTMLElement | null>(null);
   const lastScrollTop = useRef(0);
 
@@ -291,18 +278,15 @@ export function AboutPage({ onFooterVisibilityChange }: AboutPageProps) {
     <main ref={pageRef} className={styles.page} onWheel={snapFromHero}>
       <section className={styles.hero} aria-labelledby="about-title">
         <div className={styles.meta}>
-          <span>Est. 2025</span>
-          <span>#About</span>
+          <span>{aboutContent.heroMetaLeft}</span>
+          <span>{aboutContent.heroMetaRight}</span>
         </div>
-        <h2 id="about-title">
-          Vinex Nepal brings carefully picked gadgets, accessories, and daily essentials into one
-          simple store, built for easy discovery, fair prices, and reliable local support.
-        </h2>
+        <h2 id="about-title">{aboutContent.heroTitle}</h2>
       </section>
 
-      <ImageTeamStackSection containerRef={pageRef} />
-      <StorySection />
-      <GalleryStackSection containerRef={pageRef} />
+      <ImageTeamStackSection containerRef={pageRef} aboutContent={aboutContent} />
+      <StorySection aboutContent={aboutContent} />
+      <GalleryStackSection containerRef={pageRef} aboutContent={aboutContent} />
       <FooterSection showWelcome={false} showProductRequest={true} />
     </main>
   );

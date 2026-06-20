@@ -252,7 +252,7 @@ export function CheckoutPage({
 
   if (submitState === "success" && submittedOrder) {
     return (
-      <main className={`${styles.page} page-shell`}>
+      <main className={`${styles.page} ${styles.checkoutPage} page-shell`}>
         <section className="success-card">
           <div className="success-hero">
             <span className="section-tag">Order Received</span>
@@ -320,11 +320,15 @@ export function CheckoutPage({
               <p>{submittedOrder.customerEmail}</p>
               <p>{submittedOrder.customerPhone}</p>
               {submittedOrder.items.map((item) => (
-                <div className="summary-row" key={item.cartKey}>
-                  <span>
-                    {item.name} x {item.quantity}
-                    {item.selectedColor ? ` / ${item.selectedColor}` : ""}
-                    {item.selectedSize ? ` / ${item.selectedSize}` : ""}
+                <div className="checkout-item-row" key={item.cartKey}>
+                  <img className="checkout-item-image" src={item.image} alt={item.name} />
+                  <span className="checkout-item-copy">
+                    <strong>{item.name}</strong>
+                    <span>
+                      Qty {item.quantity}
+                      {item.selectedColor ? ` / ${item.selectedColor}` : ""}
+                      {item.selectedSize ? ` / ${item.selectedSize}` : ""}
+                    </span>
                   </span>
                   <strong>{formatPrice(item.price * item.quantity)}</strong>
                 </div>
@@ -346,7 +350,7 @@ export function CheckoutPage({
 
   if (items.length === 0) {
     return (
-      <main className={`${styles.page} page-shell`}>
+      <main className={`${styles.page} ${styles.checkoutPage} page-shell`}>
         <section className="empty-card checkout-empty">
           <h2>No items to checkout</h2>
           <p>Add something to your cart first, then return here to enter delivery details.</p>
@@ -464,7 +468,7 @@ export function CheckoutPage({
   };
 
   return (
-    <main className={`${styles.page} page-shell`}>
+    <main className={`${styles.page} ${styles.checkoutPage} page-shell`}>
       <section className="page-intro checkout-intro">
         <span className="section-tag">Checkout</span>
         <h2>Delivery details</h2>
@@ -676,11 +680,15 @@ export function CheckoutPage({
           <span className="section-tag">Checkout Summary</span>
           <h3>{items.length} item(s)</h3>
           {items.map((item) => (
-            <div className="summary-row" key={item.cartKey}>
-              <span>
-                {item.name} x {item.quantity}
-                {item.selectedColor ? ` / ${item.selectedColor}` : ""}
-                {item.selectedSize ? ` / ${item.selectedSize}` : ""}
+            <div className="checkout-item-row" key={item.cartKey}>
+              <img className="checkout-item-image" src={item.image} alt={item.name} />
+              <span className="checkout-item-copy">
+                <strong>{item.name}</strong>
+                <span>
+                  Qty {item.quantity}
+                  {item.selectedColor ? ` / ${item.selectedColor}` : ""}
+                  {item.selectedSize ? ` / ${item.selectedSize}` : ""}
+                </span>
               </span>
               <strong>{formatPrice(item.price * item.quantity)}</strong>
             </div>

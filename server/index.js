@@ -1,20 +1,43 @@
 import cors from "cors";
 import crypto from "node:crypto";
 import express from "express";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import nodemailer from "nodemailer";
 import { createAdminToken, verifyAdminToken } from "./auth.js";
 import { readStore, updateStore } from "./data-store.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 8787);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.join(__dirname, "..");
+const publicDir = path.join(projectRoot, "public");
+const uploadsDir = path.join(publicDir, "uploads");
 
 app.use(cors());
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "12mb" }));
+app.use("/uploads", express.static(uploadsDir));
 
 const defaultPageContent = {
   bannerPrimary: "Hot Deals",
   bannerSecondary: "Premium picks only",
   bannerTertiary: "Auto-updating flash sale",
+  homeHeroImage: "/images/Herosection.png",
+  homeHeroImages: [
+    "/images/HeroSection/Hero1.png",
+    "/images/HeroSection/Hero2.png",
+    "/images/HeroSection/Hero3.png",
+  ],
+  brandIntroText:
+    "Vinex Nepal is built for everyday style, useful tech, and smart essentials that feel easy to choose and better to own. We bring clean, reliable products together with a shopping experience made for Nepal.",
+  collectionTitle: "Our Collection",
+  collectionProductIds: [1, 2],
+  flashProductIds: [1],
+  flashDescription:
+    "Limited-time Vinex picks with sharp pricing, clean utility, and fast local support.",
+  flashCta: "Quick Add",
+  shopNowImage: "/images/shopnow.png",
   heroPromos: [
     {
       title: "Hot Sellers",
@@ -63,6 +86,58 @@ const defaultPageContent = {
     "The storefront now focuses on a tighter, ad-driven experience with fast product discovery, visible discounts, and a hero area that keeps rotating between the airbuds and Apple Watch.",
 };
 
+const defaultAboutContent = {
+  heroMetaLeft: "Est. 2025",
+  heroMetaRight: "#About",
+  heroTitle:
+    "Vinex Nepal brings carefully picked gadgets, accessories, and daily essentials into one simple store, built for easy discovery, fair prices, and reliable local support.",
+  storyImages: [
+    "/images/About Us Images/1st image.png",
+    "/images/About Us Images/2nd image.png",
+    "/images/About Us Images/3rd image.png",
+  ],
+  teamMembers: [
+    {
+      name: "Grish Katwal",
+      titles: ["Founder", "CEO", "Managing Director"],
+      message:
+        "Building Vinex Nepal as a cleaner way to discover practical products, with a focus on trust, speed, and everyday value for local customers.",
+      imageLabel: "Grish Katwal",
+      imageSrc: "/images/Team Images/Grish Katwal.jpg",
+    },
+    {
+      name: "Himalaya Jung Katwal",
+      titles: ["Cofounder", "Executive Director"],
+      message:
+        "Shaping the operations behind Vinex Nepal so each order feels simple, responsive, and supported from product selection to delivery.",
+      imageLabel: "Himalaya Jung Katwal",
+      imageSrc: "/images/Team Images/Himalaya Katwal.jpg",
+    },
+  ],
+  storyHeadline:
+    'Vinex takes "Vin" from Vinayak, Lord Ganesh, and pairs it with "ex" for modern expression. Together, it reflects thoughtful, quick, and smarter shopping.',
+  storyParagraphs: [
+    "We started Vinex Nepal because finding useful, good-looking products should not feel scattered. Customers should be able to discover practical gadgets, accessories, and daily essentials without guessing where to buy, what to trust, or whether support will be available after checkout.",
+    "Our store is shaped around clarity: focused collections, fair pricing, simple ordering, and local communication that feels human. Vinex is not trying to make shopping louder. We are building a cleaner place to choose products that fit real routines.",
+    "Every product we highlight has to earn its space. It should be easy to understand, useful to own, and backed by a team that cares about the full experience from first look to final delivery.",
+    "That is the long-term idea behind Vinex Nepal: a modern ecommerce brand rooted in local trust, built carefully enough that customers can come back with confidence.",
+  ],
+  galleryLogo: "/images/brand/VinexLogo.png",
+  galleryText:
+    "Join our community for new drops, behind-the-scenes updates, and product stories made for everyday Nepal.",
+  galleryImages: [
+    "/images/Gallery Images/1st.png",
+    "/images/Gallery Images/2nd.png",
+    "/images/Gallery Images/3rd.png",
+    "/images/Gallery Images/4th.png",
+  ],
+  socialLinks: [
+    { label: "Instagram", url: "https://www.instagram.com/vinexnepal/" },
+    { label: "TikTok", url: "https://www.tiktok.com/@vinexnepal" },
+    { label: "Facebook", url: "https://www.facebook.com/" },
+  ],
+};
+
 const defaultOperations = {
   categories: ["Audio", "Wearables"],
   coupons: [],
@@ -86,6 +161,20 @@ const defaultOperations = {
   productPageTitle: "Shop all products",
   productPageText: "Browse every available product, filter by category, and open details before buying.",
   relatedProductsTitle: "Related products",
+  supportPageTag: "Help & Support",
+  supportPageTitle: "We are here to help",
+  supportPageText: "For order updates, product questions, or quick support, message us directly on your preferred platform.",
+  supportContactTitle: "Direct Contact",
+  supportContactText: "Reach Vinex Nepal on WhatsApp, Instagram, TikTok, or call us at",
+  supportPhone: "+977 9748285909",
+  supportWhatsappUrl: "https://wa.me/9779748285909",
+  supportInstagramUrl: "https://www.instagram.com/vinexnepal/",
+  supportInstagramLabel: "vinexnepal",
+  supportTiktokUrl: "https://www.tiktok.com/@vinexnepal",
+  supportTiktokLabel: "@vinexnepal",
+  supportHoursTag: "Support Hours",
+  supportHoursTitle: "Fast replies on social",
+  supportHoursText: "WhatsApp and Instagram are best for quick order questions.",
 };
 
 function buildSettings(store) {
@@ -97,6 +186,34 @@ function buildSettings(store) {
     pageContent: {
       ...defaultPageContent,
       ...(store.settings?.pageContent ?? {}),
+      collectionProductIds: Array.isArray(store.settings?.pageContent?.collectionProductIds)
+        ? store.settings.pageContent.collectionProductIds.map((productId) => Number(productId)).filter(Number.isFinite)
+        : defaultPageContent.collectionProductIds,
+      flashProductIds: Array.isArray(store.settings?.pageContent?.flashProductIds)
+        ? store.settings.pageContent.flashProductIds.map((productId) => Number(productId)).filter(Number.isFinite)
+        : defaultPageContent.flashProductIds,
+      homeHeroImages: Array.isArray(store.settings?.pageContent?.homeHeroImages)
+        ? store.settings.pageContent.homeHeroImages.filter((image) => typeof image === "string" && image.trim())
+        : defaultPageContent.homeHeroImages,
+    },
+    aboutContent: {
+      ...defaultAboutContent,
+      ...(store.settings?.aboutContent ?? {}),
+      storyImages: Array.isArray(store.settings?.aboutContent?.storyImages)
+        ? store.settings.aboutContent.storyImages
+        : defaultAboutContent.storyImages,
+      teamMembers: Array.isArray(store.settings?.aboutContent?.teamMembers)
+        ? store.settings.aboutContent.teamMembers
+        : defaultAboutContent.teamMembers,
+      storyParagraphs: Array.isArray(store.settings?.aboutContent?.storyParagraphs)
+        ? store.settings.aboutContent.storyParagraphs
+        : defaultAboutContent.storyParagraphs,
+      galleryImages: Array.isArray(store.settings?.aboutContent?.galleryImages)
+        ? store.settings.aboutContent.galleryImages
+        : defaultAboutContent.galleryImages,
+      socialLinks: Array.isArray(store.settings?.aboutContent?.socialLinks)
+        ? store.settings.aboutContent.socialLinks
+        : defaultAboutContent.socialLinks,
     },
     operations: {
       ...defaultOperations,
@@ -182,6 +299,28 @@ function validateProductInput(product) {
 
 function textValue(value, maxLength = 500) {
   return String(value ?? "").trim().slice(0, maxLength);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function sanitizeUploadFileName(fileName) {
+  const extension = path.extname(String(fileName ?? "")).toLowerCase();
+  const safeExtension = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"].includes(extension) ? extension : ".png";
+  const baseName = path
+    .basename(String(fileName ?? "image"), extension)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+
+  return `${baseName || "image"}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}${safeExtension}`;
 }
 
 function normalizeEmail(value) {
@@ -411,6 +550,69 @@ async function sendAdminOrderEmail(order, products = []) {
   });
 }
 
+function buildContactRequestEmail(message) {
+  const fullName = escapeHtml(`${message.firstName} ${message.lastName}`.trim());
+
+  return `
+    <div style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#111111;">
+      <div style="max-width:680px;margin:0 auto;background:#ffffff;border:1px solid #dedede;">
+        <div style="padding:24px 28px;background:#050505;color:#ffffff;">
+          <div style="font-size:26px;font-weight:900;line-height:1;">Vinex Nepal</div>
+          <div style="margin-top:8px;color:#d6d6d6;font-size:11px;letter-spacing:.24em;text-transform:uppercase;">New contact request</div>
+        </div>
+        <div style="padding:28px;">
+          <h1 style="margin:0 0 18px;font-size:24px;color:#050505;">${escapeHtml(message.requestType)}</h1>
+          <table style="width:100%;border-collapse:collapse;font-size:15px;line-height:1.55;">
+            <tr><td style="width:140px;padding:8px 0;color:#666;">Name</td><td style="padding:8px 0;color:#111;font-weight:700;">${fullName}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;">Title</td><td style="padding:8px 0;color:#111;">${escapeHtml(message.title || "N/A")}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;">Email</td><td style="padding:8px 0;color:#111;">${escapeHtml(message.email)}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;">Phone</td><td style="padding:8px 0;color:#111;">${escapeHtml(message.phone || "N/A")}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;">Language</td><td style="padding:8px 0;color:#111;">${escapeHtml(message.language)}</td></tr>
+          </table>
+          <div style="margin-top:20px;padding:18px;background:#f4f4f4;border:1px solid #dddddd;">
+            <strong style="display:block;margin-bottom:8px;color:#050505;">Message</strong>
+            <p style="margin:0;color:#111;white-space:pre-wrap;line-height:1.6;">${escapeHtml(message.message || "No message provided.")}</p>
+          </div>
+          <p style="margin:18px 0 0;color:#666;font-size:13px;">Submitted at ${new Date(message.createdAt).toLocaleString()}</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function sendContactRequestEmail(message) {
+  const transporter = getMailTransporter();
+  const to = process.env.CONTACT_REQUEST_EMAIL?.trim() || "katwalgrish@gmail.com";
+
+  if (!transporter || !to) {
+    if (!transporter) console.warn("Contact request email skipped: SMTP is not configured.");
+    return false;
+  }
+
+  const fullName = `${message.firstName} ${message.lastName}`.trim();
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM?.trim() || process.env.SMTP_USER?.trim(),
+    to,
+    replyTo: message.email,
+    subject: `New Vinex contact request from ${fullName}`,
+    html: buildContactRequestEmail(message),
+    text: [
+      "New Vinex contact request",
+      "",
+      `Type: ${message.requestType}`,
+      `Name: ${fullName}`,
+      `Title: ${message.title || "N/A"}`,
+      `Email: ${message.email}`,
+      `Phone: ${message.phone || "N/A"}`,
+      `Language: ${message.language}`,
+      "",
+      message.message || "No message provided.",
+    ].join("\n"),
+  });
+
+  return true;
+}
+
 function buildCustomerWelcomeEmail(customer) {
   const firstName = textValue(customer.name, 120).split(/\s+/)[0] || "there";
   const siteUrl = process.env.PUBLIC_SITE_URL?.trim() || "http://localhost:5173";
@@ -566,6 +768,7 @@ function buildDashboard(store) {
     recentOrders: [...normalizedOrders].reverse().slice(0, 8),
     products: productsWithStats,
     productRequests: [...(store.productRequests ?? [])].reverse(),
+    contactMessages: [...(store.contactMessages ?? [])].reverse(),
     liveChats: [...(store.liveChats ?? [])].reverse(),
     settings: buildSettings(store),
   };
@@ -807,6 +1010,58 @@ app.post("/api/product-requests", async (request, response) => {
   response.status(201).json({ ok: true, request: nextStore.productRequests.at(-1) });
 });
 
+app.post("/api/contact-messages", async (request, response) => {
+  const requestType = textValue(request.body?.requestType, 120);
+  const title = textValue(request.body?.title, 80);
+  const firstName = textValue(request.body?.firstName, 120);
+  const lastName = textValue(request.body?.lastName, 120);
+  const email = normalizeEmail(request.body?.email);
+  const phone = textValue(request.body?.phone, 80);
+  const language = textValue(request.body?.language, 80) || "English";
+  const message = textValue(request.body?.message, 1500);
+
+  if (!requestType || !title || !firstName || !lastName || !email || !language) {
+    response.status(400).json({ message: "Request type, title, name, email, and language are required." });
+    return;
+  }
+
+  const createdAt = new Date().toISOString();
+  const contactMessage = {
+    id: `contact-${Date.now()}`,
+    status: "new",
+    requestType,
+    title,
+    firstName,
+    lastName,
+    email,
+    phone,
+    language,
+    message,
+    createdAt,
+  };
+
+  const nextStore = await updateStore((store) => ({
+    ...store,
+    contactMessages: [
+      ...(store.contactMessages ?? []),
+      contactMessage,
+    ],
+  }));
+
+  let emailSent = false;
+  try {
+    emailSent = await sendContactRequestEmail(contactMessage);
+  } catch (error) {
+    console.error("Contact request email failed:", error);
+  }
+
+  response.status(201).json({
+    ok: true,
+    emailSent,
+    message: nextStore.contactMessages.at(-1),
+  });
+});
+
 app.post("/api/customers/register", async (request, response) => {
   const name = textValue(request.body?.name, 120);
   const email = normalizeEmail(request.body?.email);
@@ -1024,6 +1279,29 @@ app.get("/api/admin/dashboard", requireAdmin, async (_request, response) => {
   response.json(buildDashboard(store));
 });
 
+app.post("/api/admin/uploads", requireAdmin, async (request, response) => {
+  const dataUrl = textValue(request.body?.dataUrl, 10_000_000);
+  const fileName = textValue(request.body?.fileName, 180);
+  const match = dataUrl.match(/^data:(image\/(?:png|jpe?g|webp|gif|avif));base64,([a-z0-9+/=]+)$/i);
+
+  if (!match) {
+    response.status(400).json({ message: "Upload an image file in PNG, JPG, WEBP, GIF, or AVIF format." });
+    return;
+  }
+
+  const buffer = Buffer.from(match[2], "base64");
+  if (buffer.length === 0 || buffer.length > 8 * 1024 * 1024) {
+    response.status(400).json({ message: "Image must be smaller than 8MB." });
+    return;
+  }
+
+  await mkdir(uploadsDir, { recursive: true });
+  const safeFileName = sanitizeUploadFileName(fileName);
+  await writeFile(path.join(uploadsDir, safeFileName), buffer);
+
+  response.status(201).json({ url: `/uploads/${safeFileName}` });
+});
+
 app.patch("/api/admin/orders/:id/status", requireAdmin, async (request, response) => {
   const orderId = String(request.params.id ?? "").trim();
   const nextStatus = String(request.body?.status ?? "").trim();
@@ -1087,6 +1365,26 @@ app.patch("/api/admin/product-requests/:id/status", requireAdmin, async (request
             updatedAt: new Date().toISOString(),
           }
         : requestEntry,
+    ),
+  }));
+
+  response.json(buildDashboard(nextStore));
+});
+
+app.patch("/api/admin/contact-messages/:id/status", requireAdmin, async (request, response) => {
+  const messageId = textValue(request.params.id, 120);
+  const status = textValue(request.body?.status, 40) || "reviewed";
+
+  const nextStore = await updateStore((store) => ({
+    ...store,
+    contactMessages: (store.contactMessages ?? []).map((message) =>
+      message.id === messageId
+        ? {
+            ...message,
+            status,
+            updatedAt: new Date().toISOString(),
+          }
+        : message,
     ),
   }));
 
@@ -1195,6 +1493,33 @@ app.patch("/api/admin/settings/page-content", requireAdmin, async (request, resp
       continue;
     }
 
+    if (key === "collectionProductIds") {
+      nextPageContent.collectionProductIds = Array.isArray(request.body?.collectionProductIds)
+        ? request.body.collectionProductIds.map((productId) => Number(productId)).filter(Number.isFinite)
+        : [];
+      continue;
+    }
+
+    if (key === "flashProductIds") {
+      nextPageContent.flashProductIds = Array.isArray(request.body?.flashProductIds)
+        ? request.body.flashProductIds.map((productId) => Number(productId)).filter(Number.isFinite)
+        : [];
+      continue;
+    }
+
+    if (key === "homeHeroImages") {
+      nextPageContent.homeHeroImages = Array.isArray(request.body?.homeHeroImages)
+        ? request.body.homeHeroImages.map((image) => textValue(image, 500)).filter(Boolean)
+        : [];
+
+      if (nextPageContent.homeHeroImages.length < 3) {
+        response.status(400).json({ message: "Three hero carousel images are required." });
+        return;
+      }
+
+      continue;
+    }
+
     const value = String(request.body?.[key] ?? "").trim();
     if (!value) {
       response.status(400).json({ message: `Missing ${key}.` });
@@ -1208,6 +1533,78 @@ app.patch("/api/admin/settings/page-content", requireAdmin, async (request, resp
     settings: {
       ...store.settings,
       pageContent: nextPageContent,
+    },
+  }));
+
+  response.json(buildDashboard(nextStore));
+});
+
+app.patch("/api/admin/settings/about-content", requireAdmin, async (request, response) => {
+  const storyImages = Array.isArray(request.body?.storyImages)
+    ? request.body.storyImages.map((image) => textValue(image, 500)).filter(Boolean)
+    : [];
+  const storyParagraphs = Array.isArray(request.body?.storyParagraphs)
+    ? request.body.storyParagraphs.map((paragraph) => textValue(paragraph, 1200)).filter(Boolean)
+    : [];
+  const galleryImages = Array.isArray(request.body?.galleryImages)
+    ? request.body.galleryImages.map((image) => textValue(image, 500)).filter(Boolean)
+    : [];
+  const socialLinks = Array.isArray(request.body?.socialLinks)
+    ? request.body.socialLinks
+        .map((link) => ({
+          label: textValue(link?.label, 80),
+          url: textValue(link?.url, 500),
+        }))
+        .filter((link) => link.label && link.url)
+    : [];
+  const teamMembers = Array.isArray(request.body?.teamMembers)
+    ? request.body.teamMembers
+        .map((member) => ({
+          name: textValue(member?.name, 100),
+          titles: Array.isArray(member?.titles)
+            ? member.titles.map((title) => textValue(title, 80)).filter(Boolean)
+            : [],
+          message: textValue(member?.message, 900),
+          imageLabel: textValue(member?.imageLabel, 120),
+          imageSrc: textValue(member?.imageSrc, 500),
+        }))
+        .filter((member) => member.name && member.titles.length > 0 && member.message && member.imageLabel && member.imageSrc)
+    : [];
+
+  const nextAboutContent = {
+    heroMetaLeft: textValue(request.body?.heroMetaLeft, 80),
+    heroMetaRight: textValue(request.body?.heroMetaRight, 80),
+    heroTitle: textValue(request.body?.heroTitle, 600),
+    storyImages,
+    teamMembers,
+    storyHeadline: textValue(request.body?.storyHeadline, 700),
+    storyParagraphs,
+    galleryLogo: textValue(request.body?.galleryLogo, 500),
+    galleryText: textValue(request.body?.galleryText, 500),
+    galleryImages,
+    socialLinks,
+  };
+
+  if (!nextAboutContent.heroMetaLeft || !nextAboutContent.heroMetaRight || !nextAboutContent.heroTitle) {
+    response.status(400).json({ message: "About hero content is required." });
+    return;
+  }
+
+  if (storyImages.length < 3 || galleryImages.length < 4 || teamMembers.length < 2 || storyParagraphs.length < 1) {
+    response.status(400).json({ message: "About story images, team members, gallery images, and story paragraphs are required." });
+    return;
+  }
+
+  if (!nextAboutContent.storyHeadline || !nextAboutContent.galleryLogo || !nextAboutContent.galleryText || socialLinks.length < 1) {
+    response.status(400).json({ message: "About story and gallery content is required." });
+    return;
+  }
+
+  const nextStore = await updateStore((store) => ({
+    ...store,
+    settings: {
+      ...store.settings,
+      aboutContent: nextAboutContent,
     },
   }));
 
@@ -1276,6 +1673,20 @@ app.patch("/api/admin/settings/operations", requireAdmin, async (request, respon
         productPageTitle: stringSetting("productPageTitle", defaultOperations.productPageTitle),
         productPageText: stringSetting("productPageText", defaultOperations.productPageText, 260),
         relatedProductsTitle: stringSetting("relatedProductsTitle", defaultOperations.relatedProductsTitle),
+        supportPageTag: stringSetting("supportPageTag", defaultOperations.supportPageTag),
+        supportPageTitle: stringSetting("supportPageTitle", defaultOperations.supportPageTitle),
+        supportPageText: stringSetting("supportPageText", defaultOperations.supportPageText, 360),
+        supportContactTitle: stringSetting("supportContactTitle", defaultOperations.supportContactTitle),
+        supportContactText: stringSetting("supportContactText", defaultOperations.supportContactText, 360),
+        supportPhone: stringSetting("supportPhone", defaultOperations.supportPhone),
+        supportWhatsappUrl: stringSetting("supportWhatsappUrl", defaultOperations.supportWhatsappUrl, 500),
+        supportInstagramUrl: stringSetting("supportInstagramUrl", defaultOperations.supportInstagramUrl, 500),
+        supportInstagramLabel: stringSetting("supportInstagramLabel", defaultOperations.supportInstagramLabel),
+        supportTiktokUrl: stringSetting("supportTiktokUrl", defaultOperations.supportTiktokUrl, 500),
+        supportTiktokLabel: stringSetting("supportTiktokLabel", defaultOperations.supportTiktokLabel),
+        supportHoursTag: stringSetting("supportHoursTag", defaultOperations.supportHoursTag),
+        supportHoursTitle: stringSetting("supportHoursTitle", defaultOperations.supportHoursTitle),
+        supportHoursText: stringSetting("supportHoursText", defaultOperations.supportHoursText, 260),
       },
     },
   }));

@@ -1,124 +1,249 @@
+import { useState, type FormEvent } from "react";
+import type { StoreOperationSettings } from "../../lib/api";
+import { submitContactMessage } from "../../lib/api";
 import styles from "./SupportPage.module.scss";
 
-function SocialIcon({ platform }: { platform: "whatsapp" | "instagram" | "tiktok" }) {
-  if (platform === "whatsapp") {
+function ContactIcon({ type }: { type: "mail" | "whatsapp" | "phone" }) {
+  if (type === "mail") {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          fill="currentColor"
-          d="M12.04 2C6.52 2 2.04 6.37 2.04 11.77c0 1.72.46 3.4 1.33 4.88L2 22l5.58-1.45a10.2 10.2 0 0 0 4.46 1.02h.01c5.52 0 10-4.37 10-9.77C22.05 6.37 17.57 2 12.04 2Zm0 17.9a8.3 8.3 0 0 1-4.23-1.15l-.3-.18-3.31.86.89-3.17-.2-.32a7.92 7.92 0 0 1-1.23-4.14c0-4.43 3.74-8.04 8.36-8.04 4.6 0 8.35 3.6 8.35 8.03 0 4.44-3.74 8.05-8.33 8.05Zm4.58-5.98c-.25-.12-1.49-.72-1.72-.8-.23-.08-.4-.12-.57.12-.17.24-.66.8-.81.97-.15.16-.3.18-.55.06-.25-.12-1.06-.38-2.02-1.2-.74-.64-1.24-1.43-1.39-1.67-.14-.24-.01-.37.11-.49.11-.11.25-.29.38-.44.13-.14.17-.24.25-.4.08-.16.04-.3-.02-.42-.06-.12-.57-1.35-.78-1.84-.2-.48-.41-.41-.57-.42h-.48c-.17 0-.44.06-.67.3-.23.24-.88.85-.88 2.07 0 1.22.9 2.4 1.02 2.56.13.16 1.76 2.77 4.35 3.77.61.24 1.09.38 1.46.49.61.18 1.17.15 1.61.09.49-.07 1.49-.6 1.7-1.18.21-.58.21-1.08.15-1.18-.06-.1-.22-.16-.47-.28Z"
-        />
+        <path d="M4 6h16v12H4z" />
+        <path d="m4 7 8 6 8-6" />
       </svg>
     );
   }
 
-  if (platform === "instagram") {
+  if (type === "whatsapp") {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          fill="currentColor"
-          d="M7.5 2h9A5.5 5.5 0 0 1 22 7.5v9a5.5 5.5 0 0 1-5.5 5.5h-9A5.5 5.5 0 0 1 2 16.5v-9A5.5 5.5 0 0 1 7.5 2Zm0 1.8A3.7 3.7 0 0 0 3.8 7.5v9a3.7 3.7 0 0 0 3.7 3.7h9a3.7 3.7 0 0 0 3.7-3.7v-9a3.7 3.7 0 0 0-3.7-3.7h-9Zm9.65 1.35a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3ZM12 6.4A5.6 5.6 0 1 1 6.4 12 5.6 5.6 0 0 1 12 6.4Zm0 1.8A3.8 3.8 0 1 0 15.8 12 3.8 3.8 0 0 0 12 8.2Z"
-        />
+        <path d="M5.4 19.1 6.3 16A8 8 0 1 1 9 18.2l-3.6.9Z" />
+        <path d="M9.6 8.7c.2-.4.4-.4.7-.4h.5c.2 0 .4.1.5.4l.7 1.6c.1.3 0 .5-.1.6l-.4.5c-.1.1-.2.3-.1.5.4.8 1.3 1.7 2.2 2.1.2.1.3 0 .5-.1l.6-.7c.2-.2.4-.2.6-.1l1.7.8c.3.1.4.3.4.5 0 .5-.4 1.3-.9 1.5-.6.3-2 .2-3.8-.8-2-1.1-3.5-3-4-4.5-.5-1.4 0-2.4.4-2.6Z" />
       </svg>
     );
   }
 
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M14.58 3h2.71a4.94 4.94 0 0 0 1.47 3.24A4.98 4.98 0 0 0 22 7.71v2.76a7.72 7.72 0 0 1-4.67-1.51v6.13A6.09 6.09 0 1 1 11.24 9v2.86a3.23 3.23 0 1 0 3.34 3.23V3Z"
-      />
-      <path
-        fill="#25F4EE"
-        d="M13.5 3h1.08v12.02a4.31 4.31 0 0 1-4.52 4.25 4.25 4.25 0 0 1-1.98-.48 4.3 4.3 0 0 0 6.42-3.7V3Z"
-      />
-      <path
-        fill="#FE2C55"
-        d="M14.58 5.8A4.94 4.94 0 0 0 17.29 9a4.96 4.96 0 0 0 2.71.8V8.24a4.98 4.98 0 0 1-3.24-1.47A4.94 4.94 0 0 1 15.29 3h-.71v2.8Z"
-      />
+      <path d="M6.6 3.8 9 3.2l2 4.5-1.5 1.1c.9 1.9 2.4 3.4 4.4 4.3l1.1-1.5 4.5 2-.6 2.4c-.2.8-.9 1.4-1.8 1.4C10.8 17.4 5.2 11.8 5.2 5.5c0-.8.6-1.5 1.4-1.7Z" />
     </svg>
   );
 }
 
-export function SupportPage() {
+type SupportPageProps = {
+  storeOperations: StoreOperationSettings;
+};
+
+export function SupportPage({ storeOperations }: SupportPageProps) {
+  const [form, setForm] = useState({
+    requestType: "",
+    title: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    language: "English",
+    message: "",
+  });
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState<"success" | "error">("success");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const updateField = (field: keyof typeof form, value: string) => {
+    setForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setStatusMessage("");
+
+    try {
+      const result = await submitContactMessage(form);
+      setStatusType("success");
+      setStatusMessage(
+        result.emailSent
+          ? "Your request was sent successfully."
+          : "Your request was saved. Email delivery is not configured on the server yet.",
+      );
+      setForm({
+        requestType: "",
+        title: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        language: "English",
+        message: "",
+      });
+    } catch (error) {
+      setStatusType("error");
+      setStatusMessage(error instanceof Error ? error.message : "Unable to send your request right now.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <main className={`${styles.page} page-shell support-shell`}>
-      <section className="page-intro">
-        <span className="section-tag">Help &amp; Support</span>
-        <h2>We are here to help</h2>
-        <p>
-          For order updates, product questions, or quick support, message us directly on your
-          preferred platform.
-        </p>
+      <section className="contact-hero" aria-label="Contact page hero">
+        <h1>Contact Us</h1>
       </section>
 
-      <section className="support-page-grid">
-        <article className="success-panel">
-          <h3>Direct Contact</h3>
-          <p>
-            Reach Vinex Nepal on WhatsApp, Instagram, TikTok, or call us at
-            <strong> +977 9748285909</strong>.
-          </p>
+      <section className="contact-intro" aria-label="Contact introduction">
+        <h2>May we help you?</h2>
+        <p>Our Customer Care will be happy to assist you with your requests.</p>
+      </section>
 
-          <div className="contact-grid">
-            <a
-              className="contact-link whatsapp-link"
-              href="https://wa.me/9779748285909"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <span className="contact-logo"><SocialIcon platform="whatsapp" /></span>
-              <span className="contact-copy">
-                <strong>WhatsApp</strong>
-                <span>+977 9748285909</span>
-              </span>
-            </a>
-
-            <a
-              className="contact-link instagram-link"
-              href="https://www.instagram.com/vinexnepal/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <span className="contact-logo"><SocialIcon platform="instagram" /></span>
-              <span className="contact-copy">
-                <strong>Instagram</strong>
-                <span>vinexnepal</span>
-              </span>
-            </a>
-
-            <a
-              className="contact-link tiktok-link"
-              href="https://www.tiktok.com/@vinexnepal"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <span className="contact-logo"><SocialIcon platform="tiktok" /></span>
-              <span className="contact-copy">
-                <strong>TikTok</strong>
-                <span>@vinexnepal</span>
-              </span>
-            </a>
+      <section className="contact-layout" aria-label="Contact Vinex Nepal">
+        <form className="contact-request-form" onSubmit={handleSubmit}>
+          <div className="contact-section-heading">
+            <ContactIcon type="mail" />
+            <h2>Write us your request</h2>
           </div>
-        </article>
+          <p>We will reply to you as soon as possible.</p>
+          <p>Fields marked with an asterisk (*) are required.</p>
 
-        <aside className="success-summary">
-          <span className="section-tag">Support Hours</span>
-          <h3>Fast replies on social</h3>
-          <p>WhatsApp and Instagram are best for quick order questions.</p>
-          <div className="summary-row">
+          <label>
+            <span>Type of request*</span>
+            <select
+              value={form.requestType}
+              onChange={(event) => updateField("requestType", event.target.value)}
+              required
+            >
+              <option value="" disabled>Select...</option>
+              <option>Order support</option>
+              <option>Product question</option>
+              <option>Payment help</option>
+              <option>Delivery update</option>
+              <option>General enquiry</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Title*</span>
+            <select
+              value={form.title}
+              onChange={(event) => updateField("title", event.target.value)}
+              required
+            >
+              <option value="" disabled>Select...</option>
+              <option>Mr.</option>
+              <option>Ms.</option>
+              <option>Mrs.</option>
+              <option>Prefer not to say</option>
+            </select>
+          </label>
+
+          <label>
+            <span>First Name*</span>
+            <input type="text" value={form.firstName} onChange={(event) => updateField("firstName", event.target.value)} required />
+          </label>
+
+          <label>
+            <span>Last Name*</span>
+            <input type="text" value={form.lastName} onChange={(event) => updateField("lastName", event.target.value)} required />
+          </label>
+
+          <label>
+            <span>E-mail*</span>
+            <input type="email" value={form.email} onChange={(event) => updateField("email", event.target.value)} required />
+          </label>
+
+          <label>
             <span>Phone</span>
-            <strong>+977 9748285909</strong>
-          </div>
-          <div className="summary-row">
-            <span>Instagram</span>
-            <strong>vinexnepal</strong>
-          </div>
-          <div className="summary-row">
-            <span>TikTok</span>
-            <strong>@vinexnepal</strong>
-          </div>
+            <input type="tel" value={form.phone} onChange={(event) => updateField("phone", event.target.value)} />
+          </label>
+
+          <label>
+            <span>Language*</span>
+            <select value={form.language} onChange={(event) => updateField("language", event.target.value)} required>
+              <option>English</option>
+              <option>Nepali</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Message</span>
+            <textarea
+              value={form.message}
+              onChange={(event) => updateField("message", event.target.value)}
+              placeholder="Write your message here"
+            />
+          </label>
+
+          <small>
+            For more information, see our Privacy Policy. This site is protected by reCAPTCHA
+            and the Google Privacy Policy and Terms of Service apply.
+          </small>
+
+          {statusMessage ? (
+            <div className={`contact-form-status contact-form-status-${statusType}`} role="status">
+              {statusMessage}
+            </div>
+          ) : null}
+
+          <button type="submit" data-tooltip="Send your request by e-mail" disabled={isSubmitting}>
+            {isSubmitting ? "Sending..." : "Send us an e-mail"}
+          </button>
+        </form>
+
+        <aside className="contact-info-panel">
+          <article className="contact-info-block">
+            <div className="contact-section-heading">
+              <ContactIcon type="whatsapp" />
+              <h2>WhatsApp</h2>
+            </div>
+            <p>{storeOperations.supportHoursText}</p>
+            <a
+              href={storeOperations.supportWhatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              data-tooltip="Open WhatsApp chat"
+            >
+              Send us a message
+            </a>
+          </article>
+
+          <article className="contact-info-block">
+            <div className="contact-section-heading">
+              <ContactIcon type="phone" />
+              <h2>Telephone support</h2>
+            </div>
+            <p>
+              Our customer care team is available for order questions, product support, and
+              quick delivery updates during business hours.
+            </p>
+            <a
+              href={`tel:${storeOperations.supportPhone.replace(/\s/g, "")}`}
+              data-tooltip="Call Vinex Nepal"
+            >
+              <span>Call us</span>
+              {storeOperations.supportPhone}
+            </a>
+          </article>
+
+          <article className="contact-info-block contact-social-block">
+            <h2>Social support</h2>
+            <p>Message us on Instagram or TikTok for quick product questions.</p>
+            <div>
+              <a
+                href={storeOperations.supportInstagramUrl}
+                target="_blank"
+                rel="noreferrer"
+                data-tooltip={storeOperations.supportInstagramLabel}
+              >
+                Instagram
+              </a>
+              <a
+                href={storeOperations.supportTiktokUrl}
+                target="_blank"
+                rel="noreferrer"
+                data-tooltip={storeOperations.supportTiktokLabel}
+              >
+                TikTok
+              </a>
+            </div>
+          </article>
         </aside>
       </section>
     </main>

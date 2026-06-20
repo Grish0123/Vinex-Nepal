@@ -8,6 +8,15 @@ export type PageContentSettings = {
   bannerPrimary: string;
   bannerSecondary: string;
   bannerTertiary: string;
+  homeHeroImage: string;
+  homeHeroImages: string[];
+  brandIntroText: string;
+  collectionTitle: string;
+  collectionProductIds: number[];
+  flashProductIds: number[];
+  flashDescription: string;
+  flashCta: string;
+  shopNowImage: string;
   heroPromos: Array<{
     title: string;
     subtitle: string;
@@ -25,6 +34,29 @@ export type PageContentSettings = {
   sectionTag: string;
   sectionTitle: string;
   sectionText: string;
+};
+
+export type AboutContentSettings = {
+  heroMetaLeft: string;
+  heroMetaRight: string;
+  heroTitle: string;
+  storyImages: string[];
+  teamMembers: Array<{
+    name: string;
+    titles: string[];
+    message: string;
+    imageLabel: string;
+    imageSrc: string;
+  }>;
+  storyHeadline: string;
+  storyParagraphs: string[];
+  galleryLogo: string;
+  galleryText: string;
+  galleryImages: string[];
+  socialLinks: Array<{
+    label: string;
+    url: string;
+  }>;
 };
 
 export type StoreOperationSettings = {
@@ -54,6 +86,20 @@ export type StoreOperationSettings = {
   productPageTitle: string;
   productPageText: string;
   relatedProductsTitle: string;
+  supportPageTag: string;
+  supportPageTitle: string;
+  supportPageText: string;
+  supportContactTitle: string;
+  supportContactText: string;
+  supportPhone: string;
+  supportWhatsappUrl: string;
+  supportInstagramUrl: string;
+  supportInstagramLabel: string;
+  supportTiktokUrl: string;
+  supportTiktokLabel: string;
+  supportHoursTag: string;
+  supportHoursTitle: string;
+  supportHoursText: string;
 };
 
 export type OrderPayload = {
@@ -114,6 +160,32 @@ export type LiveChat = {
   messages: LiveChatMessage[];
   createdAt: string;
   updatedAt?: string;
+};
+
+export type ContactMessage = {
+  id: string;
+  status: string;
+  requestType: string;
+  title: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  language: string;
+  message?: string;
+  createdAt: string;
+  updatedAt?: string;
+};
+
+export type ContactMessagePayload = {
+  requestType: string;
+  title: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  language: string;
+  message: string;
 };
 
 export type TrackedOrder = {
@@ -198,6 +270,7 @@ export type AdminDashboard = {
   }>;
   products: Array<Product & { soldCount: number; interestCount: number }>;
   productRequests: ProductRequest[];
+  contactMessages?: ContactMessage[];
   liveChats: LiveChat[];
   settings: {
     flashSale: {
@@ -205,6 +278,7 @@ export type AdminDashboard = {
       endsAt: string | null;
     };
     pageContent: PageContentSettings;
+    aboutContent: AboutContentSettings;
     operations: StoreOperationSettings;
   };
 };
@@ -217,6 +291,7 @@ type ProductsResponse = {
       endsAt: string | null;
     };
     pageContent: PageContentSettings;
+    aboutContent: AboutContentSettings;
     operations: StoreOperationSettings;
   };
 };
@@ -231,11 +306,11 @@ export type CustomerAccount = {
 class ApiResponseError extends Error {}
 class ApiFormatError extends Error {}
 
-async function parseJsonResponse<T>(response: Response): Promise<T> {
+async function parseJsonResponse<T>(response: Response, formatErrorMessage?: string): Promise<T> {
   const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
 
   if (!contentType.includes("application/json")) {
-    throw new ApiFormatError("The server returned a page instead of account data. Please restart the dev server and try again.");
+    throw new ApiFormatError(formatErrorMessage ?? "The server returned a page instead of account data. Please restart the dev server and try again.");
   }
 
   const result = (await response.json()) as T & { message?: string };
@@ -403,6 +478,18 @@ export async function sendLiveChatMessage(chatId: string, message: string) {
   return parseJsonResponse<{ ok: true; chat: LiveChat }>(response);
 }
 
+export async function submitContactMessage(payload: ContactMessagePayload) {
+  const response = await fetch(`${apiBase}/contact-messages`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return parseJsonResponse<{ ok: true; emailSent: boolean; message: ContactMessage }>(response);
+}
+
 export async function trackOrder(orderNumber: string) {
   const response = await fetch(`${apiBase}/orders/track/${encodeURIComponent(orderNumber.trim())}`);
   return parseJsonResponse<{ order: TrackedOrder }>(response);
@@ -490,6 +577,16 @@ export async function updateProductRequestStatus(token: string, requestId: strin
   return parseJsonResponse<AdminDashboard>(response);
 }
 
+export async function updateContactMessageStatus(token: string, messageId: string, status: string) {
+  const response = await fetch(`${apiBase}/admin/contact-messages/${messageId}/status`, {
+    method: "PATCH",
+    headers: buildAdminHeaders(token),
+    body: JSON.stringify({ status }),
+  });
+
+  return parseJsonResponse<AdminDashboard>(response);
+}
+
 export async function replyToLiveChat(token: string, chatId: string, message: string) {
   const response = await fetch(`${apiBase}/admin/live-chats/${chatId}/reply`, {
     method: "POST",
@@ -526,6 +623,16 @@ export async function updatePageContentSettings(token: string, payload: PageCont
   return parseJsonResponse<AdminDashboard>(response);
 }
 
+export async function updateAboutContentSettings(token: string, payload: AboutContentSettings) {
+  const response = await fetch(`${apiBase}/admin/settings/about-content`, {
+    method: "PATCH",
+    headers: buildAdminHeaders(token),
+    body: JSON.stringify(payload),
+  });
+
+  return parseJsonResponse<AdminDashboard>(response);
+}
+
 export async function updateStoreOperationSettings(token: string, payload: StoreOperationSettings) {
   const response = await fetch(`${apiBase}/admin/settings/operations`, {
     method: "PATCH",
@@ -534,4 +641,17 @@ export async function updateStoreOperationSettings(token: string, payload: Store
   });
 
   return parseJsonResponse<AdminDashboard>(response);
+}
+
+export async function uploadAdminImage(token: string, payload: { fileName: string; dataUrl: string }) {
+  const response = await fetch(`${apiBase}/admin/uploads`, {
+    method: "POST",
+    headers: buildAdminHeaders(token),
+    body: JSON.stringify(payload),
+  });
+
+  return parseJsonResponse<{ url: string }>(
+    response,
+    "The image upload API is not available. Restart both the backend server and Vite dev server, then try uploading again.",
+  );
 }

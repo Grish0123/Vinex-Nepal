@@ -414,8 +414,28 @@
     grid-template-rows: 52vh 48vh;
   }
 
+  .memberImageSlot {
+    order: 1;
+  }
+
   .memberCopy {
+    order: 2;
+    grid-template-rows: auto auto auto;
+    align-content: start;
     padding: 24px 18px;
+  }
+
+  .memberTitlePills {
+    grid-row: 2;
+  }
+
+  .memberMessage {
+    grid-row: 3;
+  }
+
+  .memberCopy h2 {
+    grid-row: 1;
+    margin-bottom: 14px;
   }
 
   .storySection {
@@ -459,6 +479,10 @@
 }
 
 @media (max-width: 520px) {
+  .page {
+    scroll-snap-type: none;
+  }
+
   .hero h2 {
     font-size: clamp(2.2rem, 12vw, 3.8rem);
   }
@@ -491,19 +515,24 @@
   }
 
   .storySection {
-    padding: 14vh 14px 7vh;
+    height: auto;
+    min-height: 100vh;
+    padding: 12vh 14px 7vh;
+    scroll-snap-align: start;
   }
 
   .storyContent {
-    gap: 24px;
+    gap: 20px;
   }
 
   .storyContent h2 {
-    font-size: clamp(1.65rem, 9vw, 2.8rem);
+    font-size: clamp(1.55rem, 7.4vw, 2.15rem);
+    line-height: 0.96;
   }
 
   .storyColumns p {
     font-size: 0.78rem;
+    line-height: 1.28;
   }
 
   .galleryReveal {

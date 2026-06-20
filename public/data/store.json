@@ -9,6 +9,12 @@
       "bannerPrimary": "Hot Deal",
       "bannerSecondary": "Premium picks only",
       "bannerTertiary": "Auto-updating flash sale",
+      "homeHeroImage": "/images/Herosection.png",
+      "homeHeroImages": [
+        "/images/HeroSection/Hero1.png",
+        "/images/HeroSection/Hero2.png",
+        "/images/HeroSection/Hero3.png"
+      ],
       "heroPromos": [
         {
           "title": "Hot Sellers",

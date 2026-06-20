@@ -1,4 +1,4 @@
-import { useRef, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import type { PageContentSettings, StoreOperationSettings } from "../../lib/api";
 import type { Product } from "../../types/product";
@@ -16,23 +16,50 @@ type HomePageProps = {
   onOpenProduct: (productId: number) => void;
 };
 
-function HomeHeroImage() {
+function HomeHeroImage({ images }: { images: string[] }) {
+  const heroImages = images.filter(Boolean);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  useEffect(() => {
+    if (heroImages.length < 2) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setActiveImageIndex((currentIndex) => (currentIndex + 1) % heroImages.length);
+    }, 3500);
+
+    return () => window.clearInterval(intervalId);
+  }, [heroImages.length]);
+
+  useEffect(() => {
+    if (activeImageIndex >= heroImages.length) {
+      setActiveImageIndex(0);
+    }
+  }, [activeImageIndex, heroImages.length]);
+
   return (
     <section className={styles.heroImageSection} aria-label="Featured collection">
-      <img className={styles.heroImage} src="/images/Herosection.png" alt="" aria-hidden="true" />
+      {heroImages.map((image, index) => (
+        <img
+          className={`${styles.heroImage} ${index === activeImageIndex ? styles.heroImageActive : ""}`}
+          src={image}
+          alt=""
+          aria-hidden="true"
+          key={`${image}-${index}`}
+        />
+      ))}
     </section>
   );
 }
 
-function BrandIntroSection() {
+function BrandIntroSection({ text }: { text: string }) {
   return (
     <section className={styles.brandIntro} aria-label="About Vinex Nepal">
       <div className={styles.brandIntroLogo}>
         <img src="/images/brand/VinexLogo.png" alt="Vinex Nepal" />
       </div>
-      <p>
-        Vinex Nepal is built for everyday style, useful tech, and smart essentials that feel easy to choose and better to own. We bring clean, reliable products together with a shopping experience made for Nepal.
-      </p>
+      <p>{text}</p>
     </section>
   );
 }
@@ -48,47 +75,41 @@ const defaultFlashProduct: Product = {
   description: "Premium wireless audio with deep bass, all-day battery life, and a clean launch discount.",
 };
 
-function CollectionSection({ products, onBrowseProducts }: { products: Product[]; onBrowseProducts: () => void }) {
-  const airbudsProduct = products.find((product) => product.name.toLowerCase().includes("airbud")) ?? products[0];
-  const watchProduct = products.find((product) => product.name.toLowerCase().includes("watch")) ?? products[1];
-  const collectionProducts = [
-    {
-      title: airbudsProduct?.name ?? "Airbuds Pro 2",
-      price: airbudsProduct ? `Rs ${airbudsProduct.price.toLocaleString()}` : "Rs 4,499",
-      image: airbudsProduct?.image ?? "/images/products/airbuds-display.png",
-      hoverImage: airbudsProduct?.hoverImage,
-      productId: airbudsProduct?.id,
-      tone: "light",
-    },
-    {
-      title: watchProduct?.name ?? "Apple Watch Series 9",
-      price: watchProduct ? `Rs ${watchProduct.price.toLocaleString()}` : "Rs 4,499",
-      image: "/images/products/watch.png",
-      hoverImage: "/images/products/watch-hover.png",
-      productId: watchProduct?.id,
-      tone: "soft",
-    },
-    {
-      title: "Headphones",
-      price: "Coming Soon",
-      image: "/images/products/headphones.png",
-      hoverImage: "/images/products/headphones-hover.png",
-      productId: undefined,
-      tone: "soft",
-    },
-  ];
+function CollectionSection({
+  products,
+  collectionProductIds,
+  title,
+  onBrowseProducts,
+  onOpenProduct,
+}: {
+  products: Product[];
+  collectionProductIds: number[];
+  title: string;
+  onBrowseProducts: () => void;
+  onOpenProduct: (productId: number) => void;
+}) {
+  const selectedProducts = collectionProductIds
+    .map((productId) => products.find((product) => product.id === productId))
+    .filter((product): product is Product => Boolean(product));
+  const collectionProducts = selectedProducts.length > 0
+    ? selectedProducts
+    : products.filter((product) => product.featured).slice(0, 3);
+  const visibleCollectionProducts = collectionProducts.length > 0 ? collectionProducts : products.slice(0, 3);
 
   return (
     <section className={styles.collectionSection} aria-labelledby="home-collection-title">
       <h2 id="home-collection-title">
         <span aria-hidden="true">•</span>
-        Our Collection
+        {title}
       </h2>
       <div className={styles.collectionGrid}>
-        {collectionProducts.map((product) => {
+        {visibleCollectionProducts.map((product) => {
+          const discountPercentage = product.originalPrice && product.originalPrice > product.price
+            ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+            : 0;
           const content = (
             <>
-              <span className={`${styles.collectionImageWrap} ${product.tone === "soft" ? styles.collectionImageWrapSoft : ""}`}>
+              <span className={styles.collectionImageWrap}>
                 <img
                   className={`${styles.collectionImagePrimary} ${product.hoverImage ? styles.collectionImagePrimaryWithHover : ""}`}
                   src={product.image}
@@ -98,11 +119,15 @@ function CollectionSection({ products, onBrowseProducts }: { products: Product[]
                 {product.hoverImage ? (
                   <img className={styles.collectionImageHover} src={product.hoverImage} alt="" aria-hidden="true" />
                 ) : null}
+                {discountPercentage > 0 ? (
+                  <span className={styles.collectionDiscountBadge}>{discountPercentage}% OFF</span>
+                ) : null}
+                {product.inStock === false ? <span className={styles.collectionStockBadge}>Out of Stock</span> : null}
                 <span className={styles.collectionSelect}>Select</span>
               </span>
               <span className={styles.collectionMeta}>
-                <strong>{product.title}</strong>
-                <span>{product.price}</span>
+                <strong>{product.name}</strong>
+                <span>Rs {product.price.toLocaleString()}</span>
               </span>
             </>
           );
@@ -110,9 +135,11 @@ function CollectionSection({ products, onBrowseProducts }: { products: Product[]
           return (
             <button
               className={styles.collectionCard}
-              key={product.title}
+              key={product.id}
               type="button"
-              onClick={onBrowseProducts}
+              onClick={() => {
+                onOpenProduct(product.id);
+              }}
             >
               {content}
             </button>
@@ -123,92 +150,241 @@ function CollectionSection({ products, onBrowseProducts }: { products: Product[]
   );
 }
 
-function FlashSaleParallaxSection({
-  products,
+function resolveFlashProducts(products: Product[], flashProductIds: number[]) {
+  const selectedProducts = flashProductIds
+    .map((productId) => products.find((product) => product.id === productId))
+    .filter((product): product is Product => Boolean(product));
+  const discountedProducts = (products.length > 0 ? products : [defaultFlashProduct])
+    .filter((product) => product.originalPrice && product.originalPrice > product.price)
+    .slice(0, 3);
+
+  return selectedProducts.length > 0
+    ? selectedProducts
+    : discountedProducts.length > 0
+      ? discountedProducts
+      : (products.length > 0 ? products : [defaultFlashProduct]).slice(0, 3);
+}
+
+function FlashProductPanel({
+  product,
+  index,
+  productCount,
+  flashSaleSettings,
+  pageContent,
   onOpenProduct,
   y,
 }: {
-  products: Product[];
+  product: Product;
+  index: number;
+  productCount: number;
+  flashSaleSettings: HomePageProps["flashSaleSettings"];
+  pageContent: PageContentSettings;
   onOpenProduct: (productId: number) => void;
   y: MotionValue<string>;
 }) {
-  const flashProducts = (products.length > 0 ? products : [defaultFlashProduct])
-    .filter((product) => product.originalPrice && product.originalPrice > product.price)
-    .slice(0, 3);
-  const visibleFlashProducts = flashProducts.length > 0 ? flashProducts : (products.length > 0 ? products : [defaultFlashProduct]).slice(0, 3);
-  const featuredProduct = visibleFlashProducts[0] ?? defaultFlashProduct;
-  const discountPercentage = featuredProduct.originalPrice
-    ? Math.round(((featuredProduct.originalPrice - featuredProduct.price) / featuredProduct.originalPrice) * 100)
+  const [now, setNow] = useState(() => Date.now());
+  const endsAtTime = flashSaleSettings.endsAt ? new Date(flashSaleSettings.endsAt).getTime() : 0;
+  const remainingSeconds = Math.max(0, Math.floor((endsAtTime - now) / 1000));
+  const showCountdown = flashSaleSettings.enabled && remainingSeconds > 0;
+  const countdownParts = useMemo(
+    () => [
+      { label: "Days", value: Math.floor(remainingSeconds / 86400) },
+      { label: "Hours", value: Math.floor((remainingSeconds % 86400) / 3600) },
+      { label: "Min", value: Math.floor((remainingSeconds % 3600) / 60) },
+      { label: "Sec", value: remainingSeconds % 60 },
+    ],
+    [remainingSeconds],
+  );
+  const discountPercentage = product.originalPrice
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
   const featureAccentStyle = {
-    "--flash-image": `url(${featuredProduct.hoverImage ?? featuredProduct.image})`,
+    "--flash-image": `url(${product.hoverImage ?? product.image})`,
   } as CSSProperties;
 
+  useEffect(() => {
+    if (!flashSaleSettings.enabled || !flashSaleSettings.endsAt) {
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [flashSaleSettings.enabled, flashSaleSettings.endsAt]);
+
   return (
-    <motion.section className={styles.flashParallaxSection} style={{ ...featureAccentStyle, y }} aria-labelledby="flash-sale-title">
+    <motion.div
+      className={styles.flashPanelLayer}
+      style={{ y, zIndex: index + 1 }}
+      aria-label={`${product.name} flash sale panel`}
+    >
       <div className={styles.flashPanel} style={featureAccentStyle}>
         <div className={styles.flashCopy}>
-          <span className={styles.flashEyebrow}>Flash Sale</span>
-          <p className={styles.flashDescription}>
-            Limited-time Vinex picks with sharp pricing, clean utility, and fast local support.
-          </p>
+          <span className={styles.flashEyebrow}>{pageContent.flashTag}</span>
+          {!showCountdown && pageContent.flashInactiveText ? (
+            <p className={styles.flashDescription}>{pageContent.flashInactiveText}</p>
+          ) : null}
+          <p className={styles.flashDescription}>{pageContent.flashDescription}</p>
+          {showCountdown ? (
+            <div className={styles.flashCountdown} aria-label="Flash sale countdown">
+              {countdownParts.map((part) => (
+                <span key={part.label}>
+                  <strong>{String(part.value).padStart(2, "0")}</strong>
+                  <em>{part.label}</em>
+                </span>
+              ))}
+            </div>
+          ) : null}
           <div className={styles.flashTitleRow}>
-            <h2 id="flash-sale-title">{featuredProduct.name}</h2>
-            <strong>001</strong>
+            <h2 id={index === 0 ? "flash-sale-title" : undefined}>{product.name}</h2>
+            <strong>{String(index + 1).padStart(3, "0")}</strong>
           </div>
           <div className={styles.flashPriceRow}>
-            {featuredProduct.originalPrice ? <span>Rs {featuredProduct.originalPrice.toLocaleString()}</span> : null}
-            <strong>Rs {featuredProduct.price.toLocaleString()}</strong>
+            {product.originalPrice ? <span>Rs {product.originalPrice.toLocaleString()}</span> : null}
+            <strong>Rs {product.price.toLocaleString()}</strong>
             {discountPercentage > 0 ? <em>{discountPercentage}% off</em> : null}
           </div>
           <div className={styles.flashMiniProducts} aria-label="Flash sale product">
             <button
-              key={featuredProduct.id || featuredProduct.name}
+              key={product.id || product.name}
               type="button"
               onClick={() => {
-                if (featuredProduct.id) {
-                  onOpenProduct(featuredProduct.id);
+                if (product.id) {
+                  onOpenProduct(product.id);
                 }
               }}
             >
-              <img src={featuredProduct.hoverImage ?? featuredProduct.image} alt="" aria-hidden="true" />
-              <span>{featuredProduct.name}</span>
+              <img src={product.hoverImage ?? product.image} alt="" aria-hidden="true" />
+              <span>{productCount > 1 ? `${index + 1} / ${productCount}` : product.name}</span>
             </button>
           </div>
           <button
             className={styles.flashQuickAdd}
             type="button"
             onClick={() => {
-              if (featuredProduct.id) {
-                onOpenProduct(featuredProduct.id);
+              if (product.id) {
+                onOpenProduct(product.id);
               }
             }}
           >
-            Quick Add
+            {pageContent.flashCta}
           </button>
         </div>
         <button
           className={styles.flashImagePane}
           type="button"
           onClick={() => {
-            if (featuredProduct.id) {
-              onOpenProduct(featuredProduct.id);
+            if (product.id) {
+              onOpenProduct(product.id);
             }
           }}
         >
-          <img src={featuredProduct.hoverImage ?? featuredProduct.image} alt={featuredProduct.name} />
+          <img src={product.hoverImage ?? product.image} alt={product.name} />
         </button>
       </div>
+    </motion.div>
+  );
+}
+
+function FlashStackedProductPanel({
+  product,
+  index,
+  productCount,
+  scrollYProgress,
+  flashSaleSettings,
+  pageContent,
+  onOpenProduct,
+}: {
+  product: Product;
+  index: number;
+  productCount: number;
+  scrollYProgress: MotionValue<number>;
+  flashSaleSettings: HomePageProps["flashSaleSettings"];
+  pageContent: PageContentSettings;
+  onOpenProduct: (productId: number) => void;
+}) {
+  const stackedPanelCount = Math.max(1, productCount - 1);
+  const slideStart = 0.64;
+  const slideEnd = 0.94;
+  const slideSlot = (slideEnd - slideStart) / stackedPanelCount;
+  const start = index === 0 ? 0 : slideStart + (index - 1) * slideSlot;
+  const end = index === 0 ? 1 : start + slideSlot * 0.78;
+  const panelY = useTransform(scrollYProgress, [start, end], [index === 0 ? "0vh" : "100vh", "0vh"]);
+
+  return (
+    <FlashProductPanel
+      product={product}
+      index={index}
+      productCount={productCount}
+      flashSaleSettings={flashSaleSettings}
+      pageContent={pageContent}
+      onOpenProduct={onOpenProduct}
+      y={panelY}
+    />
+  );
+}
+
+function FlashSaleParallaxSection({
+  products,
+  flashSaleSettings,
+  pageContent,
+  onOpenProduct,
+  y,
+  scrollYProgress,
+}: {
+  products: Product[];
+  flashSaleSettings: HomePageProps["flashSaleSettings"];
+  pageContent: PageContentSettings;
+  onOpenProduct: (productId: number) => void;
+  y: MotionValue<string>;
+  scrollYProgress: MotionValue<number>;
+}) {
+  const visibleFlashProducts = resolveFlashProducts(products, pageContent.flashProductIds);
+  const featuredProduct = visibleFlashProducts[0] ?? defaultFlashProduct;
+  const staticPanelY = useTransform(scrollYProgress, [0, 1], ["0vh", "0vh"]);
+  const featureAccentStyle = {
+    "--flash-image": `url(${featuredProduct.hoverImage ?? featuredProduct.image})`,
+  } as CSSProperties;
+
+  return (
+    <motion.section className={styles.flashParallaxSection} style={{ ...featureAccentStyle, y }} aria-labelledby="flash-sale-title">
+      {visibleFlashProducts.length > 1 ? (
+        visibleFlashProducts.map((product, index) => (
+          <FlashStackedProductPanel
+            product={product}
+            index={index}
+            productCount={visibleFlashProducts.length}
+            scrollYProgress={scrollYProgress}
+            flashSaleSettings={flashSaleSettings}
+            pageContent={pageContent}
+            onOpenProduct={onOpenProduct}
+            key={product.id || `${product.name}-${index}`}
+          />
+        ))
+      ) : (
+        <FlashProductPanel
+          product={featuredProduct}
+          index={0}
+          productCount={1}
+          flashSaleSettings={flashSaleSettings}
+          pageContent={pageContent}
+          onOpenProduct={onOpenProduct}
+          y={staticPanelY}
+        />
+      )}
     </motion.section>
   );
 }
 
 function CollectionStackSection({
   products,
+  flashSaleSettings,
+  pageContent,
   onOpenProduct,
   onBrowseProducts,
 }: {
   products: Product[];
+  flashSaleSettings: HomePageProps["flashSaleSettings"];
+  pageContent: PageContentSettings;
   onOpenProduct: (productId: number) => void;
   onBrowseProducts: () => void;
 }) {
@@ -217,36 +393,69 @@ function CollectionStackSection({
     target: stackRef,
     offset: ["start start", "end end"],
   });
-  const flashY = useTransform(scrollYProgress, [0.18, 0.62], ["100vh", "0vh"]);
+  const flashProductCount = resolveFlashProducts(products, pageContent.flashProductIds).length;
+  const flashY = useTransform(scrollYProgress, [0.46, flashProductCount > 1 ? 0.6 : 0.88], ["100vh", "0vh"]);
+  const stackSceneStyle = {
+    "--stack-scene-height": `${Math.max(200, 180 + Math.max(0, flashProductCount - 1) * 80)}vh`,
+  } as CSSProperties;
 
   return (
-    <section ref={stackRef} className={styles.stackScene}>
+    <section ref={stackRef} className={styles.stackScene} style={stackSceneStyle}>
       <div className={styles.stackSticky}>
-        <CollectionSection products={products} onBrowseProducts={onBrowseProducts} />
-        <FlashSaleParallaxSection products={products} onOpenProduct={onOpenProduct} y={flashY} />
+        <CollectionSection
+          products={products}
+          collectionProductIds={pageContent.collectionProductIds}
+          title={pageContent.collectionTitle}
+          onBrowseProducts={onBrowseProducts}
+          onOpenProduct={onOpenProduct}
+        />
+        <FlashSaleParallaxSection
+          products={products}
+          flashSaleSettings={flashSaleSettings}
+          pageContent={pageContent}
+          onOpenProduct={onOpenProduct}
+          y={flashY}
+          scrollYProgress={scrollYProgress}
+        />
       </div>
     </section>
   );
 }
 
-function ShopNowImageSection({ onBrowseProducts }: { onBrowseProducts: () => void }) {
+function ShopNowImageSection({ image, buttonText, onBrowseProducts }: { image: string; buttonText: string; onBrowseProducts: () => void }) {
   return (
     <section className={styles.shopNowImageSection} aria-label="Shop Vinex Nepal">
-      <img className={styles.shopNowImage} src="/images/shopnow.png" alt="" aria-hidden="true" />
+      <img className={styles.shopNowImage} src={image} alt="" aria-hidden="true" />
       <button className={styles.shopNowButton} type="button" onClick={onBrowseProducts}>
-        Shop Now
+        {buttonText}
       </button>
     </section>
   );
 }
 
-export function HomePage({ products, onOpenProduct, onBrowseProducts }: HomePageProps) {
+export function HomePage({ products, flashSaleSettings, pageContent, storeOperations, onOpenProduct, onBrowseProducts }: HomePageProps) {
+  const heroImages = pageContent.homeHeroImages?.length ? pageContent.homeHeroImages : [pageContent.homeHeroImage];
+  const showCollectionStack =
+    storeOperations.showCategorySection ||
+    storeOperations.showBestProductsSection ||
+    storeOperations.showFeaturedSection ||
+    storeOperations.showBestSellersSection ||
+    storeOperations.showNewArrivalsSection;
+
   return (
     <main className={`${styles.page} page-shell homepage-shell`}>
-      <HomeHeroImage />
-      <BrandIntroSection />
-      <CollectionStackSection products={products} onOpenProduct={onOpenProduct} onBrowseProducts={onBrowseProducts} />
-      <ShopNowImageSection onBrowseProducts={onBrowseProducts} />
+      <HomeHeroImage images={heroImages} />
+      <BrandIntroSection text={pageContent.brandIntroText} />
+      {showCollectionStack ? (
+        <CollectionStackSection
+          products={products}
+          flashSaleSettings={flashSaleSettings}
+          pageContent={pageContent}
+          onOpenProduct={onOpenProduct}
+          onBrowseProducts={onBrowseProducts}
+        />
+      ) : null}
+      <ShopNowImageSection image={pageContent.shopNowImage} buttonText={pageContent.heroButton} onBrowseProducts={onBrowseProducts} />
     </main>
   );
 }

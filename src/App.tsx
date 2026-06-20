@@ -11,7 +11,7 @@ import { AdminPage } from "./pages/AdminPage/AdminPage";
 import { FooterSection } from "./components/FooterSection";
 import { LiveChatWidget } from "./components/LiveChatWidget";
 import { CustomerAccountModal } from "./components/CustomerAccountModal";
-import { fetchProducts, recordProductInterest, type CustomerAccount, type PageContentSettings, type StoreOperationSettings } from "./lib/api";
+import { fetchProducts, recordProductInterest, type AboutContentSettings, type CustomerAccount, type PageContentSettings, type StoreOperationSettings } from "./lib/api";
 import type { Product } from "./types/product";
 
 type Page = "home" | "about" | "products" | "cart" | "checkout" | "support" | "admin";
@@ -35,6 +35,20 @@ const defaultPageContent: PageContentSettings = {
   bannerPrimary: "Hot Deals",
   bannerSecondary: "Premium picks only",
   bannerTertiary: "Auto-updating flash sale",
+  homeHeroImage: "/images/Herosection.png",
+  homeHeroImages: [
+    "/images/HeroSection/Hero1.png",
+    "/images/HeroSection/Hero2.png",
+    "/images/HeroSection/Hero3.png",
+  ],
+  brandIntroText:
+    "Vinex Nepal is built for everyday style, useful tech, and smart essentials that feel easy to choose and better to own. We bring clean, reliable products together with a shopping experience made for Nepal.",
+  collectionTitle: "Our Collection",
+  collectionProductIds: [1, 2],
+  flashProductIds: [1],
+  flashDescription: "Limited-time Vinex picks with sharp pricing, clean utility, and fast local support.",
+  flashCta: "Quick Add",
+  shopNowImage: "/images/shopnow.png",
   heroPromos: [
     {
       title: "Hot Sellers",
@@ -82,6 +96,57 @@ const defaultPageContent: PageContentSettings = {
     "The storefront now focuses on a tighter, ad-driven experience with fast product discovery, visible discounts, and a hero area that keeps rotating between the airbuds and Apple Watch.",
 };
 
+const defaultAboutContent: AboutContentSettings = {
+  heroMetaLeft: "Est. 2025",
+  heroMetaRight: "#About",
+  heroTitle:
+    "Vinex Nepal brings carefully picked gadgets, accessories, and daily essentials into one simple store, built for easy discovery, fair prices, and reliable local support.",
+  storyImages: [
+    "/images/About Us Images/1st image.png",
+    "/images/About Us Images/2nd image.png",
+    "/images/About Us Images/3rd image.png",
+  ],
+  teamMembers: [
+    {
+      name: "Grish Katwal",
+      titles: ["Founder", "CEO", "Managing Director"],
+      message:
+        "Building Vinex Nepal as a cleaner way to discover practical products, with a focus on trust, speed, and everyday value for local customers.",
+      imageLabel: "Grish Katwal",
+      imageSrc: "/images/Team Images/Grish Katwal.jpg",
+    },
+    {
+      name: "Himalaya Jung Katwal",
+      titles: ["Cofounder", "Executive Director"],
+      message:
+        "Shaping the operations behind Vinex Nepal so each order feels simple, responsive, and supported from product selection to delivery.",
+      imageLabel: "Himalaya Jung Katwal",
+      imageSrc: "/images/Team Images/Himalaya Katwal.jpg",
+    },
+  ],
+  storyHeadline:
+    'Vinex takes "Vin" from Vinayak, Lord Ganesh, and pairs it with "ex" for modern expression. Together, it reflects thoughtful, quick, and smarter shopping.',
+  storyParagraphs: [
+    "We started Vinex Nepal because finding useful, good-looking products should not feel scattered. Customers should be able to discover practical gadgets, accessories, and daily essentials without guessing where to buy, what to trust, or whether support will be available after checkout.",
+    "Our store is shaped around clarity: focused collections, fair pricing, simple ordering, and local communication that feels human. Vinex is not trying to make shopping louder. We are building a cleaner place to choose products that fit real routines.",
+    "Every product we highlight has to earn its space. It should be easy to understand, useful to own, and backed by a team that cares about the full experience from first look to final delivery.",
+    "That is the long-term idea behind Vinex Nepal: a modern ecommerce brand rooted in local trust, built carefully enough that customers can come back with confidence.",
+  ],
+  galleryLogo: "/images/brand/VinexLogo.png",
+  galleryText: "Join our community for new drops, behind-the-scenes updates, and product stories made for everyday Nepal.",
+  galleryImages: [
+    "/images/Gallery Images/1st.png",
+    "/images/Gallery Images/2nd.png",
+    "/images/Gallery Images/3rd.png",
+    "/images/Gallery Images/4th.png",
+  ],
+  socialLinks: [
+    { label: "Instagram", url: "https://www.instagram.com/vinexnepal/" },
+    { label: "TikTok", url: "https://www.tiktok.com/@vinexnepal" },
+    { label: "Facebook", url: "https://www.facebook.com/" },
+  ],
+};
+
 const defaultStoreOperations: StoreOperationSettings = {
   categories: ["Audio", "Wearables"],
   coupons: [],
@@ -105,6 +170,20 @@ const defaultStoreOperations: StoreOperationSettings = {
   productPageTitle: "Shop all products",
   productPageText: "Browse every available product, filter by category, and open details before buying.",
   relatedProductsTitle: "Related products",
+  supportPageTag: "Help & Support",
+  supportPageTitle: "We are here to help",
+  supportPageText: "For order updates, product questions, or quick support, message us directly on your preferred platform.",
+  supportContactTitle: "Direct Contact",
+  supportContactText: "Reach Vinex Nepal on WhatsApp, Instagram, TikTok, or call us at",
+  supportPhone: "+977 9748285909",
+  supportWhatsappUrl: "https://wa.me/9779748285909",
+  supportInstagramUrl: "https://www.instagram.com/vinexnepal/",
+  supportInstagramLabel: "vinexnepal",
+  supportTiktokUrl: "https://www.tiktok.com/@vinexnepal",
+  supportTiktokLabel: "@vinexnepal",
+  supportHoursTag: "Support Hours",
+  supportHoursTitle: "Fast replies on social",
+  supportHoursText: "WhatsApp and Instagram are best for quick order questions.",
 };
 
 const customerSessionStorageKey = "vinex-customer-session";
@@ -226,6 +305,7 @@ function CartDrawer({
   onRemoveItem,
   onCheckout,
   onContinueShopping,
+  onViewCart,
 }: {
   isOpen: boolean;
   items: CartProduct[];
@@ -245,6 +325,7 @@ function CartDrawer({
   onRemoveItem: (cartKey: string) => void;
   onCheckout: () => void;
   onContinueShopping: () => void;
+  onViewCart: () => void;
 }) {
   const formatPrice = (price: number) => `Rs ${price.toLocaleString()}`;
   const submitCoupon = (event: FormEvent<HTMLFormElement>) => {
@@ -296,6 +377,9 @@ function CartDrawer({
                   </div>
                 </article>
               ))}
+              <button className="cart-drawer-view-all" type="button" onClick={onViewCart}>
+                View All
+              </button>
             </div>
 
             <div className="cart-drawer-footer">
@@ -381,6 +465,7 @@ function ProductShopWindow({
   const [selectedSize, setSelectedSize] = useState("");
   const [activeImage, setActiveImage] = useState("");
   const [isProductPanelOpen, setIsProductPanelOpen] = useState(false);
+  const [hasReturnedFromProduct, setHasReturnedFromProduct] = useState(false);
   const formatPrice = (price: number) => `Rs ${price.toLocaleString()}`;
   const categories = Array.from(new Set([...(storeOperations.categories ?? []), ...products.map((product) => product.category)].filter(Boolean)));
   const visibleProducts = products
@@ -406,7 +491,16 @@ function ProductShopWindow({
     size: selectedSize || selectedProductSizes[0],
   };
 
+  useEffect(() => {
+    document.body.classList.toggle("shop-product-detail-open", isProductPanelOpen);
+
+    return () => {
+      document.body.classList.remove("shop-product-detail-open");
+    };
+  }, [isProductPanelOpen]);
+
   const openProductPanel = (product: Product) => {
+    setHasReturnedFromProduct(false);
     setSelectedProductId(product.id);
     setSelectedColor(product.colorOptions?.[0] ?? "");
     setSelectedSize(product.sizeOptions?.[0] ?? "");
@@ -417,6 +511,7 @@ function ProductShopWindow({
   };
 
   const closeProductPanel = () => {
+    setHasReturnedFromProduct(true);
     setIsProductPanelOpen(false);
     window.setTimeout(() => {
       setSelectedProductId(null);
@@ -429,6 +524,7 @@ function ProductShopWindow({
     isPage ? "shop-window-page" : "",
     isOpen ? "open" : "",
     selectedProduct || isProductPanelOpen ? "product-open" : "",
+    hasReturnedFromProduct ? "product-returned" : "",
   ].filter(Boolean).join(" ");
 
   return (
@@ -487,6 +583,12 @@ function ProductShopWindow({
         </div>
 
         <div className="shop-window-grid">
+          {visibleProducts.length === 0 ? (
+            <div className="shop-window-empty">
+              <span>No products found</span>
+              <strong>Try another search or category.</strong>
+            </div>
+          ) : null}
           {visibleProducts.map((product) => {
             const discountPercent = product.originalPrice && product.originalPrice > product.price
               ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -613,12 +715,14 @@ function AboutPanel({
   onClose,
   onOpenShop,
   onOpenCart,
+  aboutContent,
 }: {
   isOpen: boolean;
   cartCount: number;
   onClose: () => void;
   onOpenShop: () => void;
   onOpenCart: () => void;
+  aboutContent: AboutContentSettings;
 }) {
   const [isAboutHeaderHidden, setIsAboutHeaderHidden] = useState(false);
 
@@ -647,7 +751,7 @@ function AboutPanel({
           onOpenCart={onOpenCart}
           onOpenAccount={() => undefined}
         />
-        <AboutPage onFooterVisibilityChange={setIsAboutHeaderHidden} />
+        <AboutPage aboutContent={aboutContent} onFooterVisibilityChange={setIsAboutHeaderHidden} />
       </div>
     </section>
   );
@@ -683,9 +787,14 @@ export default function App() {
     endsAt: null,
   });
   const [pageContent, setPageContent] = useState<PageContentSettings>(defaultPageContent);
+  const [aboutContent, setAboutContent] = useState<AboutContentSettings>(defaultAboutContent);
   const [storeOperations, setStoreOperations] = useState<StoreOperationSettings>(defaultStoreOperations);
   const [isPastHomeHero, setIsPastHomeHero] = useState(false);
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
+  const [isPreloaderVisible, setIsPreloaderVisible] = useState(true);
+  const [isPreloaderExiting, setIsPreloaderExiting] = useState(false);
+  const [preloaderProgress, setPreloaderProgress] = useState(0);
+  const [hasLoadedStorefront, setHasLoadedStorefront] = useState(false);
   const lastScrollY = useRef(0);
 
   useEffect(() => {
@@ -716,18 +825,53 @@ export default function App() {
             endsAt: null,
           },
         );
-        setPageContent(result.settings?.pageContent ?? defaultPageContent);
+        setPageContent({ ...defaultPageContent, ...(result.settings?.pageContent ?? {}) });
+        setAboutContent({ ...defaultAboutContent, ...(result.settings?.aboutContent ?? {}) });
         setStoreOperations({
           ...defaultStoreOperations,
           ...(result.settings?.operations ?? {}),
         });
       } catch (error) {
         console.error("Failed to load products:", error);
+      } finally {
+        setHasLoadedStorefront(true);
       }
     };
 
     void loadProducts();
   }, []);
+
+  useEffect(() => {
+    if (!isPreloaderVisible) {
+      return undefined;
+    }
+
+    const progressTimer = window.setInterval(() => {
+      setPreloaderProgress((current) => {
+        if (hasLoadedStorefront) {
+          return Math.min(100, current + Math.max(1, (100 - current) * 0.18));
+        }
+
+        return Math.min(94, current + Math.max(0.35, (94 - current) * 0.035));
+      });
+    }, 28);
+
+    return () => window.clearInterval(progressTimer);
+  }, [hasLoadedStorefront, isPreloaderVisible]);
+
+  useEffect(() => {
+    if (!isPreloaderVisible || preloaderProgress < 100) {
+      return undefined;
+    }
+
+    setIsPreloaderExiting(true);
+
+    const hideTimer = window.setTimeout(() => {
+      setIsPreloaderVisible(false);
+    }, 720);
+
+    return () => window.clearTimeout(hideTimer);
+  }, [isPreloaderVisible, preloaderProgress]);
 
   useEffect(() => {
     const updateHeaderState = () => {
@@ -736,8 +880,13 @@ export default function App() {
       const footerTop = footer ? footer.offsetTop : Number.POSITIVE_INFINITY;
       const footerIsReached = page === "home" && scrollY >= footerTop - 90;
       const isScrollingDown = scrollY > lastScrollY.current;
+      const contactHero = document.querySelector<HTMLElement>(".contact-hero");
+      const heroThreshold =
+        page === "support" && contactHero
+          ? contactHero.offsetTop + contactHero.offsetHeight - 80
+          : window.innerHeight - 72;
 
-      setIsPastHomeHero(scrollY >= window.innerHeight - 72);
+      setIsPastHomeHero(scrollY >= heroThreshold);
       setIsHeaderHidden(footerIsReached && isScrollingDown);
       lastScrollY.current = scrollY;
     };
@@ -984,24 +1133,53 @@ export default function App() {
   };
 
   return (
-    <div className={["app-shell", page === "home" ? "app-shell-home" : "", page === "about" ? "app-shell-about" : ""].filter(Boolean).join(" ")}>
+    <div
+      className={[
+        "app-shell",
+        page === "home" ? "app-shell-home" : "",
+        page === "about" ? "app-shell-about" : "",
+        page === "admin" ? "app-shell-admin" : "",
+      ].filter(Boolean).join(" ")}
+    >
       <div className="background-orb orb-left" />
       <div className="background-orb orb-right" />
 
-      <Header
-        currentPage={page}
-        cartCount={cartCount}
-        customerName={customerAccount?.name}
-        searchQuery={searchQuery}
-        isPastHero={isPastHomeHero}
-        isHidden={isHeaderHidden}
-        onSearchChange={setSearchQuery}
-        onNavigate={navigate}
-        onOpenAbout={openAboutPanel}
-        onOpenShop={openShopWindow}
-        onOpenCart={openCartDrawer}
-        onOpenAccount={() => setIsAccountModalOpen(true)}
-      />
+      {isPreloaderVisible ? (
+        <section
+          className={isPreloaderExiting ? "site-preloader exiting" : "site-preloader"}
+          aria-label="Loading Vinex Nepal"
+          aria-live="polite"
+        >
+          <div className="site-preloader-mark">
+            <img src="/images/brand/VinexLogo.png" alt="Vinex Nepal" />
+          </div>
+          <div className="site-preloader-progress" aria-hidden="true">
+            <span style={{ transform: `scaleX(${preloaderProgress / 100})` }} />
+          </div>
+          <strong>{Math.round(preloaderProgress)}%</strong>
+          <div className="site-preloader-copy">
+            <span>Welcome to the Vinex Nepal experience</span>
+            <small>Loading storefront</small>
+          </div>
+        </section>
+      ) : null}
+
+      {page !== "admin" ? (
+        <Header
+          currentPage={page}
+          cartCount={cartCount}
+          customerName={customerAccount?.name}
+          searchQuery={searchQuery}
+          isPastHero={isPastHomeHero}
+          isHidden={isHeaderHidden}
+          onSearchChange={setSearchQuery}
+          onNavigate={navigate}
+          onOpenAbout={openAboutPanel}
+          onOpenShop={openShopWindow}
+          onOpenCart={openCartDrawer}
+          onOpenAccount={() => setIsAccountModalOpen(true)}
+        />
+      ) : null}
       {page !== "admin" ? (
         <MobileBottomNav
           currentPage={page}
@@ -1024,7 +1202,7 @@ export default function App() {
           onOpenProduct={openProductFromHome}
         />
       ) : page === "about" ? (
-        <AboutPage onFooterVisibilityChange={setIsHeaderHidden} />
+        <AboutPage aboutContent={aboutContent} onFooterVisibilityChange={setIsHeaderHidden} />
       ) : page === "products" ? (
         <ProductShopWindow
           isOpen
@@ -1072,16 +1250,24 @@ export default function App() {
           onOrderPlaced={handleOrderPlaced}
         />
       ) : page === "support" ? (
-        <SupportPage />
+        <SupportPage storeOperations={storeOperations} />
       ) : (
-        <AdminPage />
+        <AdminPage
+          cartCount={cartCount}
+          onSearchChange={setSearchQuery}
+          onNavigate={navigate}
+          onOpenAbout={openAboutPanel}
+          onOpenShop={openShopWindow}
+          onOpenCart={openCartDrawer}
+        />
       )}
 
+      {page !== "admin" && page !== "about" && page !== "products" && page !== "cart" && page !== "checkout" ? (
+        <FooterSection showWelcome={page === "home"} showProductRequest={true} onNavigateSupport={() => navigate("support")} />
+      ) : null}
+
       {page !== "admin" && page !== "about" && page !== "products" ? (
-        <>
-          <FooterSection showWelcome={page === "home"} showProductRequest={true} onNavigateSupport={() => navigate("support")} />
-          <LiveChatWidget />
-        </>
+        <LiveChatWidget />
       ) : null}
 
       <CartDrawer
@@ -1106,6 +1292,7 @@ export default function App() {
         onRemoveItem={removeFromCart}
         onCheckout={() => navigate("checkout")}
         onContinueShopping={openShopWindow}
+        onViewCart={() => navigate("cart")}
       />
 
       <ProductShopWindow
@@ -1125,6 +1312,7 @@ export default function App() {
         onClose={() => setIsAboutPanelOpen(false)}
         onOpenShop={openShopWindow}
         onOpenCart={openCartDrawer}
+        aboutContent={aboutContent}
       />
 
       {cartToasts.length > 0 ? (

@@ -634,21 +634,8 @@ export function ProductPage({
               {product.inStock === false ? <span className="stock-ribbon">Out of Stock</span> : null}
             </button>
             <div className="product-content">
-              <div className="product-meta">
-                <span className="product-category">{product.category}</span>
-                {product.featured ? <span className="featured-pill">Hot Deal</span> : null}
-                {product.inStock === false ? <span className="featured-pill stock-pill">Out of Stock</span> : null}
-              </div>
               <h3>{product.name}</h3>
-              <p>{product.description}</p>
-              <div className="price-row">
-                {product.originalPrice ? (
-                  <span className="product-original-price">
-                    {formatPrice(product.originalPrice)}
-                  </span>
-                ) : null}
-                <span className="product-price">{formatPrice(product.price)}</span>
-              </div>
+              <span className="product-price">{formatPrice(product.price)}</span>
             </div>
           </article>
         ))}

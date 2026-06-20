@@ -17,6 +17,7 @@ type HeaderProps = {
 
 export function Header({ currentPage, cartCount, isPastHero = false, isHidden = false, onSearchChange, onNavigate, onOpenAbout, onOpenShop, onOpenCart }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeMenuPreview, setActiveMenuPreview] = useState("/images/Herosection.png");
 
   const openShop = () => {
     onSearchChange("");
@@ -57,7 +58,7 @@ export function Header({ currentPage, cartCount, isPastHero = false, isHidden = 
     openShop();
   };
 
-  const navigateFromMenu = (page: "home" | "support") => {
+  const navigateFromMenu = (page: "home" | "support" | "admin") => {
     closeMenu();
     onNavigate(page);
   };
@@ -69,11 +70,39 @@ export function Header({ currentPage, cartCount, isPastHero = false, isHidden = 
 
   const headerClassName = [
     "site-header",
-    currentPage === "home" ? "site-header-over-hero" : "",
-    currentPage === "home" && isPastHero ? "site-header-scrolled" : "",
+    currentPage === "home" || currentPage === "support" || currentPage === "admin" ? "site-header-over-hero" : "",
+    currentPage === "support" ? "site-header-contact" : "",
+    (currentPage === "home" || currentPage === "support") && isPastHero ? "site-header-scrolled" : "",
     isHidden ? "site-header-hidden" : "",
     isMenuOpen ? "site-header-menu-open" : "",
   ].filter(Boolean).join(" ");
+  const menuItems = [
+    {
+      label: "home",
+      preview: "/images/Herosection.png",
+      onClick: () => navigateFromMenu("home"),
+    },
+    {
+      label: "about",
+      preview: "/images/About Us Images/1st image.png",
+      onClick: openAbout,
+    },
+    {
+      label: "shop",
+      preview: "/images/shopnow.png",
+      onClick: openMenuShop,
+    },
+    {
+      label: "contact",
+      preview: "/images/Gallery Images/1st.png",
+      onClick: () => navigateFromMenu("support"),
+    },
+    {
+      label: "admin login",
+      preview: "/images/Login.png",
+      onClick: () => navigateFromMenu("admin"),
+    },
+  ];
 
   return (
     <>
@@ -124,20 +153,44 @@ export function Header({ currentPage, cartCount, isPastHero = false, isHidden = 
             X
           </button>
         </div>
-        <nav className="site-menu-links" aria-label="Menu navigation">
-          <button type="button" onClick={() => navigateFromMenu("home")}>
-            home
-          </button>
-          <button type="button" onClick={openAbout}>
-            about
-          </button>
-          <button type="button" onClick={openMenuShop}>
-            shop
-          </button>
-          <button type="button" onClick={() => navigateFromMenu("support")}>
-            contact
-          </button>
-        </nav>
+        <div className="site-menu-body">
+          <nav className="site-menu-links" aria-label="Menu navigation">
+            {menuItems.map((item) => (
+              <button
+                type="button"
+                onClick={item.onClick}
+                onFocus={() => setActiveMenuPreview(item.preview)}
+                onMouseEnter={() => setActiveMenuPreview(item.preview)}
+                key={item.label}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="site-menu-preview" aria-hidden="true">
+            <img src={activeMenuPreview} alt="" />
+          </div>
+        </div>
+
+        <footer className="site-menu-footer">
+          <div>
+            <span>Contact</span>
+            <a href="tel:+9779748285909">+977 9748285909</a>
+            <a href="mailto:katwalgrish@gmail.com">katwalgrish@gmail.com</a>
+          </div>
+          <nav aria-label="Social links">
+            <a href="https://www.instagram.com/vinexnepal/" target="_blank" rel="noreferrer">
+              Instagram
+            </a>
+            <a href="https://www.facebook.com/" target="_blank" rel="noreferrer">
+              Facebook
+            </a>
+            <a href="https://wa.me/9779748285909" target="_blank" rel="noreferrer">
+              WhatsApp
+            </a>
+          </nav>
+        </footer>
       </div>
       <button
         className={isMenuOpen ? "site-menu-scrim open" : "site-menu-scrim"}
