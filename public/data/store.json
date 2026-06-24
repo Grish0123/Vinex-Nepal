@@ -92,6 +92,7 @@
   },
   "products": [
     {
+      "supplierName": "Vinex Nepal",
       "id": 1,
       "name": "Airbuds Pro 2",
       "price": 4499,
@@ -115,6 +116,7 @@
       "description": "Premium wireless airbuds with deep bass, long battery life, and a sharp launch discount for fast movers."
     },
     {
+      "supplierName": "Vinex Nepal",
       "id": 2,
       "name": "Apple Watch Series 9",
       "price": 4499,

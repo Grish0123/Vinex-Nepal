@@ -3,6 +3,10 @@ export type Product = {
   name: string;
   price: number;
   category: string;
+  supplierName?: string;
+  supplierDescription?: string;
+  supplierLocation?: string;
+  supplierContact?: string;
   image: string;
   hoverImage?: string;
   galleryImages?: string[];

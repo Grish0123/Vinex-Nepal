@@ -181,6 +181,7 @@ const defaultStore = {
       originalPrice: 7000,
       featured: true,
       category: "Audio",
+      supplierName: "Vinex Nepal",
       image: "/images/products/airbuds-display.png",
       hoverImage: "/images/products/airbuds-hover.png",
       galleryImages: [
@@ -201,6 +202,7 @@ const defaultStore = {
       originalPrice: 7000,
       featured: true,
       category: "Wearables",
+      supplierName: "Vinex Nepal",
       image:
         "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=900&q=80",
       hoverImage: "/images/products/watch-hover.png",

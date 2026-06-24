@@ -23,8 +23,7 @@
         3
       ],
       "flashProductIds": [
-        1,
-        3
+        1
       ],
       "flashDescription": "Limited-time Vinex picks with sharp pricing, clean utility, and fast local support.",
       "flashCta": "Shop now",
@@ -128,7 +127,7 @@
           ],
           "message": "Building Vinex Nepal as a cleaner way to discover practical products, with a focus on trust, speed, and everyday value for local customers.",
           "imageLabel": "Grish Katwal",
-          "imageSrc": "/images/Team Images/Grish Katwal.jpg"
+          "imageSrc": "/uploads/grish-katwal-1782204484973-f841f3f8.png"
         },
         {
           "name": "Himalaya Jung Katwal",
@@ -138,7 +137,7 @@
           ],
           "message": "Shaping the operations behind Vinex Nepal so each order feels simple, responsive, and supported from product selection to delivery.",
           "imageLabel": "Himalaya Jung Katwal",
-          "imageSrc": "/images/Team Images/Himalaya Katwal.jpg"
+          "imageSrc": "/uploads/himalaya-katwal-1782116752275-6123c22d.jpg"
         }
       ],
       "storyHeadline": "Vinex takes \"Vin\" from Vinayak, Lord Ganesh, and pairs it with \"ex\" for modern expression. Together, it reflects thoughtful, quick, and smarter shopping.",
@@ -174,6 +173,7 @@
   },
   "products": [
     {
+      "supplierName": "Vinex Nepal",
       "id": 1,
       "name": "Airbuds Pro 2",
       "price": 4499,
@@ -197,6 +197,7 @@
       "description": "Premium wireless airbuds with deep bass, long battery life, and a sharp launch discount for fast movers."
     },
     {
+      "supplierName": "Vinex Nepal",
       "id": 2,
       "name": "Apple Watch Series 9",
       "price": 4499,
@@ -222,6 +223,7 @@
       "inStock": true
     },
     {
+      "supplierName": "Vinex Nepal",
       "id": 3,
       "name": "Headphones",
       "price": 5000,
@@ -950,12 +952,28 @@
       "soldCount": 11
     },
     "2": {
-      "interestCount": 32,
+      "interestCount": 36,
       "soldCount": 4
     },
     "3": {
       "interestCount": 1,
       "soldCount": 0
     }
-  }
+  },
+  "contactMessages": [
+    {
+      "id": "contact-1782037063144",
+      "status": "reviewed",
+      "requestType": "Order support",
+      "title": "Mr.",
+      "firstName": "Sans",
+      "lastName": "Kc",
+      "email": "sanskarkc51@gmail.com",
+      "phone": "9823098692",
+      "language": "English",
+      "message": "asdasd",
+      "createdAt": "2026-06-21T10:17:43.144Z",
+      "updatedAt": "2026-06-21T10:58:55.902Z"
+    }
+  ]
 }

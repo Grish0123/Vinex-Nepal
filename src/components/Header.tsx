@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 
 type HeaderProps = {
-  currentPage: "home" | "about" | "products" | "cart" | "checkout" | "support" | "admin";
+  currentPage: "home" | "about" | "products" | "cart" | "checkout" | "support" | "seller" | "admin";
   cartCount: number;
   customerName?: string;
   searchQuery: string;
   isPastHero?: boolean;
   isHidden?: boolean;
   onSearchChange: (query: string) => void;
-  onNavigate: (page: "home" | "about" | "products" | "cart" | "checkout" | "support" | "admin") => void;
+  onNavigate: (page: "home" | "about" | "products" | "cart" | "checkout" | "support" | "seller" | "admin") => void;
   onOpenAbout: () => void;
   onOpenShop: () => void;
   onOpenCart: () => void;
@@ -58,7 +58,7 @@ export function Header({ currentPage, cartCount, isPastHero = false, isHidden = 
     openShop();
   };
 
-  const navigateFromMenu = (page: "home" | "support" | "admin") => {
+  const navigateFromMenu = (page: "home" | "support" | "seller" | "admin") => {
     closeMenu();
     onNavigate(page);
   };
@@ -70,35 +70,40 @@ export function Header({ currentPage, cartCount, isPastHero = false, isHidden = 
 
   const headerClassName = [
     "site-header",
-    currentPage === "home" || currentPage === "support" || currentPage === "admin" ? "site-header-over-hero" : "",
-    currentPage === "support" ? "site-header-contact" : "",
-    (currentPage === "home" || currentPage === "support") && isPastHero ? "site-header-scrolled" : "",
+    currentPage === "home" || currentPage === "support" || currentPage === "seller" || currentPage === "admin" ? "site-header-over-hero" : "",
+    currentPage === "support" || currentPage === "seller" ? "site-header-contact" : "",
+    (currentPage === "home" || currentPage === "support" || currentPage === "seller") && isPastHero ? "site-header-scrolled" : "",
     isHidden ? "site-header-hidden" : "",
     isMenuOpen ? "site-header-menu-open" : "",
   ].filter(Boolean).join(" ");
   const menuItems = [
     {
-      label: "home",
+      label: "Home",
       preview: "/images/Herosection.png",
       onClick: () => navigateFromMenu("home"),
     },
     {
-      label: "about",
+      label: "About",
       preview: "/images/About Us Images/1st image.png",
       onClick: openAbout,
     },
     {
-      label: "shop",
+      label: "Shop",
       preview: "/images/shopnow.png",
       onClick: openMenuShop,
     },
     {
-      label: "contact",
+      label: "Contact",
       preview: "/images/Gallery Images/1st.png",
       onClick: () => navigateFromMenu("support"),
     },
     {
-      label: "admin login",
+      label: "Become a seller",
+      preview: "/images/shopnow.png",
+      onClick: () => navigateFromMenu("seller"),
+    },
+    {
+      label: "Admin login",
       preview: "/images/Login.png",
       onClick: () => navigateFromMenu("admin"),
     },

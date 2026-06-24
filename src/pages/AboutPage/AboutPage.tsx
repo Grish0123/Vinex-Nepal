@@ -1,5 +1,8 @@
 import { useEffect, useRef, type RefObject, type WheelEvent } from 'react';
-import { motion, useScroll, useSpring, useTransform, type MotionValue } from 'framer-motion';
+import { motion, useMotionTemplate, useScroll, useSpring, useTransform, type MotionValue } from 'framer-motion';
+import { FaFacebookF, FaInstagram, FaTiktok } from 'react-icons/fa6';
+import { FiAward, FiHeadphones, FiTag, FiTruck } from 'react-icons/fi';
+import type { IconType } from 'react-icons';
 import { FooterSection } from '../../components/FooterSection';
 import type { AboutContentSettings } from '../../lib/api';
 import styles from './AboutPage.module.scss';
@@ -13,6 +16,47 @@ type TeamMemberPanelProps = {
   imageSrc: string;
   y: MotionValue<number> | MotionValue<string>;
 };
+
+const heroReasons: Array<{
+  title: string;
+  text: string;
+  Icon: IconType;
+}> = [
+  {
+    title: 'Carefully Selected',
+    text: 'We handpick quality products you can rely on.',
+    Icon: FiAward,
+  },
+  {
+    title: 'Fair Prices',
+    text: 'Great value without compromising on quality.',
+    Icon: FiTag,
+  },
+  {
+    title: 'Fast & Reliable',
+    text: 'Quick delivery across Nepal, right to your door.',
+    Icon: FiTruck,
+  },
+  {
+    title: 'Local Support',
+    text: 'We are here to help, before and after purchase.',
+    Icon: FiHeadphones,
+  },
+];
+
+function getSocialIcon(label: string): IconType {
+  const normalizedLabel = label.toLowerCase();
+
+  if (normalizedLabel.includes('instagram')) {
+    return FaInstagram;
+  }
+
+  if (normalizedLabel.includes('tiktok') || normalizedLabel.includes('tik tok')) {
+    return FaTiktok;
+  }
+
+  return FaFacebookF;
+}
 
 function TeamMemberPanel({
   imageSide,
@@ -37,8 +81,8 @@ function TeamMemberPanel({
           <span key={title}>{title}</span>
         ))}
       </div>
-      <span className={styles.memberMessage}>{message}</span>
       <h2>{name}</h2>
+      <span className={styles.memberMessage}>{message}</span>
     </article>
   );
 
@@ -94,12 +138,16 @@ function ImageTeamStackSection({
     target: stackRef,
     offset: ['start start', 'end end'],
   });
-  const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
-  const ceoYRaw = useTransform(scrollYProgress, [0.1, 0.4], [vh, 0]);
-  const edYRaw = useTransform(scrollYProgress, [0.54, 0.9], ['100vh', '0vh']);
-  const springConfig = { stiffness: 260, damping: 32, mass: 0.4 };
-  const ceoY = useSpring(ceoYRaw, springConfig);
-  const edY = useSpring(edYRaw, springConfig);
+  const smoothScrollYProgress = useSpring(scrollYProgress, {
+    stiffness: 72,
+    damping: 24,
+    mass: 0.38,
+    restDelta: 0.0008,
+  });
+  const ceoYOffset = useTransform(smoothScrollYProgress, [0.08, 0.44, 0.56], [100, 0, 0]);
+  const edYOffset = useTransform(smoothScrollYProgress, [0.64, 0.88, 1], [100, 0, 0]);
+  const ceoY = useMotionTemplate`${ceoYOffset}vh`;
+  const edY = useMotionTemplate`${edYOffset}vh`;
 
   return (
     <section
@@ -207,11 +255,15 @@ function GalleryStackSection({
           <img src={aboutContent.galleryLogo} alt="Vinex Nepal" />
           <p>{aboutContent.galleryText}</p>
           <nav aria-label="Vinex Nepal social links">
-            {aboutContent.socialLinks.map((link) => (
-              <a href={link.url} target="_blank" rel="noreferrer" key={`${link.label}-${link.url}`}>
-                {link.label}
-              </a>
-            ))}
+            {aboutContent.socialLinks.map((link) => {
+              const SocialIcon = getSocialIcon(link.label);
+
+              return (
+                <a href={link.url} target="_blank" rel="noreferrer" aria-label={link.label} key={`${link.label}-${link.url}`}>
+                  <SocialIcon aria-hidden="true" focusable="false" />
+                </a>
+              );
+            })}
           </nav>
         </div>
         {galleryImages.map((image, index) => (
@@ -230,6 +282,7 @@ function GalleryStackSection({
 
 type AboutPageProps = {
   aboutContent: AboutContentSettings;
+  heroImages?: string[];
   onFooterVisibilityChange?: (isVisible: boolean) => void;
 };
 
@@ -276,13 +329,67 @@ export function AboutPage({ aboutContent, onFooterVisibilityChange }: AboutPageP
 
   return (
     <main ref={pageRef} className={styles.page} onWheel={snapFromHero}>
-      <section className={styles.hero} aria-labelledby="about-title">
-        <div className={styles.meta}>
+      <motion.section
+        className={styles.hero}
+        aria-labelledby="about-title"
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <motion.div
+          className={styles.heroReasons}
+          aria-labelledby="about-reasons-title"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.72, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <motion.div
+            className={styles.heroIntro}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.64, delay: 0.14, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <span>Why choose us</span>
+            <h1 id="about-reasons-title">
+              Built on <em>trust.</em>
+              <br />
+              Chosen for <em>quality.</em>
+            </h1>
+          </motion.div>
+          <div className={styles.reasonGrid}>
+            {heroReasons.map(({ title, text, Icon }, index) => (
+              <motion.article
+                className={styles.reasonItem}
+                key={title}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.58, delay: 0.24 + index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <Icon aria-hidden="true" focusable="false" />
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </motion.article>
+            ))}
+          </div>
+        </motion.div>
+        <motion.div
+          className={styles.meta}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.56, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
           <span>{aboutContent.heroMetaLeft}</span>
           <span>{aboutContent.heroMetaRight}</span>
-        </div>
-        <h2 id="about-title">{aboutContent.heroTitle}</h2>
-      </section>
+        </motion.div>
+        <motion.h2
+          id="about-title"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.68, delay: 0.56, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {aboutContent.heroTitle}
+        </motion.h2>
+      </motion.section>
 
       <ImageTeamStackSection containerRef={pageRef} aboutContent={aboutContent} />
       <StorySection aboutContent={aboutContent} />

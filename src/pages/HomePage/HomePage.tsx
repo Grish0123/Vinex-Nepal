@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { motion, useMotionTemplate, useScroll, useSpring, useTransform, type MotionValue } from "framer-motion";
 import type { PageContentSettings, StoreOperationSettings } from "../../lib/api";
 import type { Product } from "../../types/product";
 import styles from "./HomePage.module.scss";
@@ -53,13 +53,42 @@ function HomeHeroImage({ images }: { images: string[] }) {
   );
 }
 
+function DeliveryPartnerBadge({ side, onDismiss }: { side: "left" | "right"; onDismiss: () => void }) {
+  return (
+    <aside
+      className={`${styles.deliveryPartnerBadge} ${
+        side === "right" ? styles.deliveryPartnerBadgeRight : styles.deliveryPartnerBadgeLeft
+      }`}
+      aria-label="Our delivery partner: Nepal Can Move"
+    >
+      <button className={styles.deliveryPartnerClose} type="button" onClick={onDismiss} aria-label="Hide Nepal Can Move badge">
+        X
+      </button>
+      <div className={styles.deliveryPartnerInner}>
+        <div className={styles.deliveryPartnerLogoBox}>
+          <div className={styles.deliveryPartnerLogoMark} role="img" aria-label="Nepal Can Move" />
+        </div>
+      </div>
+    </aside>
+  );
+}
+
 function BrandIntroSection({ text }: { text: string }) {
   return (
     <section className={styles.brandIntro} aria-label="About Vinex Nepal">
       <div className={styles.brandIntroLogo}>
         <img src="/images/brand/VinexLogo.png" alt="Vinex Nepal" />
       </div>
-      <p>{text}</p>
+      <div className={styles.brandIntroCopy}>
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.6 }}
+          transition={{ duration: 0.68, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {text}
+        </motion.p>
+      </div>
     </section>
   );
 }
@@ -290,6 +319,8 @@ function FlashStackedProductPanel({
   index,
   productCount,
   scrollYProgress,
+  slideStart,
+  slideEnd,
   flashSaleSettings,
   pageContent,
   onOpenProduct,
@@ -298,17 +329,23 @@ function FlashStackedProductPanel({
   index: number;
   productCount: number;
   scrollYProgress: MotionValue<number>;
+  slideStart: number;
+  slideEnd: number;
   flashSaleSettings: HomePageProps["flashSaleSettings"];
   pageContent: PageContentSettings;
   onOpenProduct: (productId: number) => void;
 }) {
   const stackedPanelCount = Math.max(1, productCount - 1);
-  const slideStart = 0.64;
-  const slideEnd = 0.94;
   const slideSlot = (slideEnd - slideStart) / stackedPanelCount;
   const start = index === 0 ? 0 : slideStart + (index - 1) * slideSlot;
-  const end = index === 0 ? 1 : start + slideSlot * 0.78;
-  const panelY = useTransform(scrollYProgress, [start, end], [index === 0 ? "0vh" : "100vh", "0vh"]);
+  const settle = index === 0 ? 1 : start + slideSlot * 0.72;
+  const end = index === 0 ? 1 : start + slideSlot;
+  const panelYOffset = useTransform(
+    scrollYProgress,
+    [start, settle, end],
+    [index === 0 ? 0 : 100, 0, 0],
+  );
+  const panelY = useMotionTemplate`${panelYOffset}vh`;
 
   return (
     <FlashProductPanel
@@ -330,6 +367,8 @@ function FlashSaleParallaxSection({
   onOpenProduct,
   y,
   scrollYProgress,
+  slideStart,
+  slideEnd,
 }: {
   products: Product[];
   flashSaleSettings: HomePageProps["flashSaleSettings"];
@@ -337,6 +376,8 @@ function FlashSaleParallaxSection({
   onOpenProduct: (productId: number) => void;
   y: MotionValue<string>;
   scrollYProgress: MotionValue<number>;
+  slideStart: number;
+  slideEnd: number;
 }) {
   const visibleFlashProducts = resolveFlashProducts(products, pageContent.flashProductIds);
   const featuredProduct = visibleFlashProducts[0] ?? defaultFlashProduct;
@@ -354,6 +395,8 @@ function FlashSaleParallaxSection({
             index={index}
             productCount={visibleFlashProducts.length}
             scrollYProgress={scrollYProgress}
+            slideStart={slideStart}
+            slideEnd={slideEnd}
             flashSaleSettings={flashSaleSettings}
             pageContent={pageContent}
             onOpenProduct={onOpenProduct}
@@ -393,10 +436,27 @@ function CollectionStackSection({
     target: stackRef,
     offset: ["start start", "end end"],
   });
+  const smoothScrollYProgress = useSpring(scrollYProgress, {
+    stiffness: 72,
+    damping: 24,
+    mass: 0.38,
+    restDelta: 0.0008,
+  });
   const flashProductCount = resolveFlashProducts(products, pageContent.flashProductIds).length;
-  const flashY = useTransform(scrollYProgress, [0.46, flashProductCount > 1 ? 0.6 : 0.88], ["100vh", "0vh"]);
+  const stackSceneHeight = Math.max(300, 280 + Math.max(0, flashProductCount - 1) * 110);
+  const flashHoldStart = 1 - 100 / (stackSceneHeight - 100);
+  const flashStart = 0.18;
+  const flashSettle = flashProductCount > 1 ? Math.max(0.42, flashHoldStart - 0.28) : flashHoldStart;
+  const stackedPanelSlideStart = Math.max(flashSettle + 0.04, flashHoldStart - 0.28);
+  const stackedPanelSlideEnd = flashHoldStart;
+  const flashYOffset = useTransform(
+    smoothScrollYProgress,
+    [flashStart, flashSettle, 1],
+    [100, 0, 0],
+  );
+  const flashY = useMotionTemplate`${flashYOffset}vh`;
   const stackSceneStyle = {
-    "--stack-scene-height": `${Math.max(200, 180 + Math.max(0, flashProductCount - 1) * 80)}vh`,
+    "--stack-scene-height": `${stackSceneHeight}vh`,
   } as CSSProperties;
 
   return (
@@ -415,7 +475,9 @@ function CollectionStackSection({
           pageContent={pageContent}
           onOpenProduct={onOpenProduct}
           y={flashY}
-          scrollYProgress={scrollYProgress}
+          scrollYProgress={smoothScrollYProgress}
+          slideStart={stackedPanelSlideStart}
+          slideEnd={stackedPanelSlideEnd}
         />
       </div>
     </section>
@@ -424,17 +486,20 @@ function CollectionStackSection({
 
 function ShopNowImageSection({ image, buttonText, onBrowseProducts }: { image: string; buttonText: string; onBrowseProducts: () => void }) {
   return (
-    <section className={styles.shopNowImageSection} aria-label="Shop Vinex Nepal">
-      <img className={styles.shopNowImage} src={image} alt="" aria-hidden="true" />
-      <button className={styles.shopNowButton} type="button" onClick={onBrowseProducts}>
-        {buttonText}
-      </button>
+    <section className={styles.shopNowHoldSection} aria-label="Shop Vinex Nepal">
+      <div className={styles.shopNowImageSection}>
+        <img className={styles.shopNowImage} src={image} alt="" aria-hidden="true" />
+        <button className={styles.shopNowButton} type="button" onClick={onBrowseProducts}>
+          {buttonText}
+        </button>
+      </div>
     </section>
   );
 }
 
 export function HomePage({ products, flashSaleSettings, pageContent, storeOperations, onOpenProduct, onBrowseProducts }: HomePageProps) {
   const heroImages = pageContent.homeHeroImages?.length ? pageContent.homeHeroImages : [pageContent.homeHeroImage];
+  const [isDeliveryBadgeVisible, setIsDeliveryBadgeVisible] = useState(true);
   const showCollectionStack =
     storeOperations.showCategorySection ||
     storeOperations.showBestProductsSection ||
@@ -444,6 +509,7 @@ export function HomePage({ products, flashSaleSettings, pageContent, storeOperat
 
   return (
     <main className={`${styles.page} page-shell homepage-shell`}>
+      {isDeliveryBadgeVisible ? <DeliveryPartnerBadge side="left" onDismiss={() => setIsDeliveryBadgeVisible(false)} /> : null}
       <HomeHeroImage images={heroImages} />
       <BrandIntroSection text={pageContent.brandIntroText} />
       {showCollectionStack ? (

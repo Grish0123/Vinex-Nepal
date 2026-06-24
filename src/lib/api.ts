@@ -177,6 +177,19 @@ export type ContactMessage = {
   updatedAt?: string;
 };
 
+export type SellerApplication = {
+  id: string;
+  status: string;
+  businessName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  productCategory?: string;
+  message?: string;
+  createdAt: string;
+  updatedAt?: string;
+};
+
 export type ContactMessagePayload = {
   requestType: string;
   title: string;
@@ -185,6 +198,15 @@ export type ContactMessagePayload = {
   email: string;
   phone: string;
   language: string;
+  message: string;
+};
+
+export type SellerApplicationPayload = {
+  businessName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  productCategory: string;
   message: string;
 };
 
@@ -271,6 +293,7 @@ export type AdminDashboard = {
   products: Array<Product & { soldCount: number; interestCount: number }>;
   productRequests: ProductRequest[];
   contactMessages?: ContactMessage[];
+  sellerApplications?: SellerApplication[];
   liveChats: LiveChat[];
   settings: {
     flashSale: {
@@ -490,6 +513,18 @@ export async function submitContactMessage(payload: ContactMessagePayload) {
   return parseJsonResponse<{ ok: true; emailSent: boolean; message: ContactMessage }>(response);
 }
 
+export async function submitSellerApplication(payload: SellerApplicationPayload) {
+  const response = await fetch(`${apiBase}/seller-applications`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return parseJsonResponse<{ ok: true; emailSent: boolean; application: SellerApplication }>(response);
+}
+
 export async function trackOrder(orderNumber: string) {
   const response = await fetch(`${apiBase}/orders/track/${encodeURIComponent(orderNumber.trim())}`);
   return parseJsonResponse<{ order: TrackedOrder }>(response);
@@ -579,6 +614,16 @@ export async function updateProductRequestStatus(token: string, requestId: strin
 
 export async function updateContactMessageStatus(token: string, messageId: string, status: string) {
   const response = await fetch(`${apiBase}/admin/contact-messages/${messageId}/status`, {
+    method: "PATCH",
+    headers: buildAdminHeaders(token),
+    body: JSON.stringify({ status }),
+  });
+
+  return parseJsonResponse<AdminDashboard>(response);
+}
+
+export async function updateSellerApplicationStatus(token: string, applicationId: string, status: string) {
+  const response = await fetch(`${apiBase}/admin/seller-applications/${applicationId}/status`, {
     method: "PATCH",
     headers: buildAdminHeaders(token),
     body: JSON.stringify({ status }),

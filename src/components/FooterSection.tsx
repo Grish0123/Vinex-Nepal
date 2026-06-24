@@ -12,7 +12,7 @@ type ProductRequestForm = {
 type FooterSectionProps = {
   showWelcome: boolean;
   showProductRequest: boolean;
-  onNavigateSupport?: () => void;
+  onNavigate?: (page: "home" | "about" | "products" | "cart" | "checkout" | "support" | "seller" | "admin") => void;
 };
 
 type LegalPageKey = "privacy" | "returns" | "terms" | "contact";
@@ -243,7 +243,7 @@ function LegalPageModal({
   );
 }
 
-export function FooterSection({ showProductRequest, onNavigateSupport }: FooterSectionProps) {
+export function FooterSection({ showProductRequest, onNavigate }: FooterSectionProps) {
   const [form, setForm] = useState<ProductRequestForm>(initialForm);
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -344,9 +344,11 @@ export function FooterSection({ showProductRequest, onNavigateSupport }: FooterS
         <div className="footer-link-column">
           <h3>Site Index</h3>
           <div>
-            <a href="/shopnow">Shop Now</a>
-            <a href="/">Home</a>
-            <button type="button" onClick={onNavigateSupport}>Contact Us</button>
+            <button type="button" onClick={() => onNavigate?.("home")}>Home</button>
+            <button type="button" onClick={() => onNavigate?.("about")}>About</button>
+            <button type="button" onClick={() => onNavigate?.("products")}>Shop Now</button>
+            <button type="button" onClick={() => onNavigate?.("support")}>Contact Us</button>
+            <button type="button" onClick={() => onNavigate?.("seller")}>Become a seller</button>
           </div>
         </div>
         <div className="footer-link-column">
@@ -362,7 +364,7 @@ export function FooterSection({ showProductRequest, onNavigateSupport }: FooterS
           <div>
             <a href="mailto:katwalgrish@gmail.com">katwalgrish@gmail.com</a>
             <a href="tel:+9779748285909">+977 9748285909</a>
-            {onNavigateSupport ? <button type="button" onClick={onNavigateSupport}>Help &amp; Support</button> : null}
+            {onNavigate ? <button type="button" onClick={() => onNavigate("support")}>Help &amp; Support</button> : null}
           </div>
         </div>
         <div className="footer-link-column">

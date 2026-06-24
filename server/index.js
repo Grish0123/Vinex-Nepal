@@ -259,6 +259,10 @@ function sanitizeProduct(product) {
         : Number(product.originalPrice),
     featured: Boolean(product.featured),
     category: String(product.category).trim(),
+    supplierName: textValue(product.supplierName, 140) || "Vinex Nepal",
+    supplierDescription: textValue(product.supplierDescription, 700) || undefined,
+    supplierLocation: textValue(product.supplierLocation, 180) || undefined,
+    supplierContact: textValue(product.supplierContact, 180) || undefined,
     image: String(product.image).trim(),
     hoverImage: product.hoverImage ? String(product.hoverImage).trim() : undefined,
     galleryImages,
@@ -613,6 +617,64 @@ async function sendContactRequestEmail(message) {
   return true;
 }
 
+function buildSellerApplicationEmail(application) {
+  return `
+    <div style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#111111;">
+      <div style="max-width:680px;margin:0 auto;background:#ffffff;border:1px solid #dedede;">
+        <div style="padding:24px 28px;background:#050505;color:#ffffff;">
+          <div style="font-size:26px;font-weight:900;line-height:1;">Vinex Nepal</div>
+          <div style="margin-top:8px;color:#d6d6d6;font-size:11px;letter-spacing:.24em;text-transform:uppercase;">New seller application</div>
+        </div>
+        <div style="padding:28px;">
+          <h1 style="margin:0 0 18px;font-size:24px;color:#050505;">${escapeHtml(application.businessName)}</h1>
+          <table style="width:100%;border-collapse:collapse;font-size:15px;line-height:1.55;">
+            <tr><td style="width:150px;padding:8px 0;color:#666;">Contact Name</td><td style="padding:8px 0;color:#111;font-weight:700;">${escapeHtml(application.contactName)}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;">Email</td><td style="padding:8px 0;color:#111;">${escapeHtml(application.email)}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;">Phone</td><td style="padding:8px 0;color:#111;">${escapeHtml(application.phone)}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;">Category</td><td style="padding:8px 0;color:#111;">${escapeHtml(application.productCategory || "N/A")}</td></tr>
+          </table>
+          <div style="margin-top:20px;padding:18px;background:#f4f4f4;border:1px solid #dddddd;">
+            <strong style="display:block;margin-bottom:8px;color:#050505;">Message</strong>
+            <p style="margin:0;color:#111;white-space:pre-wrap;line-height:1.6;">${escapeHtml(application.message || "No message provided.")}</p>
+          </div>
+          <p style="margin:18px 0 0;color:#666;font-size:13px;">Submitted at ${new Date(application.createdAt).toLocaleString()}</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function sendSellerApplicationEmail(application) {
+  const transporter = getMailTransporter();
+  const to = process.env.SELLER_APPLICATION_EMAIL?.trim() || process.env.CONTACT_REQUEST_EMAIL?.trim() || "katwalgrish@gmail.com";
+
+  if (!transporter || !to) {
+    if (!transporter) console.warn("Seller application email skipped: SMTP is not configured.");
+    return false;
+  }
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM?.trim() || process.env.SMTP_USER?.trim(),
+    to,
+    replyTo: application.email,
+    subject: `New Vinex seller application from ${application.businessName}`,
+    html: buildSellerApplicationEmail(application),
+    text: [
+      "New Vinex seller application",
+      "",
+      `Business: ${application.businessName}`,
+      `Contact: ${application.contactName}`,
+      `Email: ${application.email}`,
+      `Phone: ${application.phone}`,
+      `Category: ${application.productCategory || "N/A"}`,
+      "",
+      application.message || "No message provided.",
+    ].join("\n"),
+  });
+
+  return true;
+}
+
 function buildCustomerWelcomeEmail(customer) {
   const firstName = textValue(customer.name, 120).split(/\s+/)[0] || "there";
   const siteUrl = process.env.PUBLIC_SITE_URL?.trim() || "http://localhost:5173";
@@ -769,6 +831,7 @@ function buildDashboard(store) {
     products: productsWithStats,
     productRequests: [...(store.productRequests ?? [])].reverse(),
     contactMessages: [...(store.contactMessages ?? [])].reverse(),
+    sellerApplications: [...(store.sellerApplications ?? [])].reverse(),
     liveChats: [...(store.liveChats ?? [])].reverse(),
     settings: buildSettings(store),
   };
@@ -1059,6 +1122,54 @@ app.post("/api/contact-messages", async (request, response) => {
     ok: true,
     emailSent,
     message: nextStore.contactMessages.at(-1),
+  });
+});
+
+app.post("/api/seller-applications", async (request, response) => {
+  const businessName = textValue(request.body?.businessName, 160);
+  const contactName = textValue(request.body?.contactName, 140);
+  const email = normalizeEmail(request.body?.email);
+  const phone = textValue(request.body?.phone, 80);
+  const productCategory = textValue(request.body?.productCategory, 160);
+  const message = textValue(request.body?.message, 1500);
+
+  if (!businessName || !contactName || !email || !phone) {
+    response.status(400).json({ message: "Business name, contact name, email, and phone are required." });
+    return;
+  }
+
+  const createdAt = new Date().toISOString();
+  const sellerApplication = {
+    id: `seller-${Date.now()}`,
+    status: "new",
+    businessName,
+    contactName,
+    email,
+    phone,
+    productCategory,
+    message,
+    createdAt,
+  };
+
+  const nextStore = await updateStore((store) => ({
+    ...store,
+    sellerApplications: [
+      ...(store.sellerApplications ?? []),
+      sellerApplication,
+    ],
+  }));
+
+  let emailSent = false;
+  try {
+    emailSent = await sendSellerApplicationEmail(sellerApplication);
+  } catch (error) {
+    console.error("Seller application email failed:", error);
+  }
+
+  response.status(201).json({
+    ok: true,
+    emailSent,
+    application: nextStore.sellerApplications.at(-1),
   });
 });
 
@@ -1385,6 +1496,26 @@ app.patch("/api/admin/contact-messages/:id/status", requireAdmin, async (request
             updatedAt: new Date().toISOString(),
           }
         : message,
+    ),
+  }));
+
+  response.json(buildDashboard(nextStore));
+});
+
+app.patch("/api/admin/seller-applications/:id/status", requireAdmin, async (request, response) => {
+  const applicationId = textValue(request.params.id, 120);
+  const status = textValue(request.body?.status, 40) || "reviewed";
+
+  const nextStore = await updateStore((store) => ({
+    ...store,
+    sellerApplications: (store.sellerApplications ?? []).map((application) =>
+      application.id === applicationId
+        ? {
+            ...application,
+            status,
+            updatedAt: new Date().toISOString(),
+          }
+        : application,
     ),
   }));
 

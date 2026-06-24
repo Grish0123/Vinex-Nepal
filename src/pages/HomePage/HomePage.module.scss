@@ -28,9 +28,98 @@
   opacity: 1;
 }
 
+.deliveryPartnerBadge {
+  position: fixed;
+  top: 35%;
+  z-index: 105;
+  display: grid;
+  width: 72px;
+  height: 210px;
+  border: 0;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(5, 5, 5, 0.12);
+  transform: translateY(-50%);
+  pointer-events: auto;
+  place-items: center;
+}
+
+.deliveryPartnerClose {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  z-index: 2;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgba(5, 5, 5, 0.1);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #050505;
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 8px 18px rgba(5, 5, 5, 0.22);
+  cursor: pointer;
+  place-items: center;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.deliveryPartnerClose:hover,
+.deliveryPartnerClose:focus-visible {
+  background: #050505;
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(5, 5, 5, 0.28);
+  transform: scale(1.04);
+}
+
+.deliveryPartnerBadgeLeft {
+  left: 0;
+}
+
+.deliveryPartnerBadgeRight {
+  right: 0;
+}
+
+.deliveryPartnerInner {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+}
+
+.deliveryPartnerBadgeRight {
+  display: none;
+}
+
+.deliveryPartnerLogoBox {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.deliveryPartnerLogoMark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 184px;
+  height: 46px;
+  background-image: url("/images/nepal can move.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  transform-origin: center;
+}
+
 .brandIntro {
   display: grid;
-  grid-template-columns: 190px minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(22px, 5vw, 72px);
   align-items: start;
   min-height: 0;
@@ -52,9 +141,16 @@
   object-fit: contain;
 }
 
-.brandIntro p {
+.brandIntroCopy {
+  display: grid;
+  gap: 28px;
   justify-self: end;
-  max-width: 850px;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+.brandIntroCopy p {
   margin: 0;
   color: #050505;
   font-size: 32px;
@@ -318,9 +414,7 @@ button.collectionCard {
 
 .flashCopy {
   position: relative;
-  display: grid;
-  grid-template-rows: auto 1fr auto auto;
-  align-content: end;
+  display: block;
   min-width: 0;
   padding: clamp(24px, 3vw, 56px) clamp(16px, 3vw, 42px);
   border-right: 1px solid rgba(17, 17, 17, 0.08);
@@ -329,16 +423,15 @@ button.collectionCard {
 .flashEyebrow {
   align-self: start;
   color: #111111;
-  font-size: 0.76rem;
+  font-size: clamp(1rem, 1.15vw, 1.25rem);
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .flashDescription {
-  align-self: end;
   max-width: 920px;
-  margin: 0 0 18px;
+  margin: clamp(92px, 15vh, 150px) 0 18px;
   color: #171717;
   font-size: clamp(0.78rem, 1.1vw, 1rem);
   font-weight: 400;
@@ -486,18 +579,27 @@ button.collectionCard {
   object-fit: cover;
 }
 
-.shopNowImageSection {
+.shopNowHoldSection {
   position: relative;
   left: 50%;
-  display: block;
   width: 100vw;
   width: 100dvw;
+  height: 165vh;
+  margin: 0;
+  background: #111111;
+  transform: translateX(-50%);
+}
+
+.shopNowImageSection {
+  position: sticky;
+  top: 0;
+  display: block;
+  width: 100%;
   height: 100vh;
   min-height: 100vh;
   margin: 0;
   overflow: hidden;
   background: #111111;
-  transform: translateX(-50%);
 }
 
 .shopNowImage {
@@ -543,6 +645,44 @@ button.collectionCard {
 }
 
 @media (max-width: 640px) {
+  .deliveryPartnerBadge {
+    top: auto;
+    bottom: 12px;
+    left: 10px;
+    right: auto;
+    width: 128px;
+    height: 38px;
+    padding: 0;
+    transform: none;
+  }
+
+  .deliveryPartnerClose {
+    top: -10px;
+    right: -10px;
+  }
+
+  .deliveryPartnerBadgeRight {
+    display: none;
+  }
+
+  .deliveryPartnerInner {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+  }
+
+  .deliveryPartnerLogoBox {
+    width: 100%;
+    height: 100%;
+  }
+
+  .deliveryPartnerLogoMark {
+    width: 112px;
+    height: 28px;
+    transform: translate(-50%, -50%);
+  }
+
   .heroImageSection {
     min-height: 50vh;
     min-height: 50dvh;
@@ -569,9 +709,14 @@ button.collectionCard {
   }
 
   .brandIntro p {
-    justify-self: stretch;
     font-size: clamp(1.55rem, 7.4vw, 2rem);
     line-height: 1.03;
+  }
+
+  .brandIntroCopy {
+    gap: 18px;
+    justify-self: stretch;
+    max-width: none;
   }
 
   .collectionSection {
@@ -676,7 +821,7 @@ button.collectionCard {
   }
 
   .flashDescription {
-    margin-bottom: 10px;
+    margin: 0 0 10px;
     font-size: 0.68rem;
   }
 

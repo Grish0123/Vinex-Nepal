@@ -43,6 +43,7 @@ export function ProductPage({
   const [touchPreviewProductId, setTouchPreviewProductId] = useState<number | null>(null);
   const [focusedProductId, setFocusedProductId] = useState<number | null>(null);
   const [imageZoom, setImageZoom] = useState(1);
+  const [isSupplierDetailsOpen, setIsSupplierDetailsOpen] = useState(false);
   const galleryDragStartX = useRef<number | null>(null);
   const productCardRefs = useRef<Record<number, HTMLElement | null>>({});
   const formatPrice = (price: number) => `Rs ${price.toLocaleString()}`;
@@ -70,6 +71,15 @@ export function ProductPage({
         .filter((product) => product.id !== selectedProduct.id && product.category === selectedProduct.category)
         .slice(0, 3)
     : [];
+  const supplierDetails = selectedProduct
+    ? {
+        description:
+          selectedProduct.supplierDescription ||
+          "Vinex Nepal curates practical, quality-checked products with local order support.",
+        location: selectedProduct.supplierLocation || "Kathmandu, Nepal",
+        contact: selectedProduct.supplierContact || "+977 9748285909",
+      }
+    : null;
   const activeViewerImage =
     selectedProduct && imageViewerIndex !== null
       ? selectedProductImages[imageViewerIndex] ?? selectedProduct.image
@@ -84,6 +94,7 @@ export function ProductPage({
     setSelectedSize(selectedProduct.sizeOptions?.[0] ?? "");
     setImageViewerIndex(null);
     setImageZoom(1);
+    setIsSupplierDetailsOpen(false);
   }, [selectedProduct?.id]);
 
   useEffect(() => {
@@ -198,6 +209,7 @@ export function ProductPage({
     setSelectedProductId(null);
     setImageViewerIndex(null);
     setImageZoom(1);
+    setIsSupplierDetailsOpen(false);
   };
 
   const handleDetailAddToCart = (productId: number, selection: ProductSelection = {}) => {
@@ -441,6 +453,39 @@ export function ProductPage({
                       : "Add to Cart"}
                 </button>
               </div>
+              <div className="product-detail-supplier" aria-label={`Supplier: ${selectedProduct.supplierName ?? "Vinex Nepal"}`}>
+                <span>Supplier</span>
+                <strong>{selectedProduct.supplierName ?? "Vinex Nepal"}</strong>
+                {supplierDetails ? (
+                  <>
+                    <button
+                      className="supplier-detail-toggle"
+                      type="button"
+                      onClick={() => setIsSupplierDetailsOpen((current) => !current)}
+                      aria-expanded={isSupplierDetailsOpen}
+                    >
+                      {isSupplierDetailsOpen ? "Hide details" : "View details"}
+                    </button>
+                    {isSupplierDetailsOpen ? (
+                      <div className="supplier-detail-panel">
+                        {supplierDetails.description ? <p>{supplierDetails.description}</p> : null}
+                        {supplierDetails.location ? (
+                          <div>
+                            <span>Location</span>
+                            <strong>{supplierDetails.location}</strong>
+                          </div>
+                        ) : null}
+                        {supplierDetails.contact ? (
+                          <div>
+                            <span>Contact</span>
+                            <strong>{supplierDetails.contact}</strong>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </>
+                ) : null}
+              </div>
               {storeOperations.showRelatedProducts && relatedProducts.length > 0 ? (
                 <div className="related-products">
                   <h3>{storeOperations.relatedProductsTitle}</h3>
@@ -587,11 +632,11 @@ export function ProductPage({
         </section>
       ) : null}
 
-      <section className="product-grid" aria-label="All products">
+      <section className="product-grid product-catalog-grid" aria-label="All products">
         {visibleProducts.map((product) => (
           <article
             className={[
-              product.featured ? "product-card featured-card" : "product-card",
+              product.featured ? "product-card product-catalog-card featured-card" : "product-card product-catalog-card",
               touchPreviewProductId === product.id ? "touch-preview-active" : "",
               focusedProductId === product.id ? "product-card-focused" : "",
             ].filter(Boolean).join(" ")}

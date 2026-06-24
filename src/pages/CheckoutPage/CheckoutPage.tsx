@@ -676,44 +676,51 @@ export function CheckoutPage({
           </div>
         </form>
 
-        <aside className="cart-summary">
-          <span className="section-tag">Checkout Summary</span>
-          <h3>{items.length} item(s)</h3>
-          {items.map((item) => (
-            <div className="checkout-item-row" key={item.cartKey}>
-              <img className="checkout-item-image" src={item.image} alt={item.name} />
-              <span className="checkout-item-copy">
-                <strong>{item.name}</strong>
-                <span>
-                  Qty {item.quantity}
-                  {item.selectedColor ? ` / ${item.selectedColor}` : ""}
-                  {item.selectedSize ? ` / ${item.selectedSize}` : ""}
+        <aside className="checkout-sidebar">
+          <div className="cart-summary">
+            <span className="section-tag">Checkout Summary</span>
+            <h3>{items.length} item(s)</h3>
+            {items.map((item) => (
+              <div className="checkout-item-row" key={item.cartKey}>
+                <img className="checkout-item-image" src={item.image} alt={item.name} />
+                <span className="checkout-item-copy">
+                  <strong>{item.name}</strong>
+                  <span>
+                    Qty {item.quantity}
+                    {item.selectedColor ? ` / ${item.selectedColor}` : ""}
+                    {item.selectedSize ? ` / ${item.selectedSize}` : ""}
+                  </span>
                 </span>
-              </span>
-              <strong>{formatPrice(item.price * item.quantity)}</strong>
+                <strong>{formatPrice(item.price * item.quantity)}</strong>
+              </div>
+            ))}
+            <div className="summary-row total-row">
+              <span>Subtotal</span>
+              <strong>{formatPrice(subtotal)}</strong>
             </div>
-          ))}
-          <div className="summary-row total-row">
-            <span>Subtotal</span>
-            <strong>{formatPrice(subtotal)}</strong>
-          </div>
-          {discount > 0 ? (
+            {discount > 0 ? (
+              <div className="summary-row">
+                <span>Discount{couponCode ? ` (${couponCode})` : ""}</span>
+                <strong>-{formatPrice(discount)}</strong>
+              </div>
+            ) : null}
             <div className="summary-row">
-              <span>Discount{couponCode ? ` (${couponCode})` : ""}</span>
-              <strong>-{formatPrice(discount)}</strong>
+              <span>Delivery</span>
+              <strong>{formatPrice(deliveryCharge)}</strong>
             </div>
-          ) : null}
-          <div className="summary-row">
-            <span>Delivery</span>
-            <strong>{formatPrice(deliveryCharge)}</strong>
+            <div className="summary-row total-row">
+              <span>Total</span>
+              <strong>{formatPrice(orderTotal)}</strong>
+            </div>
+            <div className="summary-row">
+              <span>Payment</span>
+              <strong>{paymentMethod}</strong>
+            </div>
           </div>
-          <div className="summary-row total-row">
-            <span>Total</span>
-            <strong>{formatPrice(orderTotal)}</strong>
-          </div>
-          <div className="summary-row">
-            <span>Payment</span>
-            <strong>{paymentMethod}</strong>
+
+          <div className="delivery-partner" aria-label="Official delivery partner">
+            <span>Official Delivery Partner</span>
+            <img src="/images/nepal can move.png" alt="Nepal Can Move" />
           </div>
         </aside>
       </section>

@@ -12,6 +12,7 @@ import {
   updateOrderStatus,
   updateContactMessageStatus,
   updateProductRequestStatus,
+  updateSellerApplicationStatus,
   uploadAdminImage,
   type AdminDashboard,
   type AboutContentSettings,
@@ -29,6 +30,10 @@ const adminTokenStorageKey = "vinex-nepal-admin-token";
 type ProductForm = {
   name: string;
   category: string;
+  supplierName: string;
+  supplierDescription: string;
+  supplierLocation: string;
+  supplierContact: string;
   image: string;
   hoverImage: string;
   galleryImages: string;
@@ -71,7 +76,7 @@ type FlashSaleForm = {
 type AdminPageProps = {
   cartCount: number;
   onSearchChange: (query: string) => void;
-  onNavigate: (page: "home" | "about" | "products" | "cart" | "checkout" | "support" | "admin") => void;
+  onNavigate: (page: "home" | "about" | "products" | "cart" | "checkout" | "support" | "seller" | "admin") => void;
   onOpenAbout: () => void;
   onOpenShop: () => void;
   onOpenCart: () => void;
@@ -187,6 +192,10 @@ function AdminNavIcon({ view }: { view: AdminView }) {
 const initialProductForm: ProductForm = {
   name: "",
   category: "",
+  supplierName: "Vinex Nepal",
+  supplierDescription: "",
+  supplierLocation: "",
+  supplierContact: "",
   image: "",
   hoverImage: "",
   galleryImages: "",
@@ -581,6 +590,8 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
   const newProductRequestCount = dashboard?.productRequests.filter((request) => request.status === "new").length ?? 0;
   const contactMessages = dashboard?.contactMessages ?? [];
   const newContactMessageCount = contactMessages.filter((message) => message.status === "new").length;
+  const sellerApplications = dashboard?.sellerApplications ?? [];
+  const newSellerApplicationCount = sellerApplications.filter((application) => application.status === "new").length;
   const openChatCount = dashboard?.liveChats.filter((chat) => chat.status === "open").length ?? 0;
   const selectedChat = dashboard?.liveChats.find((chat) => chat.id === selectedChatId) ?? null;
   const analyticsReport = useMemo(() => {
@@ -834,6 +845,10 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
   const mapProductToForm = (product: Product): ProductForm => ({
     name: product.name,
     category: product.category,
+    supplierName: product.supplierName ?? "Vinex Nepal",
+    supplierDescription: product.supplierDescription ?? "",
+    supplierLocation: product.supplierLocation ?? "",
+    supplierContact: product.supplierContact ?? "",
     image: product.image,
     hoverImage: product.hoverImage ?? "",
     galleryImages: (product.galleryImages ?? []).join("\n"),
@@ -1037,6 +1052,10 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
     const payload = {
       name: productForm.name,
       category: productForm.category,
+      supplierName: productForm.supplierName || "Vinex Nepal",
+      supplierDescription: productForm.supplierDescription || undefined,
+      supplierLocation: productForm.supplierLocation || undefined,
+      supplierContact: productForm.supplierContact || undefined,
       image: productForm.image,
       hoverImage: productForm.hoverImage || undefined,
       galleryImages: productForm.galleryImages
@@ -1101,6 +1120,10 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
       await updateAdminProduct(token, product.id, {
         name: product.name,
         category: product.category,
+        supplierName: product.supplierName ?? "Vinex Nepal",
+        supplierDescription: product.supplierDescription,
+        supplierLocation: product.supplierLocation,
+        supplierContact: product.supplierContact,
         image: product.image,
         hoverImage: product.hoverImage,
         galleryImages: product.galleryImages ?? [],
@@ -1312,6 +1335,19 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
     }
   };
 
+  const handleSellerApplicationStatus = async (applicationId: string, status: string) => {
+    if (!token) return;
+
+    setCustomerCareMessage("");
+    try {
+      const nextDashboard = await updateSellerApplicationStatus(token, applicationId, status);
+      setDashboard(nextDashboard);
+      setCustomerCareMessage("Seller application updated.");
+    } catch (error) {
+      setCustomerCareMessage(error instanceof Error ? error.message : "Unable to update seller application.");
+    }
+  };
+
   const handleSendChatReply = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!token || !selectedChat || !chatReply.trim()) return;
@@ -1504,6 +1540,39 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
                 onChange={(event) => setProductForm({ ...productForm, category: event.target.value })}
               />
             </label>
+            <label className="form-field">
+              <span>Supplier Name</span>
+              <input
+                value={productForm.supplierName}
+                onChange={(event) => setProductForm({ ...productForm, supplierName: event.target.value })}
+                placeholder="Vinex Nepal"
+              />
+            </label>
+            <label className="form-field full-span">
+              <span>Supplier Short Description</span>
+              <textarea
+                rows={3}
+                value={productForm.supplierDescription}
+                onChange={(event) => setProductForm({ ...productForm, supplierDescription: event.target.value })}
+                placeholder="Short note about the supplier shown on product details."
+              />
+            </label>
+            <label className="form-field">
+              <span>Supplier Location</span>
+              <input
+                value={productForm.supplierLocation}
+                onChange={(event) => setProductForm({ ...productForm, supplierLocation: event.target.value })}
+                placeholder="Kathmandu, Nepal"
+              />
+            </label>
+            <label className="form-field">
+              <span>Supplier Contact</span>
+              <input
+                value={productForm.supplierContact}
+                onChange={(event) => setProductForm({ ...productForm, supplierContact: event.target.value })}
+                placeholder="+977 9800000000"
+              />
+            </label>
             <ImageUrlField
               label="Display Image URL"
               value={productForm.image}
@@ -1638,6 +1707,7 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
                 <tr>
                   <th>Product</th>
                   <th>Category</th>
+                  <th>Supplier</th>
                   <th>Price</th>
                   <th>Options</th>
                   <th>Stock</th>
@@ -1651,6 +1721,7 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
                   <tr key={product.id}>
                     <td>{product.name}</td>
                     <td>{product.category}</td>
+                    <td>{product.supplierName ?? "Vinex Nepal"}</td>
                     <td>{formatPrice(product.price)}</td>
                     <td>
                       {(product.colorOptions?.length ?? 0) > 0 ? `${product.colorOptions?.length} color(s)` : "No colors"}
@@ -2116,6 +2187,52 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
                           onClick={() => handleContactMessageStatus(message.id, "handled")}
                         >
                           Mark Handled
+                        </button>
+                      </div>
+                    </article>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="admin-panel-card nested-card admin-care-contact-panel">
+              <div className="admin-panel-header">
+                <div>
+                  <span className="section-tag">Seller Applications</span>
+                  <h3>{newSellerApplicationCount} new application(s)</h3>
+                </div>
+              </div>
+
+              <div className="admin-care-list">
+                {sellerApplications.length === 0 ? (
+                  <p>No seller applications yet.</p>
+                ) : (
+                  sellerApplications.map((application) => (
+                    <article className="admin-care-card" key={application.id}>
+                      <div className="admin-order-card-top">
+                        <strong>{application.businessName}</strong>
+                        <span className={`order-status-pill ${application.status === "new" ? "status-new" : "status-completed"}`}>
+                          {application.status}
+                        </span>
+                      </div>
+                      <span>{application.contactName}</span>
+                      <small>{application.email}</small>
+                      <small>{application.phone}</small>
+                      {application.productCategory ? <small>{application.productCategory}</small> : null}
+                      {application.message ? <p>{application.message}</p> : null}
+                      <small>Submitted at: {new Date(application.createdAt).toLocaleString()}</small>
+                      <div className="admin-status-actions">
+                        <button
+                          className="ghost-button"
+                          onClick={() => handleSellerApplicationStatus(application.id, "reviewed")}
+                        >
+                          Mark Reviewed
+                        </button>
+                        <button
+                          className="ghost-button"
+                          onClick={() => handleSellerApplicationStatus(application.id, "contacted")}
+                        >
+                          Mark Contacted
                         </button>
                       </div>
                     </article>

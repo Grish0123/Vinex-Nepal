@@ -7,6 +7,7 @@ import { ProductPage, type ProductSelection } from "./pages/ProductPage/ProductP
 import { CartPage } from "./pages/CartPage/CartPage";
 import { CheckoutPage } from "./pages/CheckoutPage/CheckoutPage";
 import { SupportPage } from "./pages/SupportPage/SupportPage";
+import { SellerPage } from "./pages/SellerPage/SellerPage";
 import { AdminPage } from "./pages/AdminPage/AdminPage";
 import { FooterSection } from "./components/FooterSection";
 import { LiveChatWidget } from "./components/LiveChatWidget";
@@ -14,7 +15,7 @@ import { CustomerAccountModal } from "./components/CustomerAccountModal";
 import { fetchProducts, recordProductInterest, type AboutContentSettings, type CustomerAccount, type PageContentSettings, type StoreOperationSettings } from "./lib/api";
 import type { Product } from "./types/product";
 
-type Page = "home" | "about" | "products" | "cart" | "checkout" | "support" | "admin";
+type Page = "home" | "about" | "products" | "cart" | "checkout" | "support" | "seller" | "admin";
 
 type CartItem = {
   cartKey: string;
@@ -196,6 +197,7 @@ function getPageFromPathname(pathname: string): Page {
   if (normalizedPath === "/cart") return "cart";
   if (normalizedPath === "/checkout") return "checkout";
   if (normalizedPath === "/support") return "support";
+  if (normalizedPath === "/become-a-seller" || normalizedPath === "/seller") return "seller";
   if (normalizedPath === "/admin") return "admin";
   return "home";
 }
@@ -207,6 +209,7 @@ function getPathForPage(page: Page) {
   if (page === "cart") return "/cart";
   if (page === "checkout") return "/checkout";
   if (page === "support") return "/support";
+  if (page === "seller") return "/become-a-seller";
   return "/admin";
 }
 
@@ -216,6 +219,7 @@ function getTitleForPage(page: Page) {
   if (page === "cart") return "Cart | Vinex Nepal";
   if (page === "checkout") return "Checkout | Vinex Nepal";
   if (page === "support") return "Contact Us | Vinex Nepal";
+  if (page === "seller") return "Become a Seller | Vinex Nepal";
   if (page === "admin") return "Admin | Vinex Nepal";
   return "Home | Vinex Nepal";
 }
@@ -466,6 +470,7 @@ function ProductShopWindow({
   const [activeImage, setActiveImage] = useState("");
   const [isProductPanelOpen, setIsProductPanelOpen] = useState(false);
   const [hasReturnedFromProduct, setHasReturnedFromProduct] = useState(false);
+  const [isSupplierDetailsOpen, setIsSupplierDetailsOpen] = useState(false);
   const formatPrice = (price: number) => `Rs ${price.toLocaleString()}`;
   const categories = Array.from(new Set([...(storeOperations.categories ?? []), ...products.map((product) => product.category)].filter(Boolean)));
   const visibleProducts = products
@@ -490,6 +495,15 @@ function ProductShopWindow({
     color: selectedColor || selectedProductColors[0],
     size: selectedSize || selectedProductSizes[0],
   };
+  const supplierDetails = selectedProduct
+    ? {
+        description:
+          selectedProduct.supplierDescription ||
+          "Vinex Nepal curates practical, quality-checked products with local order support.",
+        location: selectedProduct.supplierLocation || "Kathmandu, Nepal",
+        contact: selectedProduct.supplierContact || "+977 9748285909",
+      }
+    : null;
 
   useEffect(() => {
     document.body.classList.toggle("shop-product-detail-open", isProductPanelOpen);
@@ -505,6 +519,7 @@ function ProductShopWindow({
     setSelectedColor(product.colorOptions?.[0] ?? "");
     setSelectedSize(product.sizeOptions?.[0] ?? "");
     setActiveImage(product.image);
+    setIsSupplierDetailsOpen(false);
     window.requestAnimationFrame(() => {
       setIsProductPanelOpen(true);
     });
@@ -516,6 +531,7 @@ function ProductShopWindow({
     window.setTimeout(() => {
       setSelectedProductId(null);
       setActiveImage("");
+      setIsSupplierDetailsOpen(false);
     }, 420);
   };
 
@@ -700,6 +716,39 @@ function ProductShopWindow({
                     {selectedProduct.inStock === false ? "Out of Stock" : "Add to Cart"}
                   </button>
                 </div>
+                <div className="shop-product-supplier" aria-label={`Supplier: ${selectedProduct.supplierName ?? "Vinex Nepal"}`}>
+                  <span>Supplier</span>
+                  <strong>{selectedProduct.supplierName ?? "Vinex Nepal"}</strong>
+                  {supplierDetails ? (
+                    <>
+                      <button
+                        className="supplier-detail-toggle"
+                        type="button"
+                        onClick={() => setIsSupplierDetailsOpen((current) => !current)}
+                        aria-expanded={isSupplierDetailsOpen}
+                      >
+                        {isSupplierDetailsOpen ? "Hide details" : "View details"}
+                      </button>
+                      {isSupplierDetailsOpen ? (
+                        <div className="supplier-detail-panel">
+                          {supplierDetails.description ? <p>{supplierDetails.description}</p> : null}
+                          {supplierDetails.location ? (
+                            <div>
+                              <span>Location</span>
+                              <strong>{supplierDetails.location}</strong>
+                            </div>
+                          ) : null}
+                          {supplierDetails.contact ? (
+                            <div>
+                              <span>Contact</span>
+                              <strong>{supplierDetails.contact}</strong>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
               </div>
             </article>
           ) : null}
@@ -716,6 +765,7 @@ function AboutPanel({
   onOpenShop,
   onOpenCart,
   aboutContent,
+  heroImages,
 }: {
   isOpen: boolean;
   cartCount: number;
@@ -723,6 +773,7 @@ function AboutPanel({
   onOpenShop: () => void;
   onOpenCart: () => void;
   aboutContent: AboutContentSettings;
+  heroImages: string[];
 }) {
   const [isAboutHeaderHidden, setIsAboutHeaderHidden] = useState(false);
 
@@ -751,7 +802,7 @@ function AboutPanel({
           onOpenCart={onOpenCart}
           onOpenAccount={() => undefined}
         />
-        <AboutPage aboutContent={aboutContent} onFooterVisibilityChange={setIsAboutHeaderHidden} />
+        <AboutPage aboutContent={aboutContent} heroImages={heroImages} onFooterVisibilityChange={setIsAboutHeaderHidden} />
       </div>
     </section>
   );
@@ -878,16 +929,18 @@ export default function App() {
       const scrollY = window.scrollY;
       const footer = document.querySelector<HTMLElement>(".site-footer-home");
       const footerTop = footer ? footer.offsetTop : Number.POSITIVE_INFINITY;
-      const footerIsReached = page === "home" && scrollY >= footerTop - 90;
+      const footerCanHideHeader = page === "home" || page === "support" || page === "seller";
+      const footerIsReached = footerCanHideHeader && scrollY >= footerTop - 90;
       const isScrollingDown = scrollY > lastScrollY.current;
+      const homeHeaderShouldHide = page === "home" && scrollY > 8 && isScrollingDown;
       const contactHero = document.querySelector<HTMLElement>(".contact-hero");
       const heroThreshold =
-        page === "support" && contactHero
+        (page === "support" || page === "seller") && contactHero
           ? contactHero.offsetTop + contactHero.offsetHeight - 80
           : window.innerHeight - 72;
 
       setIsPastHomeHero(scrollY >= heroThreshold);
-      setIsHeaderHidden(footerIsReached && isScrollingDown);
+      setIsHeaderHidden(homeHeaderShouldHide || (footerIsReached && isScrollingDown));
       lastScrollY.current = scrollY;
     };
 
@@ -1202,7 +1255,11 @@ export default function App() {
           onOpenProduct={openProductFromHome}
         />
       ) : page === "about" ? (
-        <AboutPage aboutContent={aboutContent} onFooterVisibilityChange={setIsHeaderHidden} />
+        <AboutPage
+          aboutContent={aboutContent}
+          heroImages={pageContent.homeHeroImages?.length ? pageContent.homeHeroImages : [pageContent.homeHeroImage]}
+          onFooterVisibilityChange={setIsHeaderHidden}
+        />
       ) : page === "products" ? (
         <ProductShopWindow
           isOpen
@@ -1251,6 +1308,8 @@ export default function App() {
         />
       ) : page === "support" ? (
         <SupportPage storeOperations={storeOperations} />
+      ) : page === "seller" ? (
+        <SellerPage storeOperations={storeOperations} />
       ) : (
         <AdminPage
           cartCount={cartCount}
@@ -1263,7 +1322,7 @@ export default function App() {
       )}
 
       {page !== "admin" && page !== "about" && page !== "products" && page !== "cart" && page !== "checkout" ? (
-        <FooterSection showWelcome={page === "home"} showProductRequest={true} onNavigateSupport={() => navigate("support")} />
+        <FooterSection showWelcome={page === "home"} showProductRequest={true} onNavigate={navigate} />
       ) : null}
 
       {page !== "admin" && page !== "about" && page !== "products" ? (
@@ -1313,6 +1372,7 @@ export default function App() {
         onOpenShop={openShopWindow}
         onOpenCart={openCartDrawer}
         aboutContent={aboutContent}
+        heroImages={pageContent.homeHeroImages?.length ? pageContent.homeHeroImages : [pageContent.homeHeroImage]}
       />
 
       {cartToasts.length > 0 ? (

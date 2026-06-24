@@ -1,0 +1,68 @@
+.page {
+  min-width: 0;
+}
+
+.sellerModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1900;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(5, 5, 5, 0.62);
+  backdrop-filter: blur(10px);
+}
+
+.sellerModal {
+  display: grid;
+  gap: 16px;
+  width: min(520px, 100%);
+  padding: clamp(24px, 4vw, 42px);
+  background: #ffffff;
+  color: #050505;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.28);
+}
+
+.sellerModal h2,
+.sellerModal p {
+  margin: 0;
+}
+
+.sellerModal h2 {
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 900;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.sellerModal p {
+  color: rgba(5, 5, 5, 0.62);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.sellerModalContact {
+  display: grid;
+  gap: 7px;
+  padding-top: 4px;
+}
+
+.sellerModalContact a {
+  color: #050505;
+  font-size: 0.9rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.sellerModal button {
+  justify-self: start;
+  min-height: 42px;
+  padding: 0 22px;
+  background: #050505;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+}
