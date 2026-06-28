@@ -4,6 +4,34 @@ const apiBase = "/api";
 
 export type OrderStatus = "new" | "processing" | "shipped" | "completed" | "cancelled";
 
+export type BillingInvoiceLineItem = {
+  id: string;
+  description: string;
+  quantity: number;
+  rate: number;
+  total?: number;
+};
+
+export type BillingInvoice = {
+  id: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  dueDate: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  customerAddress: string;
+  paymentMethod: string;
+  notes: string;
+  discount: number;
+  shipping: number;
+  subtotal: number;
+  total: number;
+  items: BillingInvoiceLineItem[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type PageContentSettings = {
   bannerPrimary: string;
   bannerSecondary: string;
@@ -295,6 +323,7 @@ export type AdminDashboard = {
   contactMessages?: ContactMessage[];
   sellerApplications?: SellerApplication[];
   liveChats: LiveChat[];
+  invoices?: BillingInvoice[];
   settings: {
     flashSale: {
       enabled: boolean;
@@ -637,6 +666,30 @@ export async function replyToLiveChat(token: string, chatId: string, message: st
     method: "POST",
     headers: buildAdminHeaders(token),
     body: JSON.stringify({ message }),
+  });
+
+  return parseJsonResponse<AdminDashboard>(response);
+}
+
+export async function saveBillingInvoice(
+  token: string,
+  payload: Omit<BillingInvoice, "subtotal" | "total" | "createdAt" | "updatedAt">,
+) {
+  const response = await fetch(`${apiBase}/admin/invoices`, {
+    method: "POST",
+    headers: buildAdminHeaders(token),
+    body: JSON.stringify(payload),
+  });
+
+  return parseJsonResponse<AdminDashboard>(response);
+}
+
+export async function deleteBillingInvoice(token: string, invoiceId: string) {
+  const response = await fetch(`${apiBase}/admin/invoices/${encodeURIComponent(invoiceId)}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   return parseJsonResponse<AdminDashboard>(response);

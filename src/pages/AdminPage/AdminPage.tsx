@@ -5,6 +5,8 @@ import {
   deleteAdminProduct,
   fetchAdminDashboard,
   replyToLiveChat,
+  deleteBillingInvoice,
+  saveBillingInvoice,
   updateAboutContentSettings,
   updateAdminProduct,
   updateFlashSaleSettings,
@@ -16,6 +18,7 @@ import {
   uploadAdminImage,
   type AdminDashboard,
   type AboutContentSettings,
+  type BillingInvoice as SavedBillingInvoice,
   type OrderStatus,
   type PageContentSettings,
   type StoreOperationSettings,
@@ -51,6 +54,7 @@ type AdminView =
   | "product-details"
   | "orders"
   | "analytics"
+  | "billing-invoice"
   | "customer-care"
   | "flash-time"
   | "page-editing"
@@ -72,6 +76,27 @@ type FlashSaleForm = {
   minutes: string;
   seconds: string;
 };
+type BillingInvoiceLineItem = {
+  id: string;
+  description: string;
+  quantity: string;
+  rate: string;
+};
+type BillingInvoiceForm = {
+  id?: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  dueDate: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  customerAddress: string;
+  paymentMethod: string;
+  notes: string;
+  discount: string;
+  shipping: string;
+  items: BillingInvoiceLineItem[];
+};
 
 type AdminPageProps = {
   cartCount: number;
@@ -91,6 +116,7 @@ const adminNavigationItems: Array<{
   { view: "add-product", label: "Add Product", description: "Create or edit product listings" },
   { view: "product-details", label: "Products", description: "Manage catalog, stock, and product records" },
   { view: "orders", label: "Orders", description: "Review orders and update fulfillment status" },
+  { view: "billing-invoice", label: "Billing Invoice", description: "Create, preview, and print customer invoices" },
   { view: "customer-care", label: "Customer Care", description: "Product requests and live chat replies" },
   { view: "flash-time", label: "Flash Time", description: "Configure the storefront countdown timer" },
   { view: "page-editing", label: "Home CMS", description: "Edit homepage and promotional content" },
@@ -126,6 +152,16 @@ function AdminNavIcon({ view }: { view: AdminView }) {
       <svg {...commonProps}>
         <path d="M7 4h10l2 4v12H5V8z" />
         <path d="M9 12h6M9 16h4" />
+      </svg>
+    );
+  }
+
+  if (view === "billing-invoice") {
+    return (
+      <svg {...commonProps}>
+        <path d="M7 3h10v18H7z" />
+        <path d="M9 8h6M9 12h6M9 16h3" />
+        <path d="M17 3v4h4" />
       </svg>
     );
   }
@@ -365,8 +401,57 @@ const initialStoreOperationForm: StoreOperationSettings = {
   supportHoursText: "WhatsApp and Instagram are best for quick order questions.",
 };
 
+const todayIsoDate = new Date().toISOString().slice(0, 10);
+
+const initialBillingInvoiceForm: BillingInvoiceForm = {
+  invoiceNumber: `VIN-${new Date().getFullYear()}-${String(Date.now()).slice(-5)}`,
+  invoiceDate: todayIsoDate,
+  dueDate: todayIsoDate,
+  customerName: "",
+  customerPhone: "",
+  customerEmail: "",
+  customerAddress: "",
+  paymentMethod: "Cash on Delivery",
+  notes: "Thank you for choosing Vinex Nepal.",
+  discount: "0",
+  shipping: "0",
+  items: [
+    {
+      id: "item-1",
+      description: "",
+      quantity: "1",
+      rate: "0",
+    },
+  ],
+};
+
 function formatPrice(value: number) {
   return `Rs ${value.toLocaleString()}`;
+}
+
+function parseInvoiceAmount(value: string) {
+  const amount = Number(value);
+  return Number.isFinite(amount) ? amount : 0;
+}
+
+function formatInvoiceDate(value: string) {
+  if (!value) return "-";
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("en-NP", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function escapeInvoiceHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function isSameDay(firstDate: Date, secondDate: Date) {
@@ -480,6 +565,9 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
   const [aboutContentMessage, setAboutContentMessage] = useState("");
   const [storeSetupMessage, setStoreSetupMessage] = useState("");
   const [customerCareMessage, setCustomerCareMessage] = useState("");
+  const [billingInvoiceMessage, setBillingInvoiceMessage] = useState("");
+  const [selectedBillingInvoiceId, setSelectedBillingInvoiceId] = useState("");
+  const [isSavedInvoiceListOpen, setIsSavedInvoiceListOpen] = useState(true);
   const [selectedChatId, setSelectedChatId] = useState("");
   const [chatReply, setChatReply] = useState("");
   const [isSavingProduct, setIsSavingProduct] = useState(false);
@@ -489,12 +577,15 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
   const [isSavingAboutContent, setIsSavingAboutContent] = useState(false);
   const [isSavingStoreSetup, setIsSavingStoreSetup] = useState(false);
   const [isSendingChatReply, setIsSendingChatReply] = useState(false);
+  const [isSavingBillingInvoice, setIsSavingBillingInvoice] = useState(false);
   const [pageContentForm, setPageContentForm] =
     useState<PageContentSettings>(initialPageContentForm);
   const [aboutContentForm, setAboutContentForm] =
     useState<AboutContentSettings>(initialAboutContentForm);
   const [storeOperationForm, setStoreOperationForm] =
     useState<StoreOperationSettings>(initialStoreOperationForm);
+  const [billingInvoiceForm, setBillingInvoiceForm] =
+    useState<BillingInvoiceForm>(initialBillingInvoiceForm);
   const [flashSaleForm, setFlashSaleForm] = useState<FlashSaleForm>({
     enabled: true,
     days: "3",
@@ -594,6 +685,7 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
   const newSellerApplicationCount = sellerApplications.filter((application) => application.status === "new").length;
   const openChatCount = dashboard?.liveChats.filter((chat) => chat.status === "open").length ?? 0;
   const selectedChat = dashboard?.liveChats.find((chat) => chat.id === selectedChatId) ?? null;
+  const savedBillingInvoices = dashboard?.invoices ?? [];
   const analyticsReport = useMemo(() => {
     if (!dashboard) {
       return {
@@ -807,10 +899,39 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
         new Date(secondCustomer.latestOrder).getTime() - new Date(firstCustomer.latestOrder).getTime(),
     );
   }, [dashboard]);
+  const billingInvoiceTotals = useMemo(() => {
+    const subtotal = billingInvoiceForm.items.reduce((sum, item) => {
+      return sum + parseInvoiceAmount(item.quantity) * parseInvoiceAmount(item.rate);
+    }, 0);
+    const discount = parseInvoiceAmount(billingInvoiceForm.discount);
+    const shipping = parseInvoiceAmount(billingInvoiceForm.shipping);
+    const total = Math.max(0, subtotal - discount + shipping);
+
+    return {
+      subtotal,
+      discount,
+      shipping,
+      total,
+    };
+  }, [billingInvoiceForm]);
 
   const resetProductForm = () => {
     setEditingProductId(null);
     setProductForm(initialProductForm);
+  };
+
+  const resetBillingInvoiceForm = () => {
+    const invoiceNumber = `VIN-${new Date().getFullYear()}-${String(Date.now()).slice(-5)}`;
+    const invoiceDate = new Date().toISOString().slice(0, 10);
+    setBillingInvoiceForm({
+      ...initialBillingInvoiceForm,
+      invoiceNumber,
+      invoiceDate,
+      dueDate: invoiceDate,
+      items: [{ ...initialBillingInvoiceForm.items[0], id: `item-${Date.now()}` }],
+    });
+    setSelectedBillingInvoiceId("");
+    setBillingInvoiceMessage("");
   };
 
   const showAdminToast = (toast: Omit<AdminToast, "id">) => {
@@ -829,6 +950,7 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
     setAboutContentMessage("");
     setStoreSetupMessage("");
     setCustomerCareMessage("");
+    setBillingInvoiceMessage("");
 
     if (nextView === "add-product") {
       resetProductForm();
@@ -840,6 +962,434 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
 
     setAdminView(nextView);
     setIsAdminMenuOpen(false);
+  };
+
+  const updateBillingInvoiceField = (field: keyof Omit<BillingInvoiceForm, "items">, value: string) => {
+    setBillingInvoiceForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const updateBillingInvoiceItem = (itemId: string, field: keyof Omit<BillingInvoiceLineItem, "id">, value: string) => {
+    setBillingInvoiceForm((current) => ({
+      ...current,
+      items: current.items.map((item) => (item.id === itemId ? { ...item, [field]: value } : item)),
+    }));
+  };
+
+  const addBillingInvoiceItem = () => {
+    setBillingInvoiceForm((current) => ({
+      ...current,
+      items: [
+        ...current.items,
+        {
+          id: `item-${Date.now()}`,
+          description: "",
+          quantity: "1",
+          rate: "0",
+        },
+      ],
+    }));
+  };
+
+  const removeBillingInvoiceItem = (itemId: string) => {
+    setBillingInvoiceForm((current) => {
+      if (current.items.length <= 1) return current;
+      return {
+        ...current,
+        items: current.items.filter((item) => item.id !== itemId),
+      };
+    });
+  };
+
+  const mapSavedInvoiceToForm = (invoice: SavedBillingInvoice): BillingInvoiceForm => ({
+    id: invoice.id,
+    invoiceNumber: invoice.invoiceNumber,
+    invoiceDate: invoice.invoiceDate,
+    dueDate: invoice.dueDate,
+    customerName: invoice.customerName,
+    customerPhone: invoice.customerPhone,
+    customerEmail: invoice.customerEmail,
+    customerAddress: invoice.customerAddress,
+    paymentMethod: invoice.paymentMethod,
+    notes: invoice.notes,
+    discount: String(invoice.discount ?? 0),
+    shipping: String(invoice.shipping ?? 0),
+    items: invoice.items.length > 0
+      ? invoice.items.map((item) => ({
+          id: item.id || `item-${Date.now()}`,
+          description: item.description,
+          quantity: String(item.quantity),
+          rate: String(item.rate),
+        }))
+      : [{ ...initialBillingInvoiceForm.items[0], id: `item-${Date.now()}` }],
+  });
+
+  const loadSavedBillingInvoice = (invoice: SavedBillingInvoice) => {
+    setBillingInvoiceForm(mapSavedInvoiceToForm(invoice));
+    setSelectedBillingInvoiceId(invoice.id);
+    setBillingInvoiceMessage(`Loaded invoice ${invoice.invoiceNumber}.`);
+  };
+
+  const buildBillingInvoicePayload = () => ({
+    id: selectedBillingInvoiceId || billingInvoiceForm.id || "",
+    invoiceNumber: billingInvoiceForm.invoiceNumber,
+    invoiceDate: billingInvoiceForm.invoiceDate,
+    dueDate: billingInvoiceForm.dueDate,
+    customerName: billingInvoiceForm.customerName,
+    customerPhone: billingInvoiceForm.customerPhone,
+    customerEmail: billingInvoiceForm.customerEmail,
+    customerAddress: billingInvoiceForm.customerAddress,
+    paymentMethod: billingInvoiceForm.paymentMethod,
+    notes: billingInvoiceForm.notes,
+    discount: parseInvoiceAmount(billingInvoiceForm.discount),
+    shipping: parseInvoiceAmount(billingInvoiceForm.shipping),
+    items: billingInvoiceForm.items.map((item) => ({
+      id: item.id,
+      description: item.description,
+      quantity: parseInvoiceAmount(item.quantity),
+      rate: parseInvoiceAmount(item.rate),
+    })),
+  });
+
+  const handleSaveBillingInvoice = async () => {
+    if (!token) return;
+
+    setIsSavingBillingInvoice(true);
+    setBillingInvoiceMessage("");
+
+    try {
+      const nextDashboard = await saveBillingInvoice(token, buildBillingInvoicePayload());
+      setDashboard(nextDashboard);
+      const savedInvoice = nextDashboard.invoices?.find(
+        (invoice) => invoice.invoiceNumber === billingInvoiceForm.invoiceNumber,
+      );
+      if (savedInvoice) {
+        setSelectedBillingInvoiceId(savedInvoice.id);
+        setBillingInvoiceForm(mapSavedInvoiceToForm(savedInvoice));
+      }
+      setBillingInvoiceMessage("Invoice saved to the server and admin panel.");
+    } catch (error) {
+      setBillingInvoiceMessage(error instanceof Error ? error.message : "Unable to save invoice.");
+    } finally {
+      setIsSavingBillingInvoice(false);
+    }
+  };
+
+  const handleDeleteBillingInvoice = async (invoiceId: string) => {
+    if (!token || !invoiceId) return;
+
+    setBillingInvoiceMessage("");
+
+    try {
+      const nextDashboard = await deleteBillingInvoice(token, invoiceId);
+      setDashboard(nextDashboard);
+      if (selectedBillingInvoiceId === invoiceId) {
+        resetBillingInvoiceForm();
+      }
+      setBillingInvoiceMessage("Saved invoice deleted.");
+    } catch (error) {
+      setBillingInvoiceMessage(error instanceof Error ? error.message : "Unable to delete invoice.");
+    }
+  };
+
+  const handlePrintBillingInvoice = () => {
+    if (!billingInvoiceForm.customerName.trim()) {
+      setBillingInvoiceMessage("Customer name is required before printing.");
+      return;
+    }
+
+    const activeItems = billingInvoiceForm.items.filter((item) => item.description.trim());
+    if (activeItems.length === 0) {
+      setBillingInvoiceMessage("Add at least one invoice item before printing.");
+      return;
+    }
+
+    const printWindow = window.open("", "_blank", "width=920,height=1100");
+    if (!printWindow) {
+      setBillingInvoiceMessage("Please allow pop-ups to print the invoice.");
+      return;
+    }
+
+    const itemRows = activeItems
+      .map((item, index) => {
+        const quantity = parseInvoiceAmount(item.quantity);
+        const rate = parseInvoiceAmount(item.rate);
+        const lineTotal = quantity * rate;
+
+        return `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${escapeInvoiceHtml(item.description)}</td>
+            <td>${quantity.toLocaleString()}</td>
+            <td>${formatPrice(rate)}</td>
+            <td>${formatPrice(lineTotal)}</td>
+          </tr>
+        `;
+      })
+      .join("");
+
+    printWindow.document.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <title>Invoice ${escapeInvoiceHtml(billingInvoiceForm.invoiceNumber)}</title>
+          <style>
+            * { box-sizing: border-box; }
+            body {
+              margin: 0;
+              padding: 24px;
+              background: #eef2f7;
+              color: #111827;
+              font-family: Inter, Arial, sans-serif;
+            }
+            .invoice {
+              width: min(860px, 100%);
+              margin: 0 auto;
+              background: #ffffff;
+              border: 1px solid #e5e7eb;
+              box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+              overflow: hidden;
+            }
+            .top {
+              display: grid;
+              grid-template-columns: 1fr auto;
+              gap: 28px;
+              align-items: start;
+              padding: 36px 42px;
+              background: #111827;
+              color: #ffffff;
+            }
+            .brand-mark {
+              display: inline-grid;
+              place-items: center;
+              width: 54px;
+              height: 54px;
+              margin-bottom: 16px;
+              border: 1px solid rgba(255,255,255,.24);
+              background: rgba(255,255,255,.08);
+              font-size: 22px;
+              font-weight: 900;
+            }
+            .brand h1, .meta h2 {
+              margin: 0;
+              color: inherit;
+              text-transform: uppercase;
+            }
+            .brand h1 {
+              font-size: 30px;
+              letter-spacing: .04em;
+            }
+            .brand p, .meta p, .bill-to p, .notes p {
+              margin: 7px 0 0;
+              color: #4b5563;
+              line-height: 1.5;
+            }
+            .top .brand p, .top .meta p {
+              color: rgba(255,255,255,.72);
+            }
+            .meta {
+              min-width: 240px;
+              text-align: right;
+            }
+            .meta h2 {
+              font-size: 38px;
+              letter-spacing: .08em;
+            }
+            .invoice-pill {
+              display: inline-block;
+              margin-top: 12px;
+              padding: 7px 11px;
+              border: 1px solid rgba(255,255,255,.26);
+              background: rgba(255,255,255,.1);
+              color: #ffffff;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: .1em;
+              text-transform: uppercase;
+            }
+            .body {
+              padding: 34px 42px 40px;
+            }
+            .grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 24px;
+              margin: 0 0 30px;
+            }
+            .bill-to {
+              min-height: 164px;
+              padding: 20px;
+              border: 1px solid #e5e7eb;
+              background: #f9fafb;
+            }
+            .bill-to:first-child {
+              background: #ffffff;
+            }
+            h3 {
+              margin: 0 0 10px;
+              color: #111827;
+              font-size: 12px;
+              letter-spacing: .12em;
+              text-transform: uppercase;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              overflow: hidden;
+              border: 1px solid #e5e7eb;
+            }
+            th, td {
+              padding: 14px 12px;
+              border-bottom: 1px solid #e5e7eb;
+              text-align: left;
+              vertical-align: top;
+            }
+            th {
+              background: #111827;
+              color: #ffffff;
+              font-size: 11px;
+              letter-spacing: .08em;
+              text-transform: uppercase;
+            }
+            td {
+              color: #111827;
+            }
+            tbody tr:nth-child(even) td {
+              background: #f9fafb;
+            }
+            th:nth-child(3), th:nth-child(4), th:nth-child(5),
+            td:nth-child(3), td:nth-child(4), td:nth-child(5) {
+              text-align: right;
+            }
+            td:first-child {
+              color: #6b7280;
+              font-weight: 800;
+            }
+            .summary {
+              display: grid;
+              justify-content: end;
+              margin-top: 26px;
+            }
+            .summary-row {
+              display: grid;
+              grid-template-columns: 180px 160px;
+              gap: 18px;
+              padding: 9px 0;
+              color: #374151;
+            }
+            .summary-row strong {
+              color: #111827;
+              text-align: right;
+            }
+            .summary-row.total {
+              margin-top: 8px;
+              padding-top: 14px;
+              border-top: 2px solid #111827;
+              color: #111827;
+              font-size: 20px;
+              font-weight: 800;
+            }
+            .footer-grid {
+              display: grid;
+              grid-template-columns: 1fr 240px;
+              gap: 28px;
+              margin-top: 34px;
+              padding-top: 22px;
+              border-top: 1px solid #e5e7eb;
+            }
+            .signature {
+              display: grid;
+              align-content: end;
+              min-height: 96px;
+              text-align: right;
+            }
+            .signature span {
+              display: block;
+              padding-top: 12px;
+              border-top: 1px solid #111827;
+              color: #111827;
+              font-size: 12px;
+              font-weight: 800;
+              text-transform: uppercase;
+            }
+            @media print {
+              body { padding: 0; background: #ffffff; }
+              .invoice { width: 100%; border: 0; box-shadow: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <main class="invoice">
+            <section class="top">
+              <div class="brand">
+                <div class="brand-mark">VN</div>
+                <h1>Vinex Nepal</h1>
+                <p>Professional customer invoice</p>
+                <p>Payment: ${escapeInvoiceHtml(billingInvoiceForm.paymentMethod)}</p>
+              </div>
+              <div class="meta">
+                <h2>Invoice</h2>
+                <p><strong>${escapeInvoiceHtml(billingInvoiceForm.invoiceNumber)}</strong></p>
+                <p>Issued: ${formatInvoiceDate(billingInvoiceForm.invoiceDate)}</p>
+                <p>Due: ${formatInvoiceDate(billingInvoiceForm.dueDate)}</p>
+                <span class="invoice-pill">Amount Due ${formatPrice(billingInvoiceTotals.total)}</span>
+              </div>
+            </section>
+            <div class="body">
+            <section class="grid">
+              <div class="bill-to">
+                <h3>Bill To</h3>
+                <p><strong>${escapeInvoiceHtml(billingInvoiceForm.customerName)}</strong></p>
+                <p>${escapeInvoiceHtml(billingInvoiceForm.customerPhone || "-")}</p>
+                <p>${escapeInvoiceHtml(billingInvoiceForm.customerEmail || "-")}</p>
+                <p>${escapeInvoiceHtml(billingInvoiceForm.customerAddress || "-")}</p>
+              </div>
+              <div class="bill-to">
+                <h3>From</h3>
+                <p><strong>Vinex Nepal</strong></p>
+                <p>Customer billing and order support</p>
+                <p>+977 9748285909</p>
+              </div>
+            </section>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Description</th>
+                  <th>Qty</th>
+                  <th>Rate</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>${itemRows}</tbody>
+            </table>
+            <section class="summary">
+              <div class="summary-row"><span>Subtotal</span><strong>${formatPrice(billingInvoiceTotals.subtotal)}</strong></div>
+              <div class="summary-row"><span>Discount</span><strong>${formatPrice(billingInvoiceTotals.discount)}</strong></div>
+              <div class="summary-row"><span>Shipping</span><strong>${formatPrice(billingInvoiceTotals.shipping)}</strong></div>
+              <div class="summary-row total"><span>Total</span><strong>${formatPrice(billingInvoiceTotals.total)}</strong></div>
+            </section>
+            <section class="footer-grid">
+              <div class="notes">
+                <h3>Notes</h3>
+                <p>${escapeInvoiceHtml(billingInvoiceForm.notes || "Thank you for choosing Vinex Nepal.")}</p>
+              </div>
+              <div class="signature">
+                <span>Authorized Signature</span>
+              </div>
+            </section>
+            </div>
+          </main>
+          <script>
+            window.addEventListener('load', () => {
+              window.focus();
+              window.print();
+            });
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    setBillingInvoiceMessage("Invoice print window opened.");
   };
 
   const mapProductToForm = (product: Product): ProductForm => ({
@@ -2883,6 +3433,333 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
               </button>
             </div>
           </form>
+        </section>
+      ) : null}
+
+      {adminView === "billing-invoice" ? (
+        <section className="admin-panel-card">
+          <div className="admin-panel-header">
+            <div>
+              <span className="section-tag">Invoice Generation</span>
+              <h3>Customer billing invoice</h3>
+            </div>
+            <div className="admin-table-actions">
+              <button type="button" onClick={() => setIsSavedInvoiceListOpen((current) => !current)}>
+                Saved Invoices
+              </button>
+              <button type="button" onClick={resetBillingInvoiceForm}>
+                New Invoice
+              </button>
+              <button type="button" onClick={handleSaveBillingInvoice} disabled={isSavingBillingInvoice}>
+                {isSavingBillingInvoice ? "Saving..." : "Save Invoice"}
+              </button>
+              <button type="button" className="primary-button" onClick={handlePrintBillingInvoice}>
+                Print Invoice
+              </button>
+            </div>
+          </div>
+
+          <div className="billing-invoice-layout">
+            <form className="billing-invoice-form" onSubmit={(event) => event.preventDefault()}>
+              <div className="admin-promo-edit-card full-span">
+                <div className="admin-panel-header full-span">
+                  <div>
+                    <span className="section-tag">Customer</span>
+                    <h3>Billing details</h3>
+                  </div>
+                </div>
+                <label className="form-field">
+                  <span>Customer Name</span>
+                  <input
+                    value={billingInvoiceForm.customerName}
+                    onChange={(event) => updateBillingInvoiceField("customerName", event.target.value)}
+                    placeholder="Customer full name"
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Phone Number</span>
+                  <input
+                    value={billingInvoiceForm.customerPhone}
+                    onChange={(event) => updateBillingInvoiceField("customerPhone", event.target.value)}
+                    placeholder="+977"
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Email</span>
+                  <input
+                    type="email"
+                    value={billingInvoiceForm.customerEmail}
+                    onChange={(event) => updateBillingInvoiceField("customerEmail", event.target.value)}
+                    placeholder="customer@email.com"
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Payment Method</span>
+                  <input
+                    value={billingInvoiceForm.paymentMethod}
+                    onChange={(event) => updateBillingInvoiceField("paymentMethod", event.target.value)}
+                    placeholder="Cash on Delivery"
+                  />
+                </label>
+                <label className="form-field full-span">
+                  <span>Billing Address</span>
+                  <textarea
+                    rows={3}
+                    value={billingInvoiceForm.customerAddress}
+                    onChange={(event) => updateBillingInvoiceField("customerAddress", event.target.value)}
+                    placeholder="Delivery or billing address"
+                  />
+                </label>
+              </div>
+
+              <div className="admin-promo-edit-card full-span">
+                <div className="admin-panel-header full-span">
+                  <div>
+                    <span className="section-tag">Invoice</span>
+                    <h3>Document details</h3>
+                  </div>
+                </div>
+                <label className="form-field">
+                  <span>Invoice Number</span>
+                  <input
+                    value={billingInvoiceForm.invoiceNumber}
+                    onChange={(event) => updateBillingInvoiceField("invoiceNumber", event.target.value)}
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Invoice Date</span>
+                  <input
+                    type="date"
+                    value={billingInvoiceForm.invoiceDate}
+                    onChange={(event) => updateBillingInvoiceField("invoiceDate", event.target.value)}
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Due Date</span>
+                  <input
+                    type="date"
+                    value={billingInvoiceForm.dueDate}
+                    onChange={(event) => updateBillingInvoiceField("dueDate", event.target.value)}
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Shipping</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={billingInvoiceForm.shipping}
+                    onChange={(event) => updateBillingInvoiceField("shipping", event.target.value)}
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Discount</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={billingInvoiceForm.discount}
+                    onChange={(event) => updateBillingInvoiceField("discount", event.target.value)}
+                  />
+                </label>
+                <label className="form-field full-span">
+                  <span>Notes</span>
+                  <textarea
+                    rows={3}
+                    value={billingInvoiceForm.notes}
+                    onChange={(event) => updateBillingInvoiceField("notes", event.target.value)}
+                  />
+                </label>
+              </div>
+
+              <div className="admin-promo-edit-card full-span">
+                <div className="admin-panel-header full-span">
+                  <div>
+                    <span className="section-tag">Items</span>
+                    <h3>Invoice line items</h3>
+                  </div>
+                  <button type="button" className="ghost-button" onClick={addBillingInvoiceItem}>
+                    Add Item
+                  </button>
+                </div>
+                <div className="billing-item-list">
+                  {billingInvoiceForm.items.map((item, index) => {
+                    const quantity = parseInvoiceAmount(item.quantity);
+                    const rate = parseInvoiceAmount(item.rate);
+
+                    return (
+                      <div className="billing-item-row" key={item.id}>
+                        <label className="form-field">
+                          <span>Item {index + 1}</span>
+                          <input
+                            value={item.description}
+                            onChange={(event) => updateBillingInvoiceItem(item.id, "description", event.target.value)}
+                            placeholder="Product or service"
+                          />
+                        </label>
+                        <label className="form-field">
+                          <span>Qty</span>
+                          <input
+                            type="number"
+                            min="0"
+                            value={item.quantity}
+                            onChange={(event) => updateBillingInvoiceItem(item.id, "quantity", event.target.value)}
+                          />
+                        </label>
+                        <label className="form-field">
+                          <span>Rate</span>
+                          <input
+                            type="number"
+                            min="0"
+                            value={item.rate}
+                            onChange={(event) => updateBillingInvoiceItem(item.id, "rate", event.target.value)}
+                          />
+                        </label>
+                        <div className="billing-line-total">
+                          <span>Total</span>
+                          <strong>{formatPrice(quantity * rate)}</strong>
+                        </div>
+                        <button
+                          type="button"
+                          className="remove-link"
+                          onClick={() => removeBillingInvoiceItem(item.id)}
+                          disabled={billingInvoiceForm.items.length <= 1}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {billingInvoiceMessage ? <div className="form-status full-span">{billingInvoiceMessage}</div> : null}
+            </form>
+
+            <aside className="billing-preview-column">
+              {isSavedInvoiceListOpen ? (
+                <section className="billing-saved-card" aria-label="Saved invoices">
+                  <div className="admin-panel-header">
+                    <div>
+                      <span className="section-tag">Saved Invoices</span>
+                      <h3>{savedBillingInvoices.length} invoices</h3>
+                    </div>
+                  </div>
+                  {savedBillingInvoices.length > 0 ? (
+                    <div className="billing-saved-list">
+                      {savedBillingInvoices.map((invoice) => (
+                        <article
+                          className={selectedBillingInvoiceId === invoice.id ? "billing-saved-row active" : "billing-saved-row"}
+                          key={invoice.id}
+                        >
+                          <button type="button" onClick={() => loadSavedBillingInvoice(invoice)}>
+                            <span>{invoice.invoiceNumber}</span>
+                            <strong>{invoice.customerName}</strong>
+                            <small>{formatInvoiceDate(invoice.invoiceDate)} · {formatPrice(invoice.total)}</small>
+                          </button>
+                          <div className="admin-table-actions">
+                            <button type="button" onClick={() => loadSavedBillingInvoice(invoice)}>
+                              Load
+                            </button>
+                            <button
+                              type="button"
+                              className="remove-link"
+                              onClick={() => handleDeleteBillingInvoice(invoice.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="billing-empty-state">Saved invoices will appear here after the admin saves them.</p>
+                  )}
+                </section>
+              ) : null}
+
+            <section className="billing-preview-card" aria-label="Live invoice preview">
+              <div className="invoice-document">
+                <header className="invoice-document-header">
+                  <div>
+                    <strong>Vinex Nepal</strong>
+                    <span>Professional customer invoice</span>
+                  </div>
+                  <div>
+                    <h4>Invoice</h4>
+                    <p>{billingInvoiceForm.invoiceNumber}</p>
+                  </div>
+                </header>
+
+                <section className="invoice-preview-meta">
+                  <div>
+                    <span>Bill To</span>
+                    <strong>{billingInvoiceForm.customerName || "Customer Name"}</strong>
+                    <p>{billingInvoiceForm.customerPhone || "Phone number"}</p>
+                    <p>{billingInvoiceForm.customerEmail || "Email address"}</p>
+                    <p>{billingInvoiceForm.customerAddress || "Billing address"}</p>
+                  </div>
+                  <div>
+                    <span>Details</span>
+                    <p>Issued: {formatInvoiceDate(billingInvoiceForm.invoiceDate)}</p>
+                    <p>Due: {formatInvoiceDate(billingInvoiceForm.dueDate)}</p>
+                    <p>Payment: {billingInvoiceForm.paymentMethod || "Payment method"}</p>
+                  </div>
+                </section>
+
+                <div className="invoice-preview-table-wrap">
+                  <table className="invoice-preview-table">
+                    <thead>
+                      <tr>
+                        <th>Item</th>
+                        <th>Qty</th>
+                        <th>Rate</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {billingInvoiceForm.items.map((item) => {
+                        const quantity = parseInvoiceAmount(item.quantity);
+                        const rate = parseInvoiceAmount(item.rate);
+
+                        return (
+                          <tr key={item.id}>
+                            <td>{item.description || "Invoice item"}</td>
+                            <td>{quantity}</td>
+                            <td>{formatPrice(rate)}</td>
+                            <td>{formatPrice(quantity * rate)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <section className="invoice-preview-summary">
+                  <div>
+                    <span>Subtotal</span>
+                    <strong>{formatPrice(billingInvoiceTotals.subtotal)}</strong>
+                  </div>
+                  <div>
+                    <span>Discount</span>
+                    <strong>{formatPrice(billingInvoiceTotals.discount)}</strong>
+                  </div>
+                  <div>
+                    <span>Shipping</span>
+                    <strong>{formatPrice(billingInvoiceTotals.shipping)}</strong>
+                  </div>
+                  <div className="invoice-preview-total">
+                    <span>Total</span>
+                    <strong>{formatPrice(billingInvoiceTotals.total)}</strong>
+                  </div>
+                </section>
+
+                <footer className="invoice-preview-notes">
+                  <span>Notes</span>
+                  <p>{billingInvoiceForm.notes || "Thank you for choosing Vinex Nepal."}</p>
+                </footer>
+              </div>
+            </section>
+            </aside>
+          </div>
         </section>
       ) : null}
 

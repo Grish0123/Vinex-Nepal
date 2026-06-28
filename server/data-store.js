@@ -218,6 +218,7 @@ const defaultStore = {
     },
   ],
   orders: [],
+  invoices: [],
   customers: [],
   productRequests: [],
   contactMessages: [],

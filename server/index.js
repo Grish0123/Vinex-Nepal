@@ -305,6 +305,72 @@ function textValue(value, maxLength = 500) {
   return String(value ?? "").trim().slice(0, maxLength);
 }
 
+function numberValue(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function sanitizeInvoice(invoice) {
+  const items = Array.isArray(invoice?.items)
+    ? invoice.items
+        .map((item) => {
+          const quantity = Math.max(0, numberValue(item?.quantity));
+          const rate = Math.max(0, numberValue(item?.rate));
+          return {
+            id: textValue(item?.id, 80) || `item-${crypto.randomUUID()}`,
+            description: textValue(item?.description, 240),
+            quantity,
+            rate,
+            total: quantity * rate,
+          };
+        })
+        .filter((item) => item.description)
+    : [];
+  const subtotal = items.reduce((sum, item) => sum + item.total, 0);
+  const discount = Math.max(0, numberValue(invoice?.discount));
+  const shipping = Math.max(0, numberValue(invoice?.shipping));
+
+  return {
+    invoiceNumber: textValue(invoice?.invoiceNumber, 80),
+    invoiceDate: textValue(invoice?.invoiceDate, 40),
+    dueDate: textValue(invoice?.dueDate, 40),
+    customerName: textValue(invoice?.customerName, 140),
+    customerPhone: textValue(invoice?.customerPhone, 80),
+    customerEmail: textValue(invoice?.customerEmail, 180),
+    customerAddress: textValue(invoice?.customerAddress, 500),
+    paymentMethod: textValue(invoice?.paymentMethod, 100) || "Cash on Delivery",
+    notes: textValue(invoice?.notes, 900),
+    discount,
+    shipping,
+    subtotal,
+    total: Math.max(0, subtotal - discount + shipping),
+    items,
+  };
+}
+
+function publicInvoice(invoice) {
+  const sanitized = sanitizeInvoice(invoice);
+  return {
+    ...sanitized,
+    id: textValue(invoice?.id, 120),
+    createdAt: textValue(invoice?.createdAt, 80),
+    updatedAt: textValue(invoice?.updatedAt, 80),
+  };
+}
+
+function validateInvoiceInput(invoice) {
+  if (!invoice || typeof invoice !== "object") {
+    return "Invoice details are required.";
+  }
+
+  const sanitized = sanitizeInvoice(invoice);
+  if (!sanitized.customerName) return "Customer name is required.";
+  if (!sanitized.invoiceNumber) return "Invoice number is required.";
+  if (sanitized.items.length < 1) return "Add at least one invoice item.";
+
+  return null;
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -833,6 +899,7 @@ function buildDashboard(store) {
     contactMessages: [...(store.contactMessages ?? [])].reverse(),
     sellerApplications: [...(store.sellerApplications ?? [])].reverse(),
     liveChats: [...(store.liveChats ?? [])].reverse(),
+    invoices: [...(store.invoices ?? [])].map(publicInvoice).reverse(),
     settings: buildSettings(store),
   };
 }
@@ -1457,6 +1524,68 @@ app.patch("/api/admin/orders/:id/status", requireAdmin, async (request, response
     } catch (error) {
       console.error("Order status email failed:", error);
     }
+  }
+
+  response.json(buildDashboard(nextStore));
+});
+
+app.post("/api/admin/invoices", requireAdmin, async (request, response) => {
+  const validationError = validateInvoiceInput(request.body);
+
+  if (validationError) {
+    response.status(400).json({ message: validationError });
+    return;
+  }
+
+  const now = new Date().toISOString();
+  const incomingId = textValue(request.body?.id, 120);
+  const sanitizedInvoice = sanitizeInvoice(request.body);
+  const nextStore = await updateStore((store) => {
+    const invoices = Array.isArray(store.invoices) ? store.invoices : [];
+    const existingInvoice = invoices.find((invoice) => invoice.id === incomingId);
+    const invoiceId = existingInvoice?.id ?? (incomingId || `invoice-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`);
+    const nextInvoice = {
+      ...sanitizedInvoice,
+      id: invoiceId,
+      createdAt: existingInvoice?.createdAt ?? now,
+      updatedAt: now,
+    };
+    const nextInvoices = existingInvoice
+      ? invoices.map((invoice) => (invoice.id === invoiceId ? nextInvoice : invoice))
+      : [nextInvoice, ...invoices];
+
+    return {
+      ...store,
+      invoices: nextInvoices,
+    };
+  });
+
+  response.status(201).json(buildDashboard(nextStore));
+});
+
+app.delete("/api/admin/invoices/:id", requireAdmin, async (request, response) => {
+  const invoiceId = textValue(request.params.id, 120);
+
+  if (!invoiceId) {
+    response.status(400).json({ message: "Invoice id is required." });
+    return;
+  }
+
+  let removedInvoice = false;
+  const nextStore = await updateStore((store) => {
+    const invoices = Array.isArray(store.invoices) ? store.invoices : [];
+    const nextInvoices = invoices.filter((invoice) => invoice.id !== invoiceId);
+    removedInvoice = nextInvoices.length !== invoices.length;
+
+    return {
+      ...store,
+      invoices: nextInvoices,
+    };
+  });
+
+  if (!removedInvoice) {
+    response.status(404).json({ message: "Invoice not found." });
+    return;
   }
 
   response.json(buildDashboard(nextStore));
