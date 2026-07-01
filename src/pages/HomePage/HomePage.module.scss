@@ -28,6 +28,87 @@
   opacity: 1;
 }
 
+.heroImageOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.26), rgba(0, 0, 0, 0) 42%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0.08) 42%, rgba(0, 0, 0, 0.62));
+  pointer-events: none;
+}
+
+.heroImageCopy {
+  position: absolute;
+  bottom: clamp(42px, 8.2vh, 88px);
+  z-index: 2;
+  display: grid;
+  width: min(48rem, calc(100vw - 32px));
+  color: #ffffff;
+  transition:
+    right 420ms ease,
+    left 420ms ease,
+    text-align 420ms ease;
+}
+
+.heroImageCopyRight {
+  right: clamp(18px, 4.8vw, 88px);
+  left: auto;
+  justify-items: end;
+  text-align: right;
+}
+
+.heroImageCopy h1 {
+  margin: 0;
+  max-width: 22ch;
+  color: inherit;
+  font-size: clamp(2rem, 3.35vw, 4rem);
+  font-weight: 900;
+  line-height: 0.96;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.heroImageCopy p {
+  margin: 18px 0 0;
+  max-width: 24rem;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: clamp(0.9rem, 0.98vw, 1.05rem);
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.heroImageCopy button {
+  display: inline-flex;
+  min-width: 142px;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 24px;
+  padding: 0 24px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  background: rgba(0, 0, 0, 0.08);
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.heroImageCopy button:hover,
+.heroImageCopy button:focus-visible {
+  background: #ffffff;
+  color: #050505;
+  transform: translateY(-1px);
+}
+
 .deliveryPartnerBadge {
   position: fixed;
   top: 35%;
@@ -176,14 +257,22 @@
 }
 
 .collectionSection {
-  position: absolute;
-  inset: 0;
+  position: relative;
   z-index: 1;
   width: 100%;
   min-height: 100vh;
   margin: 0;
   padding: 28px 0 0;
   background: #ffffff;
+}
+
+.collectionPanelLayer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  background: #ffffff;
+  will-change: transform;
 }
 
 .collectionSection h2 {
@@ -249,9 +338,9 @@ button.collectionCard {
 .collectionImageHover {
   grid-area: 1 / 1;
   display: block;
-  width: 84%;
-  height: 84%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   transition:
     opacity 220ms ease,
     transform 260ms ease;
@@ -369,7 +458,7 @@ button.collectionCard {
 .flashParallaxSection {
   position: fixed;
   inset: 0;
-  z-index: 2;
+  z-index: 10;
   width: 100vw;
   height: 100vh;
   min-height: 100vh;
@@ -695,6 +784,45 @@ button.collectionCard {
     min-height: 0;
   }
 
+  .heroImageOverlay {
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.28) 42%, rgba(0, 0, 0, 0.76));
+  }
+
+  .heroImageCopy {
+    right: 14px;
+    bottom: 18px;
+    left: 14px;
+    width: auto;
+  }
+
+  .heroImageCopyRight {
+    right: 14px;
+    left: 14px;
+    justify-items: end;
+    text-align: right;
+  }
+
+  .heroImageCopy h1 {
+    max-width: 13ch;
+    font-size: clamp(1.75rem, 8vw, 2.7rem);
+  }
+
+  .heroImageCopy p {
+    max-width: 19rem;
+    margin-top: 12px;
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+
+  .heroImageCopy button {
+    min-width: 132px;
+    min-height: 36px;
+    margin-top: 14px;
+    padding: 0 20px;
+    font-size: 0.68rem;
+  }
+
   .brandIntro {
     grid-template-columns: 1fr;
     align-content: start;
@@ -732,6 +860,12 @@ button.collectionCard {
     margin-top: 28px;
   }
 
+  .collectionPanelLayer {
+    position: relative;
+    height: auto;
+    transform: none !important;
+  }
+
   .stackSticky {
     position: relative;
     height: auto;
@@ -765,9 +899,9 @@ button.collectionCard {
 
   .collectionImagePrimary,
   .collectionImageHover {
-    width: 86%;
-    height: 86%;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .collectionMeta {

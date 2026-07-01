@@ -9,12 +9,43 @@
       "bannerPrimary": "Hot Deal",
       "bannerSecondary": "Premium picks only",
       "bannerTertiary": "Auto-updating flash sale",
-      "homeHeroImage": "/images/Herosection.png",
+      "homeHeroImage": "/uploads/home-page-1782899555136-816b7390.png",
       "homeHeroImages": [
-        "/images/HeroSection/Hero1.png",
+        "/uploads/home-page-1782899555136-816b7390.png",
         "/images/HeroSection/Hero2.png",
         "/images/HeroSection/Hero3.png"
       ],
+      "brandIntroText": "Vinex Nepal is built for everyday style, useful tech, and smart essentials that feel easy to choose and better to own. We bring clean, reliable products together with a shopping experience made for Nepal.",
+      "collectionTitle": "Featured Products",
+      "collectionProductIds": [
+        1,
+        2,
+        3
+      ],
+      "electronicsTitle": "Electronics Products",
+      "electronicsProductIds": [
+        1,
+        2,
+        3
+      ],
+      "garmentsTitle": "Garment Products",
+      "garmentsProductIds": [
+        5,
+        6,
+        7
+      ],
+      "shoesTitle": "Shoes",
+      "shoesProductIds": [
+        11,
+        12,
+        13
+      ],
+      "flashProductIds": [
+        1
+      ],
+      "flashDescription": "Limited-time Vinex picks with sharp pricing, clean utility, and fast local support.",
+      "flashCta": "Shop Now",
+      "shopNowImage": "/images/shopnow.png",
       "heroPromos": [
         {
           "title": "Hot Sellers",
@@ -57,8 +88,8 @@
       "flashInactiveText": "Limited-time offers are still highlighted for shoppers right now.",
       "sideTag": "Trending Now",
       "sectionTag": "Flash Sale",
-      "sectionTitle": "Only two clean premium deals, front and center.",
-      "sectionText": "The storefront now focuses on a tighter, ad-driven experience with fast product discovery, visible discounts, and a hero area that keeps rotating between the airbuds and Apple Watch."
+      "sectionTitle": "Built for everyday.",
+      "sectionText": "Premium tech, clean style, and daily essentials curated for Nepal."
     },
     "operations": {
       "categories": [

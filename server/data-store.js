@@ -20,6 +20,12 @@ const defaultPageContent = {
     "Vinex Nepal is built for everyday style, useful tech, and smart essentials that feel easy to choose and better to own. We bring clean, reliable products together with a shopping experience made for Nepal.",
   collectionTitle: "Our Collection",
   collectionProductIds: [1, 2],
+  electronicsTitle: "Electronics Products",
+  electronicsProductIds: [1, 2, 3],
+  garmentsTitle: "Garment Products",
+  garmentsProductIds: [5, 6, 7],
+  shoesTitle: "Shoes",
+  shoesProductIds: [11, 12, 13],
   flashProductIds: [1],
   flashDescription:
     "Limited-time Vinex picks with sharp pricing, clean utility, and fast local support.",
@@ -68,9 +74,9 @@ const defaultPageContent = {
   flashInactiveText: "Limited-time offers are still highlighted for shoppers right now.",
   sideTag: "Trending Now",
   sectionTag: "Flash Sale",
-  sectionTitle: "Only two clean premium deals, front and center.",
+  sectionTitle: "Built for everyday.",
   sectionText:
-    "The storefront now focuses on a tighter, ad-driven experience with fast product discovery, visible discounts, and a hero area that keeps rotating between the airbuds and Apple Watch.",
+    "Premium tech, clean style, and daily essentials curated for Nepal.",
 };
 
 const defaultAboutContent = {

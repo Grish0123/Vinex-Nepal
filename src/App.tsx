@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Header } from "./components/Header";
 import { HomePage } from "./pages/HomePage/HomePage";
@@ -46,6 +46,12 @@ const defaultPageContent: PageContentSettings = {
     "Vinex Nepal is built for everyday style, useful tech, and smart essentials that feel easy to choose and better to own. We bring clean, reliable products together with a shopping experience made for Nepal.",
   collectionTitle: "Our Collection",
   collectionProductIds: [1, 2],
+  electronicsTitle: "Electronics Products",
+  electronicsProductIds: [1, 2, 3],
+  garmentsTitle: "Garment Products",
+  garmentsProductIds: [5, 6, 7],
+  shoesTitle: "Shoes",
+  shoesProductIds: [11, 12, 13],
   flashProductIds: [1],
   flashDescription: "Limited-time Vinex picks with sharp pricing, clean utility, and fast local support.",
   flashCta: "Quick Add",
@@ -92,9 +98,9 @@ const defaultPageContent: PageContentSettings = {
   flashInactiveText: "Limited-time offers are still highlighted for shoppers right now.",
   sideTag: "Trending Now",
   sectionTag: "Flash Sale",
-  sectionTitle: "Only two clean premium deals, front and center.",
+  sectionTitle: "Built for everyday.",
   sectionText:
-    "The storefront now focuses on a tighter, ad-driven experience with fast product discovery, visible discounts, and a hero area that keeps rotating between the airbuds and Apple Watch.",
+    "Premium tech, clean style, and daily essentials curated for Nepal.",
 };
 
 const defaultAboutContent: AboutContentSettings = {
@@ -447,6 +453,7 @@ function ProductShopWindow({
   products,
   cartCount,
   storeOperations,
+  categoryTarget,
   onClose,
   onOpenAbout,
   onOpenCart,
@@ -457,6 +464,7 @@ function ProductShopWindow({
   products: Product[];
   cartCount: number;
   storeOperations: StoreOperationSettings;
+  categoryTarget: string | null;
   onClose: () => void;
   onOpenAbout: () => void;
   onOpenCart: () => void;
@@ -472,7 +480,18 @@ function ProductShopWindow({
   const [hasReturnedFromProduct, setHasReturnedFromProduct] = useState(false);
   const [isSupplierDetailsOpen, setIsSupplierDetailsOpen] = useState(false);
   const formatPrice = (price: number) => `Rs ${price.toLocaleString()}`;
-  const categories = Array.from(new Set([...(storeOperations.categories ?? []), ...products.map((product) => product.category)].filter(Boolean)));
+  const categories = useMemo(
+    () => Array.from(new Set([...(storeOperations.categories ?? []), ...products.map((product) => product.category)].filter(Boolean))),
+    [products, storeOperations.categories],
+  );
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    setCategoryFilter(categoryTarget && categories.includes(categoryTarget) ? categoryTarget : "all");
+  }, [categories, categoryTarget, isOpen]);
+
   const visibleProducts = products
     .filter((product) => categoryFilter === "all" || product.category === categoryFilter)
     .sort((first, second) => {
@@ -813,6 +832,7 @@ export default function App() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [shopCategoryTarget, setShopCategoryTarget] = useState<string | null>(null);
   const [couponCode, setCouponCode] = useState("");
   const [appliedCouponCode, setAppliedCouponCode] = useState("");
   const [couponMessage, setCouponMessage] = useState("");
@@ -848,6 +868,18 @@ export default function App() {
   const [hasLoadedStorefront, setHasLoadedStorefront] = useState(false);
   const lastScrollY = useRef(0);
 
+  useLayoutEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+
+    if (getPageFromPathname(window.location.pathname) === "home") {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+  }, []);
+
   useEffect(() => {
     const syncPageFromLocation = () => {
       setPage(getPageFromPathname(window.location.pathname));
@@ -863,6 +895,16 @@ export default function App() {
 
   useEffect(() => {
     document.title = getTitleForPage(page);
+  }, [page]);
+
+  useEffect(() => {
+    if (page !== "home") {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    });
   }, [page]);
 
   useEffect(() => {
@@ -1119,6 +1161,7 @@ export default function App() {
 
   const openShopWindow = () => {
     setSearchQuery("");
+    setShopCategoryTarget(null);
     navigate("products");
   };
 
@@ -1158,7 +1201,9 @@ export default function App() {
   };
 
   const openProductFromHome = (productId: number) => {
+    const product = products.find((entry) => entry.id === productId);
     setSearchQuery("");
+    setShopCategoryTarget(product?.category ?? null);
     setProductToOpen(productId);
     navigate("products");
   };
@@ -1267,6 +1312,7 @@ export default function App() {
           products={searchedProducts}
           cartCount={cartCount}
           storeOperations={storeOperations}
+          categoryTarget={shopCategoryTarget}
           onClose={() => navigate("home")}
           onOpenAbout={openAboutPanel}
           onOpenCart={openCartDrawer}
@@ -1359,6 +1405,7 @@ export default function App() {
         products={products}
         cartCount={cartCount}
         storeOperations={storeOperations}
+        categoryTarget={shopCategoryTarget}
         onClose={() => setIsShopWindowOpen(false)}
         onOpenAbout={openAboutPanel}
         onOpenCart={openCartDrawer}

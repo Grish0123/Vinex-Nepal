@@ -258,6 +258,12 @@ const initialPageContentForm: PageContentSettings = {
     "Vinex Nepal is built for everyday style, useful tech, and smart essentials that feel easy to choose and better to own. We bring clean, reliable products together with a shopping experience made for Nepal.",
   collectionTitle: "Our Collection",
   collectionProductIds: [1, 2],
+  electronicsTitle: "Electronics Products",
+  electronicsProductIds: [1, 2, 3],
+  garmentsTitle: "Garment Products",
+  garmentsProductIds: [5, 6, 7],
+  shoesTitle: "Shoes",
+  shoesProductIds: [11, 12, 13],
   flashProductIds: [1],
   flashDescription:
     "Limited-time Vinex picks with sharp pricing, clean utility, and fast local support.",
@@ -305,9 +311,9 @@ const initialPageContentForm: PageContentSettings = {
   flashInactiveText: "Limited-time offers are still highlighted for shoppers right now.",
   sideTag: "Trending Now",
   sectionTag: "Flash Sale",
-  sectionTitle: "Only two clean premium deals, front and center.",
+  sectionTitle: "Built for everyday.",
   sectionText:
-    "The storefront now focuses on a tighter, ad-driven experience with fast product discovery, visible discounts, and a hero area that keeps rotating between the airbuds and Apple Watch.",
+    "Premium tech, clean style, and daily essentials curated for Nepal.",
 };
 
 const initialAboutContentForm: AboutContentSettings = {
@@ -538,6 +544,54 @@ function ImageUrlField({ label, value, placeholder, previewAlt, onChange, onUplo
           <img src={value} alt={previewAlt} className="admin-product-image preview" />
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function ProductSelectionCard({
+  label,
+  heading,
+  products,
+  selectedProductIds,
+  onChange,
+}: {
+  label: string;
+  heading: string;
+  products: Product[];
+  selectedProductIds: number[];
+  onChange: (productIds: number[]) => void;
+}) {
+  return (
+    <div className="admin-promo-edit-card full-span">
+      <div className="admin-panel-header full-span">
+        <div>
+          <span className="section-tag">{label}</span>
+          <h3>{heading}</h3>
+        </div>
+      </div>
+      <div className="admin-collection-picker full-span">
+        {products.map((product) => {
+          const isSelected = selectedProductIds.includes(product.id);
+          return (
+            <label className="admin-checkbox" key={product.id}>
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={(event) =>
+                  onChange(
+                    event.target.checked
+                      ? [...new Set([...selectedProductIds, product.id])]
+                      : selectedProductIds.filter((productId) => productId !== product.id),
+                  )
+                }
+              />
+              <span>
+                {product.name} / Rs {product.price.toLocaleString()}
+              </span>
+            </label>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -1790,6 +1844,10 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
         ...pageContentForm,
         homeHeroImage: homeHeroImages[0] ?? pageContentForm.homeHeroImage,
         homeHeroImages,
+        collectionProductIds: pageContentForm.collectionProductIds.map((productId) => Number(productId)).filter(Number.isFinite),
+        electronicsProductIds: pageContentForm.electronicsProductIds.map((productId) => Number(productId)).filter(Number.isFinite),
+        garmentsProductIds: pageContentForm.garmentsProductIds.map((productId) => Number(productId)).filter(Number.isFinite),
+        shoesProductIds: pageContentForm.shoesProductIds.map((productId) => Number(productId)).filter(Number.isFinite),
         flashProductIds: pageContentForm.flashProductIds.map((productId) => Number(productId)).filter(Number.isFinite),
       };
       const nextDashboard = await updatePageContentSettings(token, submittedPageContent);
@@ -1799,6 +1857,18 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
         ...initialPageContentForm,
         ...submittedPageContent,
         ...savedPageContent,
+        collectionProductIds: Array.isArray(savedPageContent.collectionProductIds)
+          ? savedPageContent.collectionProductIds
+          : submittedPageContent.collectionProductIds,
+        electronicsProductIds: Array.isArray(savedPageContent.electronicsProductIds)
+          ? savedPageContent.electronicsProductIds
+          : submittedPageContent.electronicsProductIds,
+        garmentsProductIds: Array.isArray(savedPageContent.garmentsProductIds)
+          ? savedPageContent.garmentsProductIds
+          : submittedPageContent.garmentsProductIds,
+        shoesProductIds: Array.isArray(savedPageContent.shoesProductIds)
+          ? savedPageContent.shoesProductIds
+          : submittedPageContent.shoesProductIds,
         flashProductIds: Array.isArray(savedPageContent.flashProductIds)
           ? savedPageContent.flashProductIds
           : submittedPageContent.flashProductIds,
@@ -3913,6 +3983,25 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
                           }
                         />
                       </label>
+                      <label className="form-field full-span">
+                        <span>Hero Bottom-Right Title</span>
+                        <input
+                          value={pageContentForm.sectionTitle}
+                          onChange={(event) =>
+                            setPageContentForm((current) => ({ ...current, sectionTitle: event.target.value }))
+                          }
+                        />
+                      </label>
+                      <label className="form-field full-span">
+                        <span>Hero Bottom-Right Text</span>
+                        <textarea
+                          rows={3}
+                          value={pageContentForm.sectionText}
+                          onChange={(event) =>
+                            setPageContentForm((current) => ({ ...current, sectionText: event.target.value }))
+                          }
+                        />
+                      </label>
                       <label className="form-field">
                         <span>Collection Title</span>
                         <input
@@ -3922,38 +4011,69 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
                           }
                         />
                       </label>
-                      <div className="admin-promo-edit-card full-span">
-                        <div className="admin-panel-header full-span">
-                          <div>
-                            <span className="section-tag">Our Collection</span>
-                            <h3>Featured collection products</h3>
-                          </div>
-                        </div>
-                        <div className="admin-collection-picker full-span">
-                          {dashboard.products.map((product) => {
-                            const isSelected = pageContentForm.collectionProductIds.includes(product.id);
-                            return (
-                              <label className="admin-checkbox" key={product.id}>
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={(event) =>
-                                    setPageContentForm((current) => ({
-                                      ...current,
-                                      collectionProductIds: event.target.checked
-                                        ? [...new Set([...current.collectionProductIds, product.id])]
-                                        : current.collectionProductIds.filter((productId) => productId !== product.id),
-                                    }))
-                                  }
-                                />
-                                <span>
-                                  {product.name} / Rs {product.price.toLocaleString()}
-                                </span>
-                              </label>
-                            );
-                          })}
-                        </div>
-                      </div>
+                      <ProductSelectionCard
+                        label="Featured Products"
+                        heading="Featured collection products"
+                        products={dashboard.products}
+                        selectedProductIds={pageContentForm.collectionProductIds}
+                        onChange={(collectionProductIds) =>
+                          setPageContentForm((current) => ({ ...current, collectionProductIds }))
+                        }
+                      />
+                      <label className="form-field">
+                        <span>Electronics Section Title</span>
+                        <input
+                          value={pageContentForm.electronicsTitle}
+                          onChange={(event) =>
+                            setPageContentForm((current) => ({ ...current, electronicsTitle: event.target.value }))
+                          }
+                        />
+                      </label>
+                      <ProductSelectionCard
+                        label="Electronics"
+                        heading="Electronics products"
+                        products={dashboard.products}
+                        selectedProductIds={pageContentForm.electronicsProductIds}
+                        onChange={(electronicsProductIds) =>
+                          setPageContentForm((current) => ({ ...current, electronicsProductIds }))
+                        }
+                      />
+                      <label className="form-field">
+                        <span>Garment Section Title</span>
+                        <input
+                          value={pageContentForm.garmentsTitle}
+                          onChange={(event) =>
+                            setPageContentForm((current) => ({ ...current, garmentsTitle: event.target.value }))
+                          }
+                        />
+                      </label>
+                      <ProductSelectionCard
+                        label="Garments"
+                        heading="Garment products"
+                        products={dashboard.products}
+                        selectedProductIds={pageContentForm.garmentsProductIds}
+                        onChange={(garmentsProductIds) =>
+                          setPageContentForm((current) => ({ ...current, garmentsProductIds }))
+                        }
+                      />
+                      <label className="form-field">
+                        <span>Shoes Section Title</span>
+                        <input
+                          value={pageContentForm.shoesTitle}
+                          onChange={(event) =>
+                            setPageContentForm((current) => ({ ...current, shoesTitle: event.target.value }))
+                          }
+                        />
+                      </label>
+                      <ProductSelectionCard
+                        label="Shoes"
+                        heading="Shoe products"
+                        products={dashboard.products}
+                        selectedProductIds={pageContentForm.shoesProductIds}
+                        onChange={(shoesProductIds) =>
+                          setPageContentForm((current) => ({ ...current, shoesProductIds }))
+                        }
+                      />
                       <label className="form-field">
                         <span>Shop Now Button Text</span>
                         <input

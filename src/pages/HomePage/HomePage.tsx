@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import { motion, useMotionTemplate, useScroll, useSpring, useTransform, type MotionValue } from "framer-motion";
 import type { PageContentSettings, StoreOperationSettings } from "../../lib/api";
 import type { Product } from "../../types/product";
@@ -16,9 +16,22 @@ type HomePageProps = {
   onOpenProduct: (productId: number) => void;
 };
 
-function HomeHeroImage({ images }: { images: string[] }) {
+function HomeHeroImage({
+  images,
+  title,
+  text,
+  buttonText,
+  onBrowseProducts,
+}: {
+  images: string[];
+  title: string;
+  text: string;
+  buttonText: string;
+  onBrowseProducts: () => void;
+}) {
   const heroImages = images.filter(Boolean);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const titleParts = title.replace(/,\s+/g, ", ").split(/,\s*(?=front\b)/i);
 
   useEffect(() => {
     if (heroImages.length < 2) {
@@ -49,6 +62,30 @@ function HomeHeroImage({ images }: { images: string[] }) {
           key={`${image}-${index}`}
         />
       ))}
+      <div className={styles.heroImageOverlay} aria-hidden="true" />
+      <motion.div
+        className={`${styles.heroImageCopy} ${styles.heroImageCopyRight}`}
+        key={activeImageIndex}
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <h1>
+          {titleParts.length > 1 ? (
+            <>
+              {titleParts[0]},
+              <br />
+              {titleParts.slice(1).join(", ")}
+            </>
+          ) : (
+            title
+          )}
+        </h1>
+        <p>{text}</p>
+        <button type="button" onClick={onBrowseProducts}>
+          {buttonText}
+        </button>
+      </motion.div>
     </section>
   );
 }
@@ -108,15 +145,14 @@ function CollectionSection({
   products,
   collectionProductIds,
   title,
-  onBrowseProducts,
   onOpenProduct,
 }: {
   products: Product[];
   collectionProductIds: number[];
   title: string;
-  onBrowseProducts: () => void;
   onOpenProduct: (productId: number) => void;
 }) {
+  const titleId = useId();
   const selectedProducts = collectionProductIds
     .map((productId) => products.find((product) => product.id === productId))
     .filter((product): product is Product => Boolean(product));
@@ -126,8 +162,8 @@ function CollectionSection({
   const visibleCollectionProducts = collectionProducts.length > 0 ? collectionProducts : products.slice(0, 3);
 
   return (
-    <section className={styles.collectionSection} aria-labelledby="home-collection-title">
-      <h2 id="home-collection-title">
+    <section className={styles.collectionSection} aria-labelledby={titleId}>
+      <h2 id={titleId}>
         <span aria-hidden="true">•</span>
         {title}
       </h2>
@@ -418,19 +454,35 @@ function FlashSaleParallaxSection({
   );
 }
 
-function CollectionStackSection({
+function FlashSaleStackSection({
   products,
   flashSaleSettings,
   pageContent,
   onOpenProduct,
-  onBrowseProducts,
 }: {
   products: Product[];
   flashSaleSettings: HomePageProps["flashSaleSettings"];
   pageContent: PageContentSettings;
   onOpenProduct: (productId: number) => void;
-  onBrowseProducts: () => void;
 }) {
+  const collectionSections = [
+    {
+      title: pageContent.collectionTitle,
+      productIds: pageContent.collectionProductIds,
+    },
+    {
+      title: pageContent.electronicsTitle,
+      productIds: pageContent.electronicsProductIds,
+    },
+    {
+      title: pageContent.garmentsTitle,
+      productIds: pageContent.garmentsProductIds,
+    },
+    {
+      title: pageContent.shoesTitle,
+      productIds: pageContent.shoesProductIds,
+    },
+  ];
   const stackRef = useRef<HTMLElement | null>(null);
   const { scrollYProgress } = useScroll({
     target: stackRef,
@@ -443,11 +495,15 @@ function CollectionStackSection({
     restDelta: 0.0008,
   });
   const flashProductCount = resolveFlashProducts(products, pageContent.flashProductIds).length;
-  const stackSceneHeight = Math.max(300, 280 + Math.max(0, flashProductCount - 1) * 110);
+  const revealPanelCount = collectionSections.length + 1;
+  const stackSceneHeight = Math.max(300, 100 + Math.max(0, revealPanelCount - 1) * 110 + Math.max(0, flashProductCount - 1) * 110);
   const flashHoldStart = 1 - 100 / (stackSceneHeight - 100);
-  const flashStart = 0.18;
-  const flashSettle = flashProductCount > 1 ? Math.max(0.42, flashHoldStart - 0.28) : flashHoldStart;
-  const stackedPanelSlideStart = Math.max(flashSettle + 0.04, flashHoldStart - 0.28);
+  const revealStepCount = Math.max(1, revealPanelCount - 1);
+  const revealSlideEnd = flashProductCount > 1 ? Math.max(0.55, flashHoldStart - 0.24) : flashHoldStart;
+  const revealStep = revealSlideEnd / revealStepCount;
+  const flashStart = (collectionSections.length - 1) * revealStep;
+  const flashSettle = flashStart + revealStep * 0.72;
+  const stackedPanelSlideStart = Math.max(flashSettle + 0.04, flashHoldStart - 0.24);
   const stackedPanelSlideEnd = flashHoldStart;
   const flashYOffset = useTransform(
     smoothScrollYProgress,
@@ -462,13 +518,18 @@ function CollectionStackSection({
   return (
     <section ref={stackRef} className={styles.stackScene} style={stackSceneStyle}>
       <div className={styles.stackSticky}>
-        <CollectionSection
-          products={products}
-          collectionProductIds={pageContent.collectionProductIds}
-          title={pageContent.collectionTitle}
-          onBrowseProducts={onBrowseProducts}
-          onOpenProduct={onOpenProduct}
-        />
+        {collectionSections.map((section, index) => (
+          <StackedCollectionPanel
+            products={products}
+            collectionProductIds={section.productIds}
+            title={section.title}
+            index={index}
+            revealStep={revealStep}
+            scrollYProgress={smoothScrollYProgress}
+            onOpenProduct={onOpenProduct}
+            key={`${section.title}-${index}`}
+          />
+        ))}
         <FlashSaleParallaxSection
           products={products}
           flashSaleSettings={flashSaleSettings}
@@ -481,6 +542,45 @@ function CollectionStackSection({
         />
       </div>
     </section>
+  );
+}
+
+function StackedCollectionPanel({
+  products,
+  collectionProductIds,
+  title,
+  index,
+  revealStep,
+  scrollYProgress,
+  onOpenProduct,
+}: {
+  products: Product[];
+  collectionProductIds: number[];
+  title: string;
+  index: number;
+  revealStep: number;
+  scrollYProgress: MotionValue<number>;
+  onOpenProduct: (productId: number) => void;
+}) {
+  const start = index === 0 ? 0 : (index - 1) * revealStep;
+  const settle = index === 0 ? 1 : start + revealStep * 0.72;
+  const end = index === 0 ? 1 : start + revealStep;
+  const panelYOffset = useTransform(
+    scrollYProgress,
+    [start, settle, end],
+    [index === 0 ? 0 : 100, 0, 0],
+  );
+  const panelY = useMotionTemplate`${panelYOffset}vh`;
+
+  return (
+    <motion.div className={styles.collectionPanelLayer} style={{ y: panelY, zIndex: index + 1 }}>
+      <CollectionSection
+        products={products}
+        collectionProductIds={collectionProductIds}
+        title={title}
+        onOpenProduct={onOpenProduct}
+      />
+    </motion.div>
   );
 }
 
@@ -510,15 +610,20 @@ export function HomePage({ products, flashSaleSettings, pageContent, storeOperat
   return (
     <main className={`${styles.page} page-shell homepage-shell`}>
       {isDeliveryBadgeVisible ? <DeliveryPartnerBadge side="left" onDismiss={() => setIsDeliveryBadgeVisible(false)} /> : null}
-      <HomeHeroImage images={heroImages} />
+      <HomeHeroImage
+        images={heroImages}
+        title={pageContent.sectionTitle}
+        text={pageContent.sectionText}
+        buttonText={pageContent.heroButton}
+        onBrowseProducts={onBrowseProducts}
+      />
       <BrandIntroSection text={pageContent.brandIntroText} />
       {showCollectionStack ? (
-        <CollectionStackSection
+        <FlashSaleStackSection
           products={products}
           flashSaleSettings={flashSaleSettings}
           pageContent={pageContent}
           onOpenProduct={onOpenProduct}
-          onBrowseProducts={onBrowseProducts}
         />
       ) : null}
       <ShopNowImageSection image={pageContent.shopNowImage} buttonText={pageContent.heroButton} onBrowseProducts={onBrowseProducts} />

@@ -41,6 +41,12 @@ export type PageContentSettings = {
   brandIntroText: string;
   collectionTitle: string;
   collectionProductIds: number[];
+  electronicsTitle: string;
+  electronicsProductIds: number[];
+  garmentsTitle: string;
+  garmentsProductIds: number[];
+  shoesTitle: string;
+  shoesProductIds: number[];
   flashProductIds: number[];
   flashDescription: string;
   flashCta: string;

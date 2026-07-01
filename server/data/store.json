@@ -1,5 +1,5 @@
 {
-  "nextProductId": 5,
+  "nextProductId": 15,
   "settings": {
     "flashSale": {
       "enabled": true,
@@ -9,18 +9,18 @@
       "bannerPrimary": "Hot Deal",
       "bannerSecondary": "Premium picks only",
       "bannerTertiary": "Auto-updating flash sale",
-      "homeHeroImage": "/images/HeroSection/Hero1.png",
+      "homeHeroImage": "/uploads/home-page-1782899555136-816b7390.png",
       "homeHeroImages": [
-        "/images/HeroSection/Hero1.png",
-        "/images/HeroSection/Hero2.png",
-        "/images/HeroSection/Hero3.png"
+        "/uploads/home-page-1782899555136-816b7390.png",
+        "/uploads/home-page2-1782900796928-4dcd22ee.png",
+        "/uploads/home-page3-1782901054384-4c0e8297.png"
       ],
       "brandIntroText": "Vinex Nepal is built for everyday style, useful tech, and smart essentials that feel easy to choose and better to own. We bring clean, reliable products together with a shopping experience made for Nepal.",
       "collectionTitle": "Featured Products",
       "collectionProductIds": [
         1,
-        2,
-        3
+        5,
+        14
       ],
       "flashProductIds": [
         1
@@ -70,8 +70,8 @@
       "flashInactiveText": "Limited-time offers are still highlighted for shoppers right now.",
       "sideTag": "Trending Now",
       "sectionTag": "Flash Sale",
-      "sectionTitle": "Only two clean premium deals, front and center.",
-      "sectionText": "The storefront now focuses on a tighter, ad-driven experience with fast product discovery, visible discounts, and a hero area that keeps rotating between the airbuds and Apple Watch."
+      "sectionTitle": "Premium deals, front and center.",
+      "sectionText": "One destination. Endless possibilities. Discover premium electronics, apparel, footwear, accessories, and more at Vinex Nepal."
     },
     "operations": {
       "categories": [
@@ -173,13 +173,13 @@
   },
   "products": [
     {
-      "supplierName": "Vinex Nepal",
       "id": 1,
       "name": "Airbuds Pro 2",
       "price": 4499,
       "originalPrice": 7000,
       "featured": true,
-      "category": "Audio",
+      "category": "Electronics",
+      "supplierName": "Vinex Nepal",
       "image": "/images/products/airbuds-display.png",
       "hoverImage": "/images/products/airbuds-hover.png",
       "galleryImages": [
@@ -194,19 +194,19 @@
       "sizeOptions": [
         "Standard"
       ],
-      "description": "Premium wireless airbuds with deep bass, long battery life, and a sharp launch discount for fast movers."
+      "description": "Premium wireless airbuds with deep bass, long battery life, and a sharp launch discount for fast movers.",
+      "inStock": true
     },
     {
-      "supplierName": "Vinex Nepal",
       "id": 2,
       "name": "Apple Watch Series 9",
       "price": 4499,
       "originalPrice": 7000,
       "featured": true,
-      "category": "Wearables",
+      "category": "Electronics",
+      "supplierName": "Vinex Nepal",
       "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=900&q=80",
       "hoverImage": "/images/products/watch-hover.png",
-      "description": "A clean, premium smartwatch deal with polished styling, fitness tracking, and an aggressive flash-sale price.",
       "galleryImages": [
         "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=900&q=80",
         "/images/products/watch-hover.png"
@@ -220,17 +220,18 @@
         "41mm",
         "45mm"
       ],
+      "description": "A clean, premium smartwatch deal with polished styling, fitness tracking, and an aggressive flash-sale price.",
       "inStock": true
     },
     {
-      "supplierName": "Vinex Nepal",
       "id": 3,
       "name": "Headphones",
       "price": 5000,
       "originalPrice": 10000,
       "featured": true,
-      "category": "Audio",
-      "image": "/uploads/headphones-1781798789455-72afd7e3.png",
+      "category": "Electronics",
+      "supplierName": "Vinex Nepal",
+      "image": "/uploads/headphones-1782902591227-c23d9868.webp",
       "hoverImage": "/uploads/headphones-hover-1781798797897-0df3e03f.png",
       "galleryImages": [],
       "colorOptions": [
@@ -240,6 +241,251 @@
         "Free size"
       ],
       "description": "Premium wireless airbuds with deep bass, long battery life, and a sharp launch discount for fast movers",
+      "inStock": true
+    },
+    {
+      "id": 5,
+      "name": "Striped Shirt & Navy Sweater",
+      "price": 5600,
+      "originalPrice": 6000,
+      "featured": true,
+      "category": "Garments",
+      "supplierName": "Old Money Nepal",
+      "supplierDescription": "Timeless luxury⚜️ Building Nepal's biggest oldmoney lifestyle brand.",
+      "supplierLocation": "Kupandole. Lalitpur",
+      "image": "/uploads/shirt-1782894694300-124a7acc.webp",
+      "hoverImage": "/uploads/shirt-hover-1782894696712-a9694a7c.webp",
+      "galleryImages": [],
+      "colorOptions": [
+        "Custom"
+      ],
+      "sizeOptions": [
+        "M",
+        "L"
+      ],
+      "description": "A refined spring look in true old money style. This outfit features a light blue striped button-up shirt layered with a navy sweater draped over the shoulders, paired with elegant cream trousers and black loafers. Finished with a minimalist silver wristwatch — perfect for warm days, classy outings, and effortless elegance.",
+      "inStock": true
+    },
+    {
+      "id": 6,
+      "name": "Striped Piqué Polo Shirt",
+      "price": 3500,
+      "originalPrice": 3500,
+      "featured": true,
+      "category": "Garments",
+      "supplierName": "Old Money Nepal",
+      "supplierDescription": "Timeless luxury⚜️\nBuilding Nepal's biggest oldmoney lifestyle brand.",
+      "supplierLocation": "Kupondole, Lalitpur",
+      "image": "/uploads/polo-shirt-1782894938597-3aac6b78.webp",
+      "hoverImage": "/uploads/polo-hover-1782894940516-2d1196d5.webp",
+      "galleryImages": [],
+      "colorOptions": [
+        "Striped"
+      ],
+      "sizeOptions": [
+        "M",
+        "L"
+      ],
+      "description": "The '80s basketball icon returns with classic details and throwback hoops flair. Channeling vintage style back onto the streets, its padded, low-cut collar lets you take your game anywhere—in comfort.",
+      "inStock": true
+    },
+    {
+      "id": 7,
+      "name": "Ralph Lauren Classic Polo",
+      "price": 3000,
+      "originalPrice": 4000,
+      "featured": true,
+      "category": "Garments",
+      "supplierName": "Old Money Nepal",
+      "supplierDescription": "Timeless luxury⚜️\nBuilding Nepal's biggest oldmoney lifestyle brand.",
+      "supplierLocation": "Kupandole, Lalitpur",
+      "image": "/uploads/ralph-polo-1782895076323-3d312f63.webp",
+      "hoverImage": "/uploads/ralph-polo-hover-1782895078998-5e1c2212.webp",
+      "galleryImages": [],
+      "colorOptions": [
+        "White",
+        "Navy"
+      ],
+      "sizeOptions": [
+        "M"
+      ],
+      "description": "A timeless Ralph Lauren polo shirt that speaks quiet luxury. Crafted from soft, breathable cotton and featuring the iconic embroidered logo, this polo is perfect for daily wear or elegant summer evenings.",
+      "inStock": true
+    },
+    {
+      "id": 8,
+      "name": "Polo Set",
+      "price": 5400,
+      "originalPrice": 6000,
+      "featured": true,
+      "category": "Garments",
+      "supplierName": "Old Money Nepal",
+      "supplierDescription": "Timeless luxury⚜️\nBuilding Nepal's biggest oldmoney lifestyle brand.",
+      "supplierLocation": "Kupandole, Lalitpur",
+      "image": "/uploads/set-1782895285075-dab7824b.webp",
+      "hoverImage": "/uploads/set-hover-1782895319982-56600f08.webp",
+      "galleryImages": [
+        "/uploads/set2-1782895324970-199c3aeb.webp"
+      ],
+      "colorOptions": [
+        "Navy"
+      ],
+      "sizeOptions": [
+        "M"
+      ],
+      "description": "Timeless \"Old Money\" outfit featuring a navy Ralph Lauren polo, off-white trousers, and deep blue suede loafers. Includes a burgundy watch and a Goyard cardholder to complete the look.",
+      "inStock": true
+    },
+    {
+      "id": 9,
+      "name": "Beige Polo & Cream Trousers Set",
+      "price": 5600,
+      "originalPrice": 6000,
+      "featured": true,
+      "category": "Garments",
+      "supplierName": "Old Money Nepal",
+      "supplierDescription": "Timeless luxury⚜️\nBuilding Nepal's biggest oldmoney lifestyle brand.",
+      "supplierLocation": "Kupandole, Lalitpur",
+      "image": "/uploads/settt-1782895519271-93fa122a.webp",
+      "hoverImage": "/uploads/sett-hover-1782895525118-80730ecf.webp",
+      "galleryImages": [
+        "/uploads/settt-1782895529375-24180b81.webp"
+      ],
+      "colorOptions": [
+        "Custom"
+      ],
+      "sizeOptions": [
+        "M"
+      ],
+      "description": "Stay elegant this summer with the ultimate Old Money outfit. This light and breathable beige knit polo is paired with tailored cream trousers and suede loafers in warm neutral tones — perfect for a refined, effortless summer appearance.",
+      "inStock": true
+    },
+    {
+      "id": 10,
+      "name": "Classic Navy – Summer Outfit",
+      "price": 4500,
+      "originalPrice": 5000,
+      "featured": true,
+      "category": "Garments",
+      "supplierName": "Old Money Nepal",
+      "supplierDescription": "Timeless luxury⚜️\nBuilding Nepal's biggest oldmoney lifestyle brand.",
+      "supplierLocation": "Kupandole, Kathmandu",
+      "image": "/uploads/classic-1782895662405-2f65e19a.webp",
+      "hoverImage": "/uploads/classic-hover-1782895664261-6f0ef0c0.webp",
+      "galleryImages": [
+        "/uploads/classic-g-1782895666825-5a3c7f6d.webp"
+      ],
+      "colorOptions": [
+        "Navy"
+      ],
+      "sizeOptions": [
+        "M"
+      ],
+      "description": "A true old money essential. This navy button-down shirt with red Ralph Lauren embroidery is paired with crisp off-white trousers and deep navy loafers for a sophisticated summer look. Finished with a classic silver watch for timeless appeal.",
+      "inStock": true
+    },
+    {
+      "id": 11,
+      "name": "Valentino Garavani",
+      "price": 16500,
+      "originalPrice": 20000,
+      "featured": true,
+      "category": "Shoes",
+      "supplierName": "Old Money Nepal",
+      "supplierDescription": "Timeless luxury⚜️\nBuilding Nepal's biggest oldmoney lifestyle brand.",
+      "supplierLocation": "Kupandole, Kathmandu",
+      "image": "/uploads/valentino-1782895749611-c4b05c25.webp",
+      "hoverImage": "/uploads/valentino-1782895752463-559fb51e.webp",
+      "galleryImages": [],
+      "colorOptions": [
+        "White"
+      ],
+      "sizeOptions": [
+        "40",
+        "41",
+        "42",
+        "43",
+        "44"
+      ],
+      "description": "Valentino",
+      "inStock": true
+    },
+    {
+      "id": 12,
+      "name": "Golden Goose Super-Star",
+      "price": 18200,
+      "originalPrice": 20000,
+      "featured": true,
+      "category": "Shoes",
+      "supplierName": "Old Money Nepal",
+      "supplierDescription": "Timeless luxury⚜️\nBuilding Nepal's biggest oldmoney lifestyle brand.",
+      "supplierLocation": "Kupandole, Lalitpur",
+      "image": "/uploads/golden-1782895839867-f07a2ff3.webp",
+      "hoverImage": "/uploads/golden-1782895847250-0c4098be.webp",
+      "galleryImages": [],
+      "colorOptions": [
+        "White"
+      ],
+      "sizeOptions": [
+        "40",
+        "41",
+        "42",
+        "43",
+        "44"
+      ],
+      "description": "Golden Goose Super-Star",
+      "inStock": true
+    },
+    {
+      "id": 13,
+      "name": "Christian Louboutin",
+      "price": 18500,
+      "originalPrice": 20000,
+      "featured": true,
+      "category": "Shoes",
+      "supplierName": "Old Money Nepal",
+      "supplierDescription": "Timeless luxury⚜️\nBuilding Nepal's biggest oldmoney lifestyle brand.",
+      "supplierLocation": "Kupandole, Lalitpur",
+      "image": "/uploads/christian-1782895927849-c9421573.webp",
+      "hoverImage": "/uploads/christianhover-1782895930207-09063ff4.webp",
+      "galleryImages": [],
+      "colorOptions": [
+        "Black"
+      ],
+      "sizeOptions": [
+        "40",
+        "41",
+        "42",
+        "43",
+        "44"
+      ],
+      "description": "Christian Louboutin",
+      "inStock": true
+    },
+    {
+      "id": 14,
+      "name": "Golden Goose Sneakers",
+      "price": 8000,
+      "originalPrice": 10000,
+      "featured": true,
+      "category": "Shoes",
+      "supplierName": "Old Money Nepal",
+      "supplierDescription": "Timeless luxury⚜️\nBuilding Nepal's biggest oldmoney lifestyle brand.",
+      "supplierLocation": "Kupandole, Lalitpur",
+      "image": "/uploads/gold-1782903216278-6adfbb9b.webp",
+      "hoverImage": "/uploads/goldhover-1782896042411-fe218a86.webp",
+      "galleryImages": [],
+      "colorOptions": [
+        "White"
+      ],
+      "sizeOptions": [
+        "40",
+        "41",
+        "42",
+        "43",
+        "44"
+      ],
+      "description": "Stylish and comfortable white sneakers inspired by Golden Goose. Perfect for premium casual wear with a vintage touch.",
       "inStock": true
     }
   ],
@@ -957,6 +1203,46 @@
     },
     "3": {
       "interestCount": 1,
+      "soldCount": 0
+    },
+    "5": {
+      "interestCount": 0,
+      "soldCount": 0
+    },
+    "6": {
+      "interestCount": 0,
+      "soldCount": 0
+    },
+    "7": {
+      "interestCount": 0,
+      "soldCount": 0
+    },
+    "8": {
+      "interestCount": 0,
+      "soldCount": 0
+    },
+    "9": {
+      "interestCount": 0,
+      "soldCount": 0
+    },
+    "10": {
+      "interestCount": 0,
+      "soldCount": 0
+    },
+    "11": {
+      "interestCount": 0,
+      "soldCount": 0
+    },
+    "12": {
+      "interestCount": 0,
+      "soldCount": 0
+    },
+    "13": {
+      "interestCount": 0,
+      "soldCount": 0
+    },
+    "14": {
+      "interestCount": 0,
       "soldCount": 0
     }
   },
