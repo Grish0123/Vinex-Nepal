@@ -14,6 +14,7 @@ import { LiveChatWidget } from "./components/LiveChatWidget";
 import { CustomerAccountModal } from "./components/CustomerAccountModal";
 import { fetchProducts, recordProductInterest, type AboutContentSettings, type CustomerAccount, type PageContentSettings, type StoreOperationSettings } from "./lib/api";
 import type { Product } from "./types/product";
+import { FiHeadphones, FiMapPin, FiRefreshCw, FiTruck } from "react-icons/fi";
 
 type Page = "home" | "about" | "products" | "cart" | "checkout" | "support" | "seller" | "admin";
 
@@ -31,6 +32,8 @@ type CartToast = {
   id: number;
   productName: string;
 };
+
+const hiddenCategoryOptions = new Set(["audio", "wearables"]);
 
 const defaultPageContent: PageContentSettings = {
   bannerPrimary: "Hot Deals",
@@ -472,6 +475,8 @@ function ProductShopWindow({
 }) {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [sortMode, setSortMode] = useState("featured");
+  const [shopSearchQuery, setShopSearchQuery] = useState("");
+  const [shopPage, setShopPage] = useState(1);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
@@ -481,8 +486,15 @@ function ProductShopWindow({
   const [isSupplierDetailsOpen, setIsSupplierDetailsOpen] = useState(false);
   const formatPrice = (price: number) => `Rs ${price.toLocaleString()}`;
   const categories = useMemo(
-    () => Array.from(new Set([...(storeOperations.categories ?? []), ...products.map((product) => product.category)].filter(Boolean))),
-    [products, storeOperations.categories],
+    () =>
+      Array.from(
+        new Set(
+          products
+            .map((product) => product.category)
+            .filter((category) => category && !hiddenCategoryOptions.has(category.toLowerCase())),
+        ),
+      ),
+    [products],
   );
   useEffect(() => {
     if (!isOpen) {
@@ -492,8 +504,18 @@ function ProductShopWindow({
     setCategoryFilter(categoryTarget && categories.includes(categoryTarget) ? categoryTarget : "all");
   }, [categories, categoryTarget, isOpen]);
 
+  const normalizedShopSearchQuery = shopSearchQuery.trim().toLowerCase();
   const visibleProducts = products
-    .filter((product) => categoryFilter === "all" || product.category === categoryFilter)
+    .filter((product) => {
+      const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
+      const matchesSearch =
+        !normalizedShopSearchQuery ||
+        [product.name, product.category, product.description]
+          .filter(Boolean)
+          .some((value) => value.toLowerCase().includes(normalizedShopSearchQuery));
+
+      return matchesCategory && matchesSearch;
+    })
     .sort((first, second) => {
       if (sortMode === "sale") {
         return Number(Boolean(second.originalPrice && second.originalPrice > second.price)) - Number(Boolean(first.originalPrice && first.originalPrice > first.price));
@@ -504,6 +526,14 @@ function ProductShopWindow({
       if (sortMode === "name") return first.name.localeCompare(second.name);
       return Number(second.featured ?? false) - Number(first.featured ?? false);
     });
+  const productsPerShopPage = 4;
+  const shopPageCount = Math.max(1, Math.ceil(visibleProducts.length / productsPerShopPage));
+  const currentShopPage = Math.min(shopPage, shopPageCount);
+  const paginatedProducts = visibleProducts.slice(
+    (currentShopPage - 1) * productsPerShopPage,
+    currentShopPage * productsPerShopPage,
+  );
+  const paginationItems = Array.from({ length: shopPageCount }, (_, index) => index + 1);
   const selectedProduct = products.find((product) => product.id === selectedProductId) ?? null;
   const selectedProductImages = selectedProduct
     ? Array.from(new Set([selectedProduct.image, ...(selectedProduct.galleryImages ?? []), selectedProduct.hoverImage].filter((image): image is string => Boolean(image))))
@@ -531,6 +561,10 @@ function ProductShopWindow({
       document.body.classList.remove("shop-product-detail-open");
     };
   }, [isProductPanelOpen]);
+
+  useEffect(() => {
+    setShopPage(1);
+  }, [categoryFilter, normalizedShopSearchQuery, sortMode]);
 
   const openProductPanel = (product: Product) => {
     setHasReturnedFromProduct(false);
@@ -587,10 +621,16 @@ function ProductShopWindow({
         )}
 
         <div className="shop-window-meta">
-          <div className="shop-window-summary">
-            <span>Our Products</span>
-            <strong>{visibleProducts.length} products ready</strong>
-          </div>
+          <label className="shop-window-search">
+            <span>Search</span>
+            <input
+              type="search"
+              value={shopSearchQuery}
+              onChange={(event) => setShopSearchQuery(event.target.value)}
+              placeholder="Search products"
+              aria-label="Search products"
+            />
+          </label>
 
           <div className="shop-window-filter">
             <label>
@@ -624,7 +664,7 @@ function ProductShopWindow({
               <strong>Try another search or category.</strong>
             </div>
           ) : null}
-          {visibleProducts.map((product) => {
+          {paginatedProducts.map((product) => {
             const discountPercent = product.originalPrice && product.originalPrice > product.price
               ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
               : 0;
@@ -649,6 +689,63 @@ function ProductShopWindow({
               </article>
             );
           })}
+        </div>
+
+        {shopPageCount > 1 ? (
+          <nav className="shop-window-pagination" aria-label="Product pagination">
+            <button
+              type="button"
+              onClick={() => setShopPage((page) => Math.max(1, page - 1))}
+              disabled={currentShopPage === 1}
+              aria-label="Previous products"
+            >
+              &lt;
+            </button>
+            {paginationItems.map((page) => (
+              <button
+                className={page === currentShopPage ? "active" : ""}
+                type="button"
+                onClick={() => setShopPage(page)}
+                aria-current={page === currentShopPage ? "page" : undefined}
+                key={page}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setShopPage((page) => Math.min(shopPageCount, page + 1))}
+              disabled={currentShopPage === shopPageCount}
+              aria-label="Next products"
+            >
+              &gt;
+            </button>
+          </nav>
+        ) : (
+          <div className="shop-window-pagination-spacer" aria-hidden="true" />
+        )}
+
+        <div className="shop-window-service-strip" aria-label="Shop benefits">
+          <span>
+            <FiTruck aria-hidden="true" />
+            <strong>Free delivery</strong>
+            <small>For all orders above Rs 3,000</small>
+          </span>
+          <span>
+            <FiMapPin aria-hidden="true" />
+            <strong>Our delivery partner</strong>
+            <small>Nepal can move</small>
+          </span>
+          <span>
+            <FiRefreshCw aria-hidden="true" />
+            <strong>Easy returns</strong>
+            <small>7 days return policy</small>
+          </span>
+          <span>
+            <FiHeadphones aria-hidden="true" />
+            <strong>Customer support</strong>
+            <small>We're here to help</small>
+          </span>
         </div>
 
         <div className={isProductPanelOpen ? "shop-product-panel open" : "shop-product-panel"} aria-hidden={!selectedProduct}>

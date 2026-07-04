@@ -40,7 +40,7 @@
 
 .heroImageCopy {
   position: absolute;
-  bottom: clamp(42px, 8.2vh, 88px);
+  bottom: clamp(78px, 12vh, 126px);
   z-index: 2;
   display: grid;
   width: min(48rem, calc(100vw - 32px));
@@ -791,7 +791,7 @@ button.collectionCard {
 
   .heroImageCopy {
     right: 14px;
-    bottom: 18px;
+    bottom: clamp(82px, 18vh, 104px);
     left: 14px;
     width: auto;
   }

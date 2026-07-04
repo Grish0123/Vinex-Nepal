@@ -494,15 +494,20 @@ function FlashSaleStackSection({
     mass: 0.38,
     restDelta: 0.0008,
   });
+  const panelScrollSlotVh = 140;
+  const panelSettleRatio = 0.42;
   const flashProductCount = resolveFlashProducts(products, pageContent.flashProductIds).length;
   const revealPanelCount = collectionSections.length + 1;
-  const stackSceneHeight = Math.max(300, 100 + Math.max(0, revealPanelCount - 1) * 110 + Math.max(0, flashProductCount - 1) * 110);
+  const stackSceneHeight = Math.max(
+    300,
+    100 + Math.max(0, revealPanelCount - 1) * panelScrollSlotVh + Math.max(0, flashProductCount - 1) * panelScrollSlotVh,
+  );
   const flashHoldStart = 1 - 100 / (stackSceneHeight - 100);
-  const revealStepCount = Math.max(1, revealPanelCount - 1);
-  const revealSlideEnd = flashProductCount > 1 ? Math.max(0.55, flashHoldStart - 0.24) : flashHoldStart;
+  const revealStepCount = Math.max(1, revealPanelCount);
+  const revealSlideEnd = flashProductCount > 1 ? Math.max(0.55, flashHoldStart - 0.24) : 1;
   const revealStep = revealSlideEnd / revealStepCount;
-  const flashStart = (collectionSections.length - 1) * revealStep;
-  const flashSettle = flashStart + revealStep * 0.72;
+  const flashStart = collectionSections.length * revealStep;
+  const flashSettle = flashStart + revealStep * panelSettleRatio;
   const stackedPanelSlideStart = Math.max(flashSettle + 0.04, flashHoldStart - 0.24);
   const stackedPanelSlideEnd = flashHoldStart;
   const flashYOffset = useTransform(
@@ -525,6 +530,7 @@ function FlashSaleStackSection({
             title={section.title}
             index={index}
             revealStep={revealStep}
+            panelSettleRatio={panelSettleRatio}
             scrollYProgress={smoothScrollYProgress}
             onOpenProduct={onOpenProduct}
             key={`${section.title}-${index}`}
@@ -551,6 +557,7 @@ function StackedCollectionPanel({
   title,
   index,
   revealStep,
+  panelSettleRatio,
   scrollYProgress,
   onOpenProduct,
 }: {
@@ -559,11 +566,12 @@ function StackedCollectionPanel({
   title: string;
   index: number;
   revealStep: number;
+  panelSettleRatio: number;
   scrollYProgress: MotionValue<number>;
   onOpenProduct: (productId: number) => void;
 }) {
-  const start = index === 0 ? 0 : (index - 1) * revealStep;
-  const settle = index === 0 ? 1 : start + revealStep * 0.72;
+  const start = index === 0 ? 0 : index * revealStep;
+  const settle = index === 0 ? 1 : start + revealStep * panelSettleRatio;
   const end = index === 0 ? 1 : start + revealStep;
   const panelYOffset = useTransform(
     scrollYProgress,

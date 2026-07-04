@@ -9,6 +9,8 @@ export type ProductSelection = {
   size?: string;
 };
 
+const hiddenCategoryOptions = new Set(["audio", "wearables"]);
+
 type ProductPageProps = {
   products: Product[];
   searchQuery: string;
@@ -47,7 +49,13 @@ export function ProductPage({
   const galleryDragStartX = useRef<number | null>(null);
   const productCardRefs = useRef<Record<number, HTMLElement | null>>({});
   const formatPrice = (price: number) => `Rs ${price.toLocaleString()}`;
-  const categories = Array.from(new Set([...(storeOperations.categories ?? []), ...products.map((product) => product.category)].filter(Boolean)));
+  const categories = Array.from(
+    new Set(
+      products
+        .map((product) => product.category)
+        .filter((category) => category && !hiddenCategoryOptions.has(category.toLowerCase())),
+    ),
+  );
   const visibleProducts = products
     .filter((product) => categoryFilter === "all" || product.category === categoryFilter)
     .sort((first, second) => {
