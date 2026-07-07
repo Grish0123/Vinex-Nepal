@@ -138,7 +138,7 @@ export function SellerPage({ storeOperations }: SellerPageProps) {
               <h2>Direct Contact</h2>
             </div>
             <p>You can also reach us directly if you want to discuss product supply or seller onboarding.</p>
-            <a href="mailto:katwalgrish@gmail.com">katwalgrish@gmail.com</a>
+            <a href="mailto:vinexnepal@gmail.com">vinexnepal@gmail.com</a>
           </article>
         </aside>
       </section>
@@ -150,7 +150,7 @@ export function SellerPage({ storeOperations }: SellerPageProps) {
             <p>Our representative will contact you soon. You can also reach us directly using the details below.</p>
             <div className={styles.sellerModalContact}>
               <a href={`tel:${storeOperations.supportPhone.replace(/\s/g, "")}`}>{storeOperations.supportPhone}</a>
-              <a href="mailto:katwalgrish@gmail.com">katwalgrish@gmail.com</a>
+              <a href="mailto:vinexnepal@gmail.com">vinexnepal@gmail.com</a>
               <a href={storeOperations.supportWhatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a>
             </div>
             <button type="button" onClick={() => setShowSuccessModal(false)}>Close</button>

@@ -97,16 +97,13 @@ export function Header({ currentPage, cartCount, isPastHero = false, isHidden = 
       preview: "/images/Gallery Images/1st.png",
       onClick: () => navigateFromMenu("support"),
     },
+    /*
     {
       label: "Become a seller",
       preview: "/images/shopnow.png",
       onClick: () => navigateFromMenu("seller"),
     },
-    {
-      label: "Admin login",
-      preview: "/images/Login.png",
-      onClick: () => navigateFromMenu("admin"),
-    },
+    */
   ];
 
   return (
@@ -182,13 +179,13 @@ export function Header({ currentPage, cartCount, isPastHero = false, isHidden = 
           <div>
             <span>Contact</span>
             <a href="tel:+9779748285909">+977 9748285909</a>
-            <a href="mailto:katwalgrish@gmail.com">katwalgrish@gmail.com</a>
+            <a href="mailto:vinexnepal@gmail.com">vinexnepal@gmail.com</a>
           </div>
           <nav aria-label="Social links">
             <a href="https://www.instagram.com/vinexnepal/" target="_blank" rel="noreferrer">
               Instagram
             </a>
-            <a href="https://www.facebook.com/" target="_blank" rel="noreferrer">
+            <a href="https://www.facebook.com/profile.php?id=61591204245402#" target="_blank" rel="noreferrer">
               Facebook
             </a>
             <a href="https://wa.me/9779748285909" target="_blank" rel="noreferrer">

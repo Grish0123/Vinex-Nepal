@@ -142,7 +142,7 @@ const defaultAboutContent: AboutContentSettings = {
     "Every product we highlight has to earn its space. It should be easy to understand, useful to own, and backed by a team that cares about the full experience from first look to final delivery.",
     "That is the long-term idea behind Vinex Nepal: a modern ecommerce brand rooted in local trust, built carefully enough that customers can come back with confidence.",
   ],
-  galleryLogo: "/images/brand/VinexLogo.png",
+  galleryLogo: "/images/Logo Vinex.svg",
   galleryText: "Join our community for new drops, behind-the-scenes updates, and product stories made for everyday Nepal.",
   galleryImages: [
     "/images/Gallery Images/1st.png",
@@ -152,8 +152,8 @@ const defaultAboutContent: AboutContentSettings = {
   ],
   socialLinks: [
     { label: "Instagram", url: "https://www.instagram.com/vinexnepal/" },
-    { label: "TikTok", url: "https://www.tiktok.com/@vinexnepal" },
-    { label: "Facebook", url: "https://www.facebook.com/" },
+    { label: "TikTok", url: "https://www.tiktok.com/@vinex.nepal?_r=1" },
+    { label: "Facebook", url: "https://www.facebook.com/profile.php?id=61591204245402#" },
   ],
 };
 
@@ -189,8 +189,8 @@ const defaultStoreOperations: StoreOperationSettings = {
   supportWhatsappUrl: "https://wa.me/9779748285909",
   supportInstagramUrl: "https://www.instagram.com/vinexnepal/",
   supportInstagramLabel: "vinexnepal",
-  supportTiktokUrl: "https://www.tiktok.com/@vinexnepal",
-  supportTiktokLabel: "@vinexnepal",
+  supportTiktokUrl: "https://www.tiktok.com/@vinex.nepal?_r=1",
+  supportTiktokLabel: "@vinex.nepal",
   supportHoursTag: "Support Hours",
   supportHoursTitle: "Fast replies on social",
   supportHoursText: "WhatsApp and Instagram are best for quick order questions.",
@@ -526,7 +526,7 @@ function ProductShopWindow({
       if (sortMode === "name") return first.name.localeCompare(second.name);
       return Number(second.featured ?? false) - Number(first.featured ?? false);
     });
-  const productsPerShopPage = 4;
+  const productsPerShopPage = 8;
   const shopPageCount = Math.max(1, Math.ceil(visibleProducts.length / productsPerShopPage));
   const currentShopPage = Math.min(shopPage, shopPageCount);
   const paginatedProducts = visibleProducts.slice(
@@ -684,7 +684,12 @@ function ProductShopWindow({
                 </button>
                 <div className="shop-window-card-meta">
                   <strong>{product.name}</strong>
-                  <span>{formatPrice(product.price)}</span>
+                  <div className="shop-window-price-row">
+                    {discountPercent > 0 && product.originalPrice ? (
+                      <span className="shop-window-original-price">{formatPrice(product.originalPrice)}</span>
+                    ) : null}
+                    <span className="shop-window-current-price">{formatPrice(product.price)}</span>
+                  </div>
                 </div>
               </article>
             );
@@ -1346,7 +1351,7 @@ export default function App() {
           aria-live="polite"
         >
           <div className="site-preloader-mark">
-            <img src="/images/brand/VinexLogo.png" alt="Vinex Nepal" />
+            <img src="/images/Logo Vinex.svg" alt="Vinex Nepal" />
           </div>
           <div className="site-preloader-progress" aria-hidden="true">
             <span style={{ transform: `scaleX(${preloaderProgress / 100})` }} />

@@ -184,7 +184,7 @@ function StorySection({ aboutContent }: { aboutContent: AboutContentSettings }) 
   return (
     <section className={styles.storySection} aria-labelledby="about-story-title">
       <div className={styles.storyLogo}>
-        <img src="/images/brand/VinexLogo.png" alt="Vinex Nepal" />
+        <img src="/images/Logo Vinex.svg" alt="Vinex Nepal" />
       </div>
       <div className={styles.storyContent}>
         <h2 id="about-story-title">{aboutContent.storyHeadline}</h2>

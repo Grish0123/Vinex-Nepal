@@ -3247,9 +3247,9 @@ a {
   inset: auto;
   z-index: auto;
   width: 100%;
-  height: calc(100vh - var(--fixed-header-offset, 74px));
+  height: auto;
   min-height: calc(100vh - var(--fixed-header-offset, 74px));
-  overflow: hidden;
+  overflow: visible;
   pointer-events: auto;
   visibility: visible;
 }
@@ -3259,12 +3259,11 @@ a {
 }
 
 .shop-window-page .shop-window-panel {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  display: block;
   width: 100%;
-  height: calc(100vh - var(--fixed-header-offset, 74px));
+  height: auto;
   min-height: calc(100vh - var(--fixed-header-offset, 74px));
-  overflow: hidden;
+  overflow: visible;
   padding-top: 12px;
   transform: none;
   transition: none;
@@ -3468,7 +3467,7 @@ a {
   display: grid;
   place-items: center;
   width: 100%;
-  height: 100%;
+  height: clamp(520px, 67vh, 640px);
   min-height: 0;
   padding: 0;
   overflow: hidden;
@@ -3562,7 +3561,8 @@ a {
 }
 
 .shop-window-card-meta strong,
-.shop-window-card-meta span {
+.shop-window-card-meta span,
+.shop-window-price-row {
   color: #111111;
   font-size: clamp(0.72rem, 0.82vw, 0.88rem);
   line-height: 1.16;
@@ -3578,6 +3578,24 @@ a {
   font-weight: 500;
   text-transform: none;
   white-space: normal;
+}
+
+.shop-window-price-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: baseline;
+  min-height: 1.16em;
+}
+
+.shop-window-card-meta .shop-window-original-price {
+  color: rgba(17, 17, 17, 0.46);
+  text-decoration: line-through;
+}
+
+.shop-window-card-meta .shop-window-current-price {
+  color: #111111;
+  font-weight: 700;
 }
 
 .shop-window-pagination,
@@ -3619,7 +3637,7 @@ a {
 }
 
 .shop-window-service-strip {
-  display: grid;
+  display: none;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: clamp(14px, 3vw, 46px);
   align-items: center;
@@ -8547,6 +8565,7 @@ a {
 
   .shop-window-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
     gap: 8px;
     padding: 0 10px 24px;
   }
@@ -8576,6 +8595,7 @@ a {
   }
 
   .shop-window-service-strip {
+    display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
     margin: 0 10px;

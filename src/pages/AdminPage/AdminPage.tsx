@@ -352,7 +352,7 @@ const initialAboutContentForm: AboutContentSettings = {
     "Every product we highlight has to earn its space. It should be easy to understand, useful to own, and backed by a team that cares about the full experience from first look to final delivery.",
     "That is the long-term idea behind Vinex Nepal: a modern ecommerce brand rooted in local trust, built carefully enough that customers can come back with confidence.",
   ],
-  galleryLogo: "/images/brand/VinexLogo.png",
+  galleryLogo: "/images/Logo Vinex.svg",
   galleryText:
     "Join our community for new drops, behind-the-scenes updates, and product stories made for everyday Nepal.",
   galleryImages: [
@@ -363,8 +363,8 @@ const initialAboutContentForm: AboutContentSettings = {
   ],
   socialLinks: [
     { label: "Instagram", url: "https://www.instagram.com/vinexnepal/" },
-    { label: "TikTok", url: "https://www.tiktok.com/@vinexnepal" },
-    { label: "Facebook", url: "https://www.facebook.com/" },
+    { label: "TikTok", url: "https://www.tiktok.com/@vinex.nepal?_r=1" },
+    { label: "Facebook", url: "https://www.facebook.com/profile.php?id=61591204245402#" },
   ],
 };
 
@@ -400,8 +400,8 @@ const initialStoreOperationForm: StoreOperationSettings = {
   supportWhatsappUrl: "https://wa.me/9779748285909",
   supportInstagramUrl: "https://www.instagram.com/vinexnepal/",
   supportInstagramLabel: "vinexnepal",
-  supportTiktokUrl: "https://www.tiktok.com/@vinexnepal",
-  supportTiktokLabel: "@vinexnepal",
+  supportTiktokUrl: "https://www.tiktok.com/@vinex.nepal?_r=1",
+  supportTiktokLabel: "@vinex.nepal",
   supportHoursTag: "Support Hours",
   supportHoursTitle: "Fast replies on social",
   supportHoursText: "WhatsApp and Instagram are best for quick order questions.",
@@ -2062,7 +2062,7 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
       <aside className={isAdminMenuOpen ? "admin-sidebar open" : "admin-sidebar"} aria-label="Admin CMS navigation">
         <div className="admin-sidebar-brand" title="Vinex Nepal Admin" data-tooltip="Vinex Nepal Admin">
           <span aria-hidden="true">
-            <img src="/images/brand/VinexLogo.png" alt="" />
+            <img src="/images/Logo Vinex.svg" alt="" />
           </span>
           <strong>Vinex Nepal</strong>
         </div>
@@ -4054,24 +4054,6 @@ export function AdminPage({ cartCount, onSearchChange, onNavigate, onOpenAbout, 
                         selectedProductIds={pageContentForm.garmentsProductIds}
                         onChange={(garmentsProductIds) =>
                           setPageContentForm((current) => ({ ...current, garmentsProductIds }))
-                        }
-                      />
-                      <label className="form-field">
-                        <span>Shoes Section Title</span>
-                        <input
-                          value={pageContentForm.shoesTitle}
-                          onChange={(event) =>
-                            setPageContentForm((current) => ({ ...current, shoesTitle: event.target.value }))
-                          }
-                        />
-                      </label>
-                      <ProductSelectionCard
-                        label="Shoes"
-                        heading="Shoe products"
-                        products={dashboard.products}
-                        selectedProductIds={pageContentForm.shoesProductIds}
-                        onChange={(shoesProductIds) =>
-                          setPageContentForm((current) => ({ ...current, shoesProductIds }))
                         }
                       />
                       <label className="form-field">

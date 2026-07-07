@@ -52,7 +52,7 @@ export function CustomerAccountModal({ currentCustomer, onClose, onSignIn, onSig
         </button>
 
         <div className="customer-auth-brand">
-          <img src="/images/brand/vinex-logo-mark.png" alt="" />
+          <img src="/images/Logo Vinex.svg" alt="" />
           <div>
             <strong>Vinex Nepal</strong>
             <span>Customer account</span>

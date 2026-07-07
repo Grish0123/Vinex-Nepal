@@ -114,7 +114,7 @@ function BrandIntroSection({ text }: { text: string }) {
   return (
     <section className={styles.brandIntro} aria-label="About Vinex Nepal">
       <div className={styles.brandIntroLogo}>
-        <img src="/images/brand/VinexLogo.png" alt="Vinex Nepal" />
+        <img src="/images/Logo Vinex.svg" alt="Vinex Nepal" />
       </div>
       <div className={styles.brandIntroCopy}>
         <motion.p
@@ -322,17 +322,6 @@ function FlashProductPanel({
               <span>{productCount > 1 ? `${index + 1} / ${productCount}` : product.name}</span>
             </button>
           </div>
-          <button
-            className={styles.flashQuickAdd}
-            type="button"
-            onClick={() => {
-              if (product.id) {
-                onOpenProduct(product.id);
-              }
-            }}
-          >
-            {pageContent.flashCta}
-          </button>
         </div>
         <button
           className={styles.flashImagePane}
@@ -477,10 +466,6 @@ function FlashSaleStackSection({
     {
       title: pageContent.garmentsTitle,
       productIds: pageContent.garmentsProductIds,
-    },
-    {
-      title: pageContent.shoesTitle,
-      productIds: pageContent.shoesProductIds,
     },
   ];
   const stackRef = useRef<HTMLElement | null>(null);

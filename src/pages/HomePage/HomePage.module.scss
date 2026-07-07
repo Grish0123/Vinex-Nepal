@@ -974,6 +974,18 @@ button.collectionCard {
     bottom: 12px;
   }
 
+  .shopNowHoldSection {
+    height: auto;
+    min-height: 0;
+  }
+
+  .shopNowImageSection {
+    position: relative;
+    top: auto;
+    height: clamp(420px, 72vh, 620px);
+    min-height: 0;
+  }
+
   .shopNowButton {
     min-width: 132px;
     min-height: 44px;

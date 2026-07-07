@@ -300,14 +300,14 @@ export function CheckoutPage({
 
                 <a
                   className="contact-link tiktok-link"
-                  href="https://www.tiktok.com/@vinexnepal"
+                  href="https://www.tiktok.com/@vinex.nepal?_r=1"
                   target="_blank"
                   rel="noreferrer"
                 >
                   <span className="contact-logo"><SocialIcon platform="tiktok" /></span>
                   <span className="contact-copy">
                     <strong>TikTok</strong>
-                    <span>@vinexnepal</span>
+                    <span>@vinex.nepal</span>
                   </span>
                 </a>
               </div>

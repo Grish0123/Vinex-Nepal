@@ -146,8 +146,8 @@ const legalPages: Record<
         body: [
           "Phone / WhatsApp: +977 9748285909",
           "Instagram: vinexnepal",
-          "TikTok: @vinexnepal",
-          "Email: katwalgrish@gmail.com",
+          "TikTok: @vinex.nepal",
+          "Email: vinexnepal@gmail.com",
         ],
       },
       {
@@ -289,7 +289,7 @@ export function FooterSection({ showProductRequest, onNavigate }: FooterSectionP
       {showProductRequest ? (
         <section className="footer-request-panel">
           <div className="footer-request-logo" aria-hidden="true">
-            <img src="/images/brand/VinexLogo.png" alt="" />
+            <img src="/images/Logo Vinex.svg" alt="" />
           </div>
 
           <div className="footer-request-copy">
@@ -355,14 +355,14 @@ export function FooterSection({ showProductRequest, onNavigate }: FooterSectionP
           <h3>Social</h3>
           <div>
             <a href="https://www.instagram.com/vinexnepal/" target="_blank" rel="noreferrer">Instagram</a>
-            <a href="https://www.tiktok.com/@vinexnepal" target="_blank" rel="noreferrer">TikTok</a>
-            <a href="https://www.facebook.com/" target="_blank" rel="noreferrer">Facebook</a>
+            <a href="https://www.tiktok.com/@vinex.nepal?_r=1" target="_blank" rel="noreferrer">TikTok</a>
+            <a href="https://www.facebook.com/profile.php?id=61591204245402#" target="_blank" rel="noreferrer">Facebook</a>
           </div>
         </div>
         <div className="footer-link-column">
           <h3>Get In Touch</h3>
           <div>
-            <a href="mailto:katwalgrish@gmail.com">katwalgrish@gmail.com</a>
+            <a href="mailto:vinexnepal@gmail.com">vinexnepal@gmail.com</a>
             <a href="tel:+9779748285909">+977 9748285909</a>
             {onNavigate ? <button type="button" onClick={() => onNavigate("support")}>Help &amp; Support</button> : null}
           </div>
